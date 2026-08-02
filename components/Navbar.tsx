@@ -80,19 +80,37 @@ export default function Navbar() {
     };
   }, []);
 
+  const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setMobileMenuOpen(false);
+    if (href.startsWith('/#')) {
+      const targetId = href.replace('/#', '');
+      if (window.location.pathname === '/') {
+        e.preventDefault();
+        setTimeout(() => {
+          const elem = document.getElementById(targetId);
+          if (elem) {
+            const yOffset = -85;
+            const y = elem.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }, 150);
+      }
+    }
+  };
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 py-4 px-4 sm:px-8 transition-all duration-500">
+      <header className="fixed top-0 left-0 right-0 z-50 py-3 sm:py-4 px-3 sm:px-8 transition-all duration-500">
         <div
-          className={`max-w-7xl mx-auto px-6 py-3 rounded-full transition-all duration-500 ${
+          className={`max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-500 ${
             scrolled
               ? 'glass-nav shadow-[0_0_30px_rgba(0,217,255,0.25)] border-[#00D9FF]/35'
-              : 'bg-[#020817]/40 backdrop-blur-md border border-[#00D9FF]/20'
+              : 'bg-[#020817]/60 backdrop-blur-md border border-[#00D9FF]/20'
           } flex items-center justify-between`}
         >
           {/* Logo */}
-          <Link href="/#hero" className="flex items-center gap-3 group" data-hoverable="true">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 shadow-[0_0_20px_rgba(0,217,255,0.5)] group-hover:scale-110 group-hover:border-[#00D9FF] transition-all overflow-hidden p-1.5">
+          <Link href="/#hero" className="flex items-center gap-2.5 sm:gap-3 group" data-hoverable="true">
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 shadow-[0_0_20px_rgba(0,217,255,0.5)] group-hover:scale-110 group-hover:border-[#00D9FF] transition-all overflow-hidden p-1.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/infinix-event-logo-clean.png"
@@ -101,7 +119,7 @@ export default function Navbar() {
               />
               <div className="absolute inset-0 rounded-full bg-[#00D9FF]/15 blur-sm group-hover:blur-md transition-all" />
             </div>
-            <span className="font-orbitron font-extrabold text-lg sm:text-xl tracking-wider text-white group-hover:text-[#00D9FF] transition-colors">
+            <span className="font-orbitron font-extrabold text-base sm:text-xl tracking-wider text-white group-hover:text-[#00D9FF] transition-colors">
               INFINIX&apos;26
             </span>
           </Link>
@@ -156,7 +174,8 @@ export default function Navbar() {
           <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => setAnnouncementsModalOpen(true)}
-              className="relative p-2 rounded-lg glass-panel text-[#00D9FF]"
+              className="relative p-2 rounded-lg glass-panel border border-[#00D9FF]/30 text-[#00D9FF] active:scale-95 transition-transform"
+              aria-label="Announcements"
             >
               <Bell className="w-5 h-5" />
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -167,10 +186,11 @@ export default function Navbar() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg glass-panel text-white hover:text-[#00D9FF]"
+              className="p-2 rounded-lg glass-panel border border-[#00D9FF]/30 text-white hover:text-[#00D9FF] active:scale-95 transition-transform"
+              aria-label="Toggle Menu"
               data-hoverable="true"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-6 h-6 text-[#00D9FF]" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -182,17 +202,19 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden mt-3 max-w-7xl mx-auto bg-[#020817]/95 backdrop-blur-2xl border border-[#00D9FF]/30 rounded-3xl p-6"
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="lg:hidden mt-2 max-w-7xl mx-auto bg-[#020817]/98 backdrop-blur-2xl border border-[#00D9FF]/40 rounded-3xl p-5 shadow-[0_15px_40px_rgba(0,0,0,0.9)] overflow-hidden"
             >
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
                 {navLinks.map((link) => (
                   <a
                     key={link.name}
                     href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-sm font-semibold tracking-wider text-gray-200 hover:text-[#00D9FF]"
+                    onClick={(e) => handleMobileNavClick(e, link.href)}
+                    className="text-xs font-bold tracking-widest text-gray-200 hover:text-[#00D9FF] active:text-[#00D9FF] py-3 px-4 rounded-xl hover:bg-[#00D9FF]/10 transition-all flex items-center justify-between border-b border-white/5 last:border-none"
                   >
-                    {link.name}
+                    <span>{link.name}</span>
+                    <span className="text-[#00D9FF]/60 text-xs">→</span>
                   </a>
                 ))}
 
@@ -200,7 +222,7 @@ export default function Navbar() {
                   href="https://unstop.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full mt-2 py-3 rounded-full bg-gradient-to-r from-[#00D9FF] to-[#4CCFFF] text-black font-bold text-xs tracking-widest uppercase shadow-[0_0_20px_#00D9FF] text-center flex items-center justify-center gap-2"
+                  className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#4CCFFF] text-black font-extrabold text-xs tracking-widest uppercase shadow-[0_0_20px_#00D9FF] text-center flex items-center justify-center gap-2 active:scale-98 transition-all"
                 >
                   REGISTER ON UNSTOP
                   <ExternalLink className="w-4 h-4" />
