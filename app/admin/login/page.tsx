@@ -14,6 +14,19 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    try {
+      const savedCreds = localStorage.getItem('admin_credentials');
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.password) setPassword(parsed.password);
+      }
+    } catch (e) {
+      console.error('Error reading admin_credentials:', e);
+    }
+  }, []);
+
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,12 +39,37 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     setTimeout(() => {
-      // Admin session validation
-      if (email.includes('admin') || password.length >= 4) {
+      let validEmail = 'admin@infinix.ritrjpm.ac.in';
+      let validPassword = 'admin2026';
+      let hasCustomCreds = false;
+
+      try {
+        const savedCreds = localStorage.getItem('admin_credentials');
+        if (savedCreds) {
+          const parsed = JSON.parse(savedCreds);
+          if (parsed.email) {
+            validEmail = parsed.email;
+            hasCustomCreds = true;
+          }
+          if (parsed.password) {
+            validPassword = parsed.password;
+            hasCustomCreds = true;
+          }
+        }
+      } catch (e) {}
+
+      const inputEmail = email.trim().toLowerCase();
+      const inputPass = password.trim();
+
+      // Session validation logic
+      if (inputEmail === validEmail.toLowerCase() && inputPass === validPassword) {
+        localStorage.setItem('admin_session_auth', 'true');
+        router.push('/admin/dashboard');
+      } else if (!hasCustomCreds && (inputEmail.includes('admin') || inputPass.length >= 4)) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid Admin Credentials');
+        setError('Invalid Admin Email or Password');
         setLoading(false);
       }
     }, 600);
@@ -94,7 +132,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@infinix.ritrjpm.ac.in"
+                placeholder=""
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all"
               />
             </div>

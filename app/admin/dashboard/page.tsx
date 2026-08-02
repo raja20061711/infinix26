@@ -129,6 +129,15 @@ export default function AdminDashboardPage() {
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // ADMIN CREDENTIALS MANAGEMENT STATE
+  const [adminEmail, setAdminEmail] = useState('admin@infinix.ritrjpm.ac.in');
+  const [adminPassword, setAdminPassword] = useState('admin2026');
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [credSuccessMsg, setCredSuccessMsg] = useState('');
+  const [credErrorMsg, setCredErrorMsg] = useState('');
+
   useEffect(() => {
     const adminAuth = localStorage.getItem('admin_session_auth');
     if (!adminAuth) {
@@ -141,6 +150,25 @@ export default function AdminDashboardPage() {
     if (state.themes.length > 0 && !newPS.themeId) {
       setNewPS((prev) => ({ ...prev, themeId: state.themes[0].id }));
     }
+
+    // Load saved admin credentials if available
+    try {
+      const savedCreds = localStorage.getItem('admin_credentials');
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.email) {
+          setAdminEmail(parsed.email);
+          setNewAdminEmail(parsed.email);
+        }
+        if (parsed.password) {
+          setAdminPassword(parsed.password);
+        }
+      } else {
+        setNewAdminEmail('admin@infinix.ritrjpm.ac.in');
+      }
+    } catch (e) {
+      console.error('Failed to load admin credentials:', e);
+    }
   }, [router]);
 
   const handleAdminLogout = () => {
@@ -151,6 +179,40 @@ export default function AdminDashboardPage() {
   const updateState = (newState: PortalState) => {
     setPortalState(newState);
     savePortalState(newState);
+  };
+
+  const handleSaveAdminCredentials = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCredSuccessMsg('');
+    setCredErrorMsg('');
+
+    if (!newAdminEmail.trim()) {
+      setCredErrorMsg('Admin Email cannot be empty');
+      return;
+    }
+    if (!newAdminEmail.includes('@')) {
+      setCredErrorMsg('Please enter a valid email address');
+      return;
+    }
+    if (newAdminPassword && newAdminPassword !== confirmAdminPassword) {
+      setCredErrorMsg('New passwords do not match');
+      return;
+    }
+    if (newAdminPassword && newAdminPassword.length < 4) {
+      setCredErrorMsg('Password must be at least 4 characters long');
+      return;
+    }
+
+    const updatedPass = newAdminPassword.trim() || adminPassword;
+    const updatedEmail = newAdminEmail.trim();
+
+    const creds = { email: updatedEmail, password: updatedPass };
+    localStorage.setItem('admin_credentials', JSON.stringify(creds));
+    setAdminEmail(updatedEmail);
+    setAdminPassword(updatedPass);
+    setNewAdminPassword('');
+    setConfirmAdminPassword('');
+    setCredSuccessMsg('Admin credentials updated successfully! Use these credentials for your next login.');
   };
 
   // Helper to trigger Low Risk Modal
@@ -177,8 +239,8 @@ export default function AdminDashboardPage() {
 
   const handleVerifyAdminPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    // Valid password check (against Supabase auth or session)
-    const validPasswords = ['admin2026', 'admin123', 'admin', 'rit2026'];
+    // Valid password check (against saved admin password or defaults)
+    const validPasswords = [adminPassword, 'admin2026', 'admin123', 'admin', 'rit2026'];
     if (!validPasswords.includes(adminPasswordInput.trim())) {
       setPasswordError('Incorrect Password. Please try again.');
       return;
@@ -1726,9 +1788,105 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
           <div className="space-y-6 max-w-2xl">
             <div>
               <h2 className="font-orbitron font-extrabold text-xl text-white uppercase">
-                ADMIN SETTINGS & SUPABASE CONFIG
+                ADMIN SETTINGS & SECURITY CONFIG
               </h2>
-              <p className="text-xs text-gray-400">Portal preferences & PostgreSQL database state management</p>
+              <p className="text-xs text-gray-400">Portal credentials, authentication & database state management</p>
+            </div>
+
+            {/* ADMIN CREDENTIALS CARD */}
+            <div className="p-6 rounded-3xl bg-[#04162E]/90 border border-[#00D9FF]/40 shadow-[0_10px_30px_rgba(0,217,255,0.15)] space-y-5">
+              <div className="flex items-center justify-between pb-4 border-b border-[#00D9FF]/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-[#00D9FF]/10 border border-[#00D9FF]/30 text-[#00D9FF]">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-orbitron font-bold text-sm text-white uppercase">
+                      CHANGE ADMIN EMAIL & PASSWORD
+                    </h3>
+                    <p className="text-[11px] text-gray-400">Update your administrator login credentials</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-[#02142b] border border-[#00D9FF]/40 text-[#00D9FF] text-[10px] font-bold font-mono">
+                  ACTIVE: {adminEmail}
+                </span>
+              </div>
+
+              {credSuccessMsg && (
+                <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>{credSuccessMsg}</span>
+                </div>
+              )}
+
+              {credErrorMsg && (
+                <div className="p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs flex items-center gap-2.5">
+                  <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <span>{credErrorMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveAdminCredentials} className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1.5">
+                    Admin Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={newAdminEmail}
+                      onChange={(e) => setNewAdminEmail(e.target.value)}
+                      placeholder="admin@infinix.ritrjpm.ac.in"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#00D9FF] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1.5">
+                      New Password (Optional)
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        value={newAdminPassword}
+                        onChange={(e) => setNewAdminPassword(e.target.value)}
+                        placeholder="Leave blank to keep current"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#00D9FF] transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1.5">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        value={confirmAdminPassword}
+                        onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#00D9FF] transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#38bdf8] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,217,255,0.4)] hover:shadow-[0_0_30px_rgba(0,217,255,0.7)] hover:scale-105 transition-all flex items-center gap-2"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-black" />
+                    <span>Save Credentials</span>
+                  </button>
+                </div>
+              </form>
             </div>
 
             <div className="p-6 rounded-3xl bg-[#04162E]/80 border border-[#00D9FF]/30 space-y-4 text-xs">
