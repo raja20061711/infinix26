@@ -9,24 +9,17 @@ export interface EmailResult {
 }
 
 export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> {
-  // Generate QR Code Data URL for the team if not already present
-  let qrCodeDataUrl = team.qrCodeUrl;
-  if (!qrCodeDataUrl) {
-    try {
-      const qrData = JSON.stringify({
-        teamId: team.teamId,
-        teamName: team.teamName,
-        event: "INFINIX'26 Hackathon",
-      });
-      qrCodeDataUrl = await QRCode.toDataURL(qrData, {
-        margin: 1,
-        width: 250,
-        color: { dark: '#00D9FF', light: '#ffffff' },
-      });
-    } catch (err) {
-      console.error('Failed to generate QR code for email:', err);
-      qrCodeDataUrl = '';
-    }
+  // Always generate a fresh high-contrast camera-scannable QR Code Data URL for the team ID
+  let qrCodeDataUrl = '';
+  try {
+    qrCodeDataUrl = await QRCode.toDataURL(team.teamId.trim(), {
+      margin: 2,
+      width: 300,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+  } catch (err) {
+    console.error('Failed to generate QR code for email:', err);
+    qrCodeDataUrl = team.qrCodeUrl || '';
   }
 
   const htmlContent = `

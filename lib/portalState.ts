@@ -280,12 +280,12 @@ export function savePortalState(state: PortalState): void {
 // Generate QR Code Data URL helper
 export async function generateTeamQRCode(teamId: string): Promise<string> {
   try {
-    const qrData = JSON.stringify({
-      teamId,
-      event: "INFINIX'26 Hackathon",
-      issuedAt: new Date().toISOString(),
+    const qrData = teamId.trim();
+    return await QRCode.toDataURL(qrData, {
+      margin: 2,
+      width: 300,
+      color: { dark: '#000000', light: '#ffffff' },
     });
-    return await QRCode.toDataURL(qrData, { margin: 1, width: 250, color: { dark: '#00D9FF', light: '#020b18' } });
   } catch (e) {
     console.error('Error generating QR Code:', e);
     return '';
