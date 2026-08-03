@@ -137,7 +137,7 @@ INSERT INTO public.announcements (id, title, message, category, is_published) VA
 
 -- Insert Initial Sample Registration
 INSERT INTO public.registrations (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
-('INF-2026-001', 'Cyber Voyagers', 'Arun Kumar', 'arunkumar@ritrjpm.ac.in', '+91 98765 43210', 'Ramco Institute of Technology', 'Information Technology', '[{"name": "Arun Kumar", "email": "arunkumar@ritrjpm.ac.in", "role": "Leader"}, {"name": "Priya Sharma", "email": "priya.s@gmail.com", "role": "Member"}]'::jsonb, 'hackathon2026', 'Verified', 'Sent');
+('INF-2026-001', 'Cyber Voyagers', 'Arun Kumar', 'raja20061711@gmail.com', '+91 98765 43210', 'Ramco Institute of Technology', 'Information Technology', '[{"name": "Arun Kumar", "email": "raja20061711@gmail.com", "role": "Leader"}, {"name": "Priya Sharma", "email": "priya.s@gmail.com", "role": "Member"}]'::jsonb, 'hackathon2026', 'Verified', 'Sent');
 
 -- STEP 4: ROW LEVEL SECURITY & PERMISSIONS
 ALTER TABLE public.registrations ENABLE ROW LEVEL SECURITY;
