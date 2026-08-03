@@ -73,7 +73,22 @@ export async function upsertAllTeamsToSupabase(teams: any[]) {
     }
     return data;
   } catch (err) {
-    console.error('Supabase all teams batch upsert failed:', err);
+  }
+}
+
+// Helper: Delete Team from Supabase
+export async function deleteTeamFromSupabase(teamId: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from('teams').delete().eq('team_id', teamId);
+    if (error) {
+      console.error('Error deleting team from Supabase:', error.message);
+    } else {
+      console.log('✅ Team', teamId, 'deleted from Supabase DB');
+    }
+    return data;
+  } catch (err) {
+    console.error('Supabase team delete failed:', err);
     return null;
   }
 }

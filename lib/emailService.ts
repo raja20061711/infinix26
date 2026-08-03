@@ -29,14 +29,17 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
     }
   }
 
-  // Production Nodemailer SMTP configuration (reads process.env or fallback)
+  const smtpUser = process.env.SMTP_USER || '';
+  const smtpPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
+
+  // Production Nodemailer SMTP configuration
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT) || 587,
     secure: false,
     auth: {
-      user: process.env.SMTP_USER || 'organizers@infinix.ritrjpm.ac.in',
-      pass: process.env.SMTP_PASSWORD || 'app_password_sample',
+      user: smtpUser,
+      pass: smtpPass,
     },
   });
 
@@ -56,7 +59,7 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
           .pass-highlight { background: rgba(0, 217, 255, 0.15); border: 1px solid #00D9FF; color: #00D9FF; padding: 12px; font-size: 20px; font-weight: bold; letter-spacing: 3px; text-align: center; border-radius: 8px; font-family: monospace; }
           .qr-section { text-align: center; background: #020b18; border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 16px; padding: 20px; margin: 20px 0; }
           .qr-title { font-size: 12px; font-weight: bold; color: #00D9FF; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
-          .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 30px; border-t: 1px solid rgba(255, 255, 255, 0.1); padding-pt: 15px; }
+          .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 30px; border-t: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px; }
         </style>
       </head>
       <body>
@@ -121,18 +124,18 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
   `;
 
   try {
-    // If SMTP credentials configured in env, send email
-    if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+    if (smtpUser && smtpPass) {
       const info = await transporter.sendMail({
-        from: '"INFINIX\'26 Organizers" <infinix26@ritrjpm.ac.in>',
+        from: `"INFINIX'26 Organizers" <${smtpUser}>`,
         to: team.leaderEmail,
         subject: `[INFINIX'26] Registration Verified & Check-in QR Code - Team ${team.teamId}`,
         html: htmlContent,
       });
       return { success: true, messageId: info.messageId };
+    } else {
+      console.warn('SMTP credentials (SMTP_USER & SMTP_PASS) not configured in env. Email simulated.');
+      return { success: false, error: 'SMTP Credentials not configured in Vercel. Please add SMTP_USER & SMTP_PASS in Vercel Environment Variables.' };
     }
-    // Fallback simulation for demonstration
-    return { success: true, messageId: `simulated-${Date.now()}` };
   } catch (e: any) {
     console.error('Email send error:', e);
     return { success: false, error: e.message || 'Failed to send email' };

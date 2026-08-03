@@ -61,6 +61,7 @@ import {
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
+import { deleteTeamFromSupabase } from '@/lib/supabaseClient';
 
 type AdminTab =
   | 'dashboard'
@@ -499,12 +500,13 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
   const handleDeleteTeam = (team: Team) => {
     triggerLowRiskModal(
       `Confirm Delete Team "${team.teamName}"`,
-      `Are you sure you want to permanently delete Team ID ${team.teamId} (${team.teamName})? This action cannot be undone.`,
-      () => {
+      `Are you sure you want to permanently delete Team ID ${team.teamId} (${team.teamName}) from website and Supabase Database? This action cannot be undone.`,
+      async () => {
         if (!portalState) return;
         const updatedTeams = portalState.teams.filter((t) => t.teamId !== team.teamId);
         updateState({ ...portalState, teams: updatedTeams });
-        showToast(`🗑️ Team "${team.teamName}" (${team.teamId}) deleted successfully!`, 'error');
+        await deleteTeamFromSupabase(team.teamId);
+        showToast(`🗑️ Team "${team.teamName}" (${team.teamId}) deleted from website & Supabase DB!`, 'error');
       }
     );
   };
