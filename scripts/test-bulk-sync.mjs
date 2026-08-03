@@ -5,7 +5,7 @@ const key = 'sb_publishable_vAzKzuE0elAuVnbPMdxdPA_CjV3Zll_';
 
 const supabase = createClient(url, key);
 
-const SAMPLE_5_TEAMS = [
+const SAMPLE_5_REGISTRATIONS = [
   {
     team_id: 'INF-2026-101',
     team_name: 'Tech Titans',
@@ -94,20 +94,20 @@ const SAMPLE_5_TEAMS = [
 ];
 
 async function testBatchSync() {
-  console.log('Testing Resilient Batch Syncing ALL 5 Teams to Supabase...');
-  const { data, error } = await supabase.from('teams').upsert(SAMPLE_5_TEAMS, { onConflict: 'team_id' }).select();
+  console.log('Testing Resilient Batch Syncing ALL 5 Registrations to Supabase...');
+  const { data, error } = await supabase.from('registrations').upsert(SAMPLE_5_REGISTRATIONS, { onConflict: 'team_id' }).select();
   
   if (error) {
     console.log('Main upsert notice (schema missing new columns):', error.message);
     console.log('Running Automatic Fallback Sync for base columns...');
     
-    const fallbackTeams = SAMPLE_5_TEAMS.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
-    const { data: fbData, error: fbError } = await supabase.from('teams').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
+    const fallbackRegs = SAMPLE_5_REGISTRATIONS.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
+    const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(fallbackRegs, { onConflict: 'team_id' }).select();
     
     if (fbError) {
       console.error('Fallback Error:', fbError.message);
     } else {
-      console.log('🎉 SUCCESS! ALL 5 TEAMS STORED IN SUPABASE DB! Count:', fbData.length);
+      console.log('🎉 SUCCESS! ALL 5 REGISTRATIONS STORED IN SUPABASE DB! Count:', fbData.length);
       fbData.forEach((t) => console.log(`   ✅ Stored ${t.team_id}: ${t.team_name} (${t.college})`));
     }
   } else {

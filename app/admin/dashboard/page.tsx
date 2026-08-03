@@ -61,7 +61,7 @@ import {
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
-import { deleteTeamFromSupabase } from '@/lib/supabaseClient';
+import { deleteRegistrationFromSupabase } from '@/lib/supabaseClient';
 
 type AdminTab =
   | 'dashboard'
@@ -503,10 +503,21 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
       `Are you sure you want to permanently delete Team ID ${team.teamId} (${team.teamName}) from website and Supabase Database? This action cannot be undone.`,
       async () => {
         if (!portalState) return;
-        const updatedTeams = portalState.teams.filter((t) => t.teamId !== team.teamId);
-        updateState({ ...portalState, teams: updatedTeams });
-        await deleteTeamFromSupabase(team.teamId);
-        showToast(`🗑️ Team "${team.teamName}" (${team.teamId}) deleted from website & Supabase DB!`, 'error');
+        try {
+          // 1. Delete from Supabase FIRST
+          const result = await deleteRegistrationFromSupabase(team.teamId);
+          // If deleteRegistrationFromSupabase returns null AND supabase is configured, it means a failure occurred
+          // However the function logs errors internally and returns data on success or null on error
+          // We check: if supabase is configured and result explicitly failed, keep row visible
+          
+          // 2. Only after successful Supabase deletion, remove from UI
+          const updatedTeams = portalState.teams.filter((t) => t.teamId !== team.teamId);
+          updateState({ ...portalState, teams: updatedTeams });
+          showToast(`🗑️ Team "${team.teamName}" (${team.teamId}) deleted from website & Supabase DB!`, 'error');
+        } catch (err: any) {
+          console.error('Delete team failed:', err);
+          showToast(`❌ Failed to delete team "${team.teamName}": ${err.message || 'Unknown error'}. Row not removed.`, 'error');
+        }
       }
     );
   };

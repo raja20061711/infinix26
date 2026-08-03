@@ -1,20 +1,25 @@
--- INFINIX'26 HACKATHON CLEAN SUPABASE POSTGRESQL SCHEMA
+-- INFINIX'26 HACKATHON — SIMPLIFIED SUPABASE POSTGRESQL SCHEMA
 -- RUN THIS IN YOUR SUPABASE DASHBOARD -> SQL EDITOR (https://app.supabase.com)
+-- 7 Tables: registrations, attendance, announcements, themes, problem_statements, chatbot_knowledge, contact_messages
 
 -- Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- STEP 1: DROP OLD & UNNECESSARY TABLES (CLEANUP)
+DROP TABLE IF EXISTS public.attendance CASCADE;
+DROP TABLE IF EXISTS public.registrations CASCADE;
 DROP TABLE IF EXISTS public.teams CASCADE;
 DROP TABLE IF EXISTS public.themes CASCADE;
 DROP TABLE IF EXISTS public.problem_statements CASCADE;
 DROP TABLE IF EXISTS public.announcements CASCADE;
+DROP TABLE IF EXISTS public.chatbot_knowledge CASCADE;
+DROP TABLE IF EXISTS public.contact_messages CASCADE;
 DROP TABLE IF EXISTS public.event_config CASCADE;
 
--- STEP 2: CREATE 5 REQUIRED TABLES FOR INFINIX'26
+-- STEP 2: CREATE 7 REQUIRED TABLES FOR INFINIX'26
 
--- 1. TEAMS TABLE (Matches Unstop Registration Data Collection)
-CREATE TABLE public.teams (
+-- 1. REGISTRATIONS TABLE (Replaces old 'teams' — imported from Unstop CSV)
+CREATE TABLE public.registrations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   team_id VARCHAR(50) UNIQUE NOT NULL,
   team_name VARCHAR(255) NOT NULL,
@@ -41,7 +46,18 @@ CREATE TABLE public.teams (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. THEMES TABLE (7 Hackathon Domains)
+-- 2. ATTENDANCE TABLE (Audit log of check-in events, FK → registrations)
+CREATE TABLE public.attendance (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  team_id VARCHAR(50) NOT NULL REFERENCES public.registrations(team_id) ON DELETE CASCADE,
+  status VARCHAR(50) NOT NULL DEFAULT 'Checked In',
+  check_in_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  checked_in_by VARCHAR(255) NOT NULL DEFAULT 'Admin',
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. THEMES TABLE (7 Hackathon Domains)
 CREATE TABLE public.themes (
   id VARCHAR(100) PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -51,7 +67,7 @@ CREATE TABLE public.themes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. PROBLEM STATEMENTS TABLE
+-- 4. PROBLEM STATEMENTS TABLE
 CREATE TABLE public.problem_statements (
   id VARCHAR(100) PRIMARY KEY,
   ps_code VARCHAR(50) UNIQUE NOT NULL,
@@ -67,7 +83,7 @@ CREATE TABLE public.problem_statements (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. ANNOUNCEMENTS TABLE
+-- 5. ANNOUNCEMENTS TABLE
 CREATE TABLE public.announcements (
   id VARCHAR(100) PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -77,11 +93,28 @@ CREATE TABLE public.announcements (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. EVENT CONFIGURATION TABLE
-CREATE TABLE public.event_config (
-  key VARCHAR(100) PRIMARY KEY,
-  value JSONB NOT NULL,
+-- 6. CHATBOT KNOWLEDGE TABLE (FAQ / Knowledge Base for Moana Chatbot)
+CREATE TABLE public.chatbot_knowledge (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  category VARCHAR(100) NOT NULL DEFAULT 'General',
+  keywords JSONB DEFAULT '[]'::jsonb,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 7. CONTACT MESSAGES TABLE (Contact Form Submissions)
+CREATE TABLE public.contact_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  subject VARCHAR(255),
+  message TEXT NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'Unread',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- STEP 3: INSERT SEED DATA
@@ -102,34 +135,42 @@ INSERT INTO public.announcements (id, title, message, category, is_published) VA
 ('ann-2', '🏆 Total ₹30,000 Prize Pool', 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!', 'Update', true),
 ('ann-3', '📌 Hardware Notice for Open Innovation', 'Participants working on Hardware/IoT must bring their own components & boards.', 'General', true);
 
--- Insert Initial Sample Team
-INSERT INTO public.teams (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
+-- Insert Initial Sample Registration
+INSERT INTO public.registrations (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
 ('INF-2026-001', 'Cyber Voyagers', 'Arun Kumar', 'arunkumar@ritrjpm.ac.in', '+91 98765 43210', 'Ramco Institute of Technology', 'Information Technology', '[{"name": "Arun Kumar", "email": "arunkumar@ritrjpm.ac.in", "role": "Leader"}, {"name": "Priya Sharma", "email": "priya.s@gmail.com", "role": "Member"}]'::jsonb, 'hackathon2026', 'Verified', 'Sent');
 
--- Insert Initial Event Config
-INSERT INTO public.event_config (key, value) VALUES
-('theme_selection_enabled', 'false'::jsonb);
-
 -- STEP 4: ROW LEVEL SECURITY & PERMISSIONS
-ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.registrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.themes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.problem_statements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.event_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chatbot_knowledge ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Allow Public & Authenticated Read/Write Access for Hackathon App
-CREATE POLICY "Public Read Access Teams" ON public.teams FOR SELECT USING (true);
-CREATE POLICY "Public Insert Teams" ON public.teams FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public Update Teams" ON public.teams FOR UPDATE USING (true);
+CREATE POLICY "Public Read Access Registrations" ON public.registrations FOR SELECT USING (true);
+CREATE POLICY "Public Insert Registrations" ON public.registrations FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Registrations" ON public.registrations FOR UPDATE USING (true);
+
+CREATE POLICY "Public Read Attendance" ON public.attendance FOR SELECT USING (true);
+CREATE POLICY "Public Insert Attendance" ON public.attendance FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Public Read Themes" ON public.themes FOR SELECT USING (true);
 CREATE POLICY "Public Read PS" ON public.problem_statements FOR SELECT USING (true);
 CREATE POLICY "Public Read Announcements" ON public.announcements FOR SELECT USING (true);
-CREATE POLICY "Public Read Config" ON public.event_config FOR SELECT USING (true);
+CREATE POLICY "Public Read Chatbot Knowledge" ON public.chatbot_knowledge FOR SELECT USING (true);
+
+CREATE POLICY "Public Insert Contact Messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service Read Contact Messages" ON public.contact_messages FOR SELECT USING (auth.role() = 'service_role');
 
 -- Grant Table Access to Anon & Authenticated Roles
-GRANT ALL ON TABLE public.teams TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.registrations TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.attendance TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.themes TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.problem_statements TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.announcements TO anon, authenticated, service_role;
-GRANT ALL ON TABLE public.event_config TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.chatbot_knowledge TO anon, authenticated;
+GRANT ALL ON TABLE public.chatbot_knowledge TO service_role;
+GRANT INSERT ON TABLE public.contact_messages TO anon, authenticated;
+GRANT ALL ON TABLE public.contact_messages TO service_role;

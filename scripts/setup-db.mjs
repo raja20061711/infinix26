@@ -21,7 +21,7 @@ const DEFAULT_ANNOUNCEMENTS = [
   { id: 'ann-3', title: '📌 Hardware Notice for Open Innovation', message: 'Participants working on Hardware/IoT must bring their own components & boards.', category: 'General', is_published: true },
 ];
 
-const DEFAULT_TEAMS = [
+const DEFAULT_REGISTRATIONS = [
   {
     team_id: 'INF-2026-001',
     team_name: 'Cyber Voyagers',
@@ -55,17 +55,11 @@ async function setupDatabase() {
   if (annErr) console.log('Announcements status:', annErr.message);
   else console.log('✅ Announcements table READY!');
 
-  // 3. Sync Teams
-  console.log('3. Syncing Teams...');
-  const { error: teamErr } = await supabase.from('teams').upsert(DEFAULT_TEAMS, { onConflict: 'team_id' });
-  if (teamErr) console.log('Teams status:', teamErr.message);
-  else console.log('✅ Teams table READY!');
-
-  // 4. Sync Event Config
-  console.log('4. Syncing Event Config...');
-  const { error: cfgErr } = await supabase.from('event_config').upsert([{ key: 'theme_selection_enabled', value: false }], { onConflict: 'key' });
-  if (cfgErr) console.log('Event Config status:', cfgErr.message);
-  else console.log('✅ Event Config table READY!');
+  // 3. Sync Registrations
+  console.log('3. Syncing Registrations...');
+  const { error: regErr } = await supabase.from('registrations').upsert(DEFAULT_REGISTRATIONS, { onConflict: 'team_id' });
+  if (regErr) console.log('Registrations status:', regErr.message);
+  else console.log('✅ Registrations table READY!');
 
   console.log('\n🎉 Setup complete check finished!');
 }

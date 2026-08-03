@@ -10,30 +10,30 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Helper: Fetch all Teams from Supabase PostgreSQL
-export async function fetchTeamsFromSupabase() {
+// Helper: Fetch all Registrations from Supabase PostgreSQL
+export async function fetchRegistrationsFromSupabase() {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from('teams').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
     if (error) {
-      console.error('Error fetching teams from Supabase:', error.message);
+      console.error('Error fetching registrations from Supabase:', error.message);
       return null;
     }
     return data;
   } catch (err) {
-    console.error('Supabase teams fetch failed:', err);
+    console.error('Supabase registrations fetch failed:', err);
     return null;
   }
 }
 
-// Helper: Sync / Save Single Team to Supabase
-export async function upsertTeamToSupabase(team: any) {
+// Helper: Sync / Save Single Registration to Supabase
+export async function upsertRegistrationToSupabase(team: any) {
   if (!supabase) return null;
-  return upsertAllTeamsToSupabase([team]);
+  return upsertAllRegistrationsToSupabase([team]);
 }
 
-// Helper: Sync / Save ALL Teams to Supabase in Batch with Resilient Fallback
-export async function upsertAllTeamsToSupabase(teams: any[]) {
+// Helper: Sync / Save ALL Registrations to Supabase in Batch with Resilient Fallback
+export async function upsertAllRegistrationsToSupabase(teams: any[]) {
   if (!supabase || !teams || teams.length === 0) return null;
   try {
     const formattedTeams = teams.map((team) => ({
@@ -61,11 +61,11 @@ export async function upsertAllTeamsToSupabase(teams: any[]) {
       updated_at: new Date().toISOString(),
     }));
 
-    const { data, error } = await supabase.from('teams').upsert(formattedTeams, { onConflict: 'team_id' }).select();
+    const { data, error } = await supabase.from('registrations').upsert(formattedTeams, { onConflict: 'team_id' }).select();
     if (error) {
       // Fallback: If new columns are not in Supabase schema yet, sync base columns
       const fallbackTeams = formattedTeams.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
-      const { data: fbData, error: fbError } = await supabase.from('teams').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
+      const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
       if (fbError) {
         console.error('Fallback batch upsert error:', fbError.message);
       }
@@ -76,19 +76,41 @@ export async function upsertAllTeamsToSupabase(teams: any[]) {
   }
 }
 
-// Helper: Delete Team from Supabase
-export async function deleteTeamFromSupabase(teamId: string) {
+// Helper: Delete Registration from Supabase (throws on failure)
+export async function deleteRegistrationFromSupabase(teamId: string) {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from('teams').delete().eq('team_id', teamId);
+    const { data, error } = await supabase.from('registrations').delete().eq('team_id', teamId);
     if (error) {
-      console.error('Error deleting team from Supabase:', error.message);
-    } else {
-      console.log('✅ Team', teamId, 'deleted from Supabase DB');
+      console.error('Error deleting registration from Supabase:', error.message);
+      throw new Error(error.message);
+    }
+    console.log('✅ Registration', teamId, 'deleted from Supabase DB');
+    return data;
+  } catch (err: any) {
+    console.error('Supabase registration delete failed:', err);
+    throw err;
+  }
+}
+
+// Helper: Log Attendance Check-in Event to Supabase
+export async function logAttendanceToSupabase(teamId: string, checkedInBy: string, notes?: string) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from('attendance').insert({
+      team_id: teamId,
+      status: 'Checked In',
+      check_in_time: new Date().toISOString(),
+      checked_in_by: checkedInBy,
+      notes: notes || null,
+    }).select();
+    if (error) {
+      console.error('Error logging attendance to Supabase:', error.message);
+      return null;
     }
     return data;
   } catch (err) {
-    console.error('Supabase team delete failed:', err);
+    console.error('Supabase attendance log failed:', err);
     return null;
   }
 }
@@ -182,6 +204,55 @@ export async function upsertAnnouncementToSupabase(announcement: any) {
     return data;
   } catch (err) {
     console.error('Supabase announcement upsert failed:', err);
+    return null;
+  }
+}
+
+// Helper: Fetch Chatbot Knowledge from Supabase
+export async function fetchChatbotKnowledgeFromSupabase() {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('chatbot_knowledge')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Error fetching chatbot knowledge from Supabase:', error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('Supabase chatbot knowledge fetch failed:', err);
+    return null;
+  }
+}
+
+// Helper: Insert Contact Message to Supabase
+export async function insertContactMessageToSupabase(message: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+}) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from('contact_messages').insert({
+      name: message.name,
+      email: message.email,
+      phone: message.phone || null,
+      subject: message.subject || null,
+      message: message.message,
+      status: 'Unread',
+    }).select();
+    if (error) {
+      console.error('Error inserting contact message to Supabase:', error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('Supabase contact message insert failed:', err);
     return null;
   }
 }
