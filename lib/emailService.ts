@@ -138,21 +138,32 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
     }
   }
 
-  // METHOD 2: Nodemailer Gmail SMTP
-  const smtpUser = process.env.SMTP_USER || '';
+  // METHOD 2: Gmail Service Transporter
+  const smtpUser = (process.env.SMTP_USER || '').trim();
   const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
-  const smtpPass = rawPass.replace(/\s+/g, ''); // Strip spaces automatically
+  const smtpPass = rawPass.replace(/\s+/g, '').trim();
 
   if (smtpUser && smtpPass) {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
+    const isGmail = smtpUser.toLowerCase().includes('gmail.com');
+    const transporter = nodemailer.createTransport(
+      isGmail
+        ? {
+            service: 'gmail',
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+          }
+        : {
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: false,
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+          }
+    );
 
     try {
       const info = await transporter.sendMail({
@@ -166,7 +177,7 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
       console.error('SMTP Email send error:', e);
       return {
         success: false,
-        error: `Gmail BadCredentials (535): Ensure 2-Step Verification is ON in Google, generate a 16-character App Password, and paste it into SMTP_PASS without normal password.`,
+        error: `Gmail 535 BadCredentials: Check that SMTP_USER is exact email address (${smtpUser || 'missing'}) and SMTP_PASS has App Password (${smtpPass ? 'provided' : 'missing'}).`,
       };
     }
   }
