@@ -1,0 +1,130 @@
+-- INFINIX'26 HACKATHON CLEAN SUPABASE POSTGRESQL SCHEMA
+-- RUN THIS IN YOUR SUPABASE DASHBOARD -> SQL EDITOR (https://app.supabase.com)
+
+-- Enable UUID Extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- STEP 1: DROP OLD & UNNECESSARY TABLES (CLEANUP)
+DROP TABLE IF EXISTS public.teams CASCADE;
+DROP TABLE IF EXISTS public.themes CASCADE;
+DROP TABLE IF EXISTS public.problem_statements CASCADE;
+DROP TABLE IF EXISTS public.announcements CASCADE;
+DROP TABLE IF EXISTS public.event_config CASCADE;
+
+-- STEP 2: CREATE 5 REQUIRED TABLES FOR INFINIX'26
+
+-- 1. TEAMS TABLE
+CREATE TABLE public.teams (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  team_id VARCHAR(50) UNIQUE NOT NULL,
+  team_name VARCHAR(255) NOT NULL,
+  leader_name VARCHAR(255) NOT NULL,
+  leader_email VARCHAR(255) NOT NULL,
+  leader_phone VARCHAR(50) NOT NULL,
+  college TEXT NOT NULL,
+  department TEXT NOT NULL DEFAULT 'Information Technology',
+  members JSONB NOT NULL DEFAULT '[]'::jsonb,
+  selected_theme_id VARCHAR(100),
+  attendance_status VARCHAR(50) NOT NULL DEFAULT 'Not Checked In',
+  check_in_time TIMESTAMP WITH TIME ZONE,
+  checked_in_by VARCHAR(255),
+  password_hash TEXT NOT NULL DEFAULT 'hackathon2026',
+  registration_status VARCHAR(50) NOT NULL DEFAULT 'Verified',
+  email_status VARCHAR(50) NOT NULL DEFAULT 'Sent',
+  qr_code_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. THEMES TABLE (7 Hackathon Domains)
+CREATE TABLE public.themes (
+  id VARCHAR(100) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  domain VARCHAR(100) NOT NULL,
+  description TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. PROBLEM STATEMENTS TABLE
+CREATE TABLE public.problem_statements (
+  id VARCHAR(100) PRIMARY KEY,
+  ps_code VARCHAR(50) UNIQUE NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  theme_id VARCHAR(100) REFERENCES public.themes(id) ON DELETE CASCADE,
+  pdf_url TEXT,
+  status VARCHAR(50) NOT NULL DEFAULT 'Draft',
+  is_published BOOLEAN NOT NULL DEFAULT false,
+  rules JSONB DEFAULT '[]'::jsonb,
+  resources JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. ANNOUNCEMENTS TABLE
+CREATE TABLE public.announcements (
+  id VARCHAR(100) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  category VARCHAR(50) NOT NULL DEFAULT 'General',
+  is_published BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. EVENT CONFIGURATION TABLE
+CREATE TABLE public.event_config (
+  key VARCHAR(100) PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- STEP 3: INSERT SEED DATA
+
+-- Insert 7 Official Themes
+INSERT INTO public.themes (id, title, domain, description, is_active) VALUES
+('theme-ai', 'Smart Intelligence (AI/ML)', 'Artificial Intelligence & Machine Learning', 'AI, Machine Learning, Computer Vision, NLP, Generative AI', true),
+('theme-cyber', 'Secure Computing in Modern World', 'Cybersecurity', 'Cyber Defense, Privacy, Encryption, Threat Detection', true),
+('theme-medtech', 'Healthcare & MedTech', 'Biotechnology & Health', 'Digital Health, Medical Devices, Diagnostics, AI Healthcare', true),
+('theme-cloud', 'Cloud Computing & DevOps', 'Cloud & Infrastructure', 'Cloud-Native Apps, Microservices, CI/CD, Containerization', true),
+('theme-fintech', 'FinTech', 'Financial Technology', 'Smart Banking, Fraud Detection, Digital Payments, Analytics', true),
+('theme-open', 'Open Innovation', 'Interdisciplinary', 'Software & Hardware Real-World Innovations', true),
+('theme-energy', 'Energy Innovation & Smart Grid', 'EEE & ECE', 'Renewable Energy, Smart Grids, Power Management', true);
+
+-- Insert Default Announcements
+INSERT INTO public.announcements (id, title, message, category, is_published) VALUES
+('ann-1', '🚀 Registrations Open on Unstop!', 'Registration via Unstop: ₹250 for Internal Ramco Students & ₹350 for External Students.', 'Urgent', true),
+('ann-2', '🏆 Total ₹30,000 Prize Pool', 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!', 'Update', true),
+('ann-3', '📌 Hardware Notice for Open Innovation', 'Participants working on Hardware/IoT must bring their own components & boards.', 'General', true);
+
+-- Insert Initial Sample Team
+INSERT INTO public.teams (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
+('INF-2026-001', 'Cyber Voyagers', 'Arun Kumar', 'arunkumar@ritrjpm.ac.in', '+91 98765 43210', 'Ramco Institute of Technology', 'Information Technology', '[{"name": "Arun Kumar", "email": "arunkumar@ritrjpm.ac.in", "role": "Leader"}, {"name": "Priya Sharma", "email": "priya.s@gmail.com", "role": "Member"}]'::jsonb, 'hackathon2026', 'Verified', 'Sent');
+
+-- Insert Initial Event Config
+INSERT INTO public.event_config (key, value) VALUES
+('theme_selection_enabled', 'false'::jsonb);
+
+-- STEP 4: ROW LEVEL SECURITY & PERMISSIONS
+ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.themes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.problem_statements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.event_config ENABLE ROW LEVEL SECURITY;
+
+-- Allow Public & Authenticated Read/Write Access for Hackathon App
+CREATE POLICY "Public Read Access Teams" ON public.teams FOR SELECT USING (true);
+CREATE POLICY "Public Insert Teams" ON public.teams FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Teams" ON public.teams FOR UPDATE USING (true);
+
+CREATE POLICY "Public Read Themes" ON public.themes FOR SELECT USING (true);
+CREATE POLICY "Public Read PS" ON public.problem_statements FOR SELECT USING (true);
+CREATE POLICY "Public Read Announcements" ON public.announcements FOR SELECT USING (true);
+CREATE POLICY "Public Read Config" ON public.event_config FOR SELECT USING (true);
+
+-- Grant Table Access to Anon & Authenticated Roles
+GRANT ALL ON TABLE public.teams TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.themes TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.problem_statements TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.announcements TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.event_config TO anon, authenticated, service_role;
