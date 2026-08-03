@@ -9,7 +9,7 @@ const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-default-1',
     title: "🚀 Registrations Open on Unstop!",
-    message: "100% FREE Registration for all college students. Register your team today!",
+    message: "Registration via Unstop: ₹250 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
     category: 'Urgent',
     timestamp: 'Just Now',
     isPublished: true,

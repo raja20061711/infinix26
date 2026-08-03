@@ -30,7 +30,7 @@ const infoCards = [
   {
     icon: Clock,
     title: 'Event',
-    details: '32-Hour National Level Hackathon',
+    details: '32-Hours National Level Hackathon',
   },
 ];
 

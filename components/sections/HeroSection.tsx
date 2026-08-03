@@ -176,9 +176,36 @@ export default function HeroSection() {
           </p>
 
           {/* Student Chapter Affiliation */}
-          <p className="text-[10px] sm:text-xs text-gray-400 font-medium tracking-wide drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-            in association with IE(I)-IT Student Chapter
+          <p className="text-xs sm:text-sm text-gray-300 font-semibold tracking-wider drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            in association with{' '}
+            <span className="text-[#7CE7FF] font-bold">IE(I)-IT Student Chapter</span>
           </p>
+
+          {/* Powered by Unstop Badge */}
+          <div className="flex items-center gap-2.5 mt-2">
+            <span className="font-orbitron font-extrabold text-xs sm:text-sm tracking-[0.25em] text-[#7CE7FF] uppercase drop-shadow-[0_0_8px_rgba(0,217,255,0.6)]">
+              POWERED BY
+            </span>
+            <a
+              href="https://unstop.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/30 hover:border-[#00D9FF]/70 hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
+              data-hoverable="true"
+            >
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md overflow-hidden shadow-[0_0_8px_rgba(0,217,255,0.3)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/unstop-logo.png"
+                  alt="Unstop"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="font-orbitron font-extrabold text-xs sm:text-sm text-white group-hover:text-[#00D9FF] transition-colors tracking-wider drop-shadow-[0_0_8px_rgba(0,217,255,0.5)]">
+                UNSTOP
+              </span>
+            </a>
+          </div>
         </div>
 
         {/* Right Official Logo - IE(I)-IT Student Chapter Dark Squircle Badge */}
@@ -244,7 +271,7 @@ export default function HeroSection() {
         transition={{ duration: 0.8, delay: 0.35 }}
         className="mt-2 text-xs sm:text-sm tracking-[0.25em] text-gray-300 uppercase font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
       >
-        A 32-HOUR NATIONAL LEVEL HACKATHON
+        A 32-HOURS NATIONAL LEVEL HACKATHON
       </motion.p>
 
       {/* Action Buttons */}

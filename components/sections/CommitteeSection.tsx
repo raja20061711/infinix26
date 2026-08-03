@@ -116,7 +116,7 @@ export default function CommitteeSection() {
           <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
               <Users className="w-4 h-4 text-[#00D9FF]" />
-              <span>FACULTY COORDINATION</span>
+              <span>FACULTY COORDINATORS</span>
             </div>
             <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
           </div>
@@ -153,7 +153,7 @@ export default function CommitteeSection() {
           <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
               <Globe className="w-4 h-4 text-[#00D9FF]" />
-              <span>DEPARTMENT IE(I) CHAPTER</span>
+              <span>DEPARTMENT IE(I) CHAPTER COORDINATOR</span>
             </div>
             <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
           </div>
@@ -243,7 +243,7 @@ export default function CommitteeSection() {
           <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
               <UserCheck className="w-4 h-4 text-[#00D9FF]" />
-              <span>STUDENT LEADERSHIP</span>
+              <span>STUDENT COORDINATORS</span>
             </div>
             <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -19,11 +19,15 @@ import ContactSection from '@/components/sections/ContactSection';
 import Footer from '@/components/Footer';
 import MoanaChatbot from '@/components/MoanaChatbot';
 
+import OceanPreloader from '@/components/OceanPreloader';
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+
   // Initialize Lenis Inertial Smooth Scroll & sync with GSAP ScrollTrigger
   useEffect(() => {
     const lenis = new Lenis({
@@ -48,6 +52,11 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen bg-[#01040d] text-white overflow-x-hidden selection:bg-[#00D9FF] selection:text-black">
+      {/* Premium Minimal Ocean Loading Animation (3-4 Seconds Duration) */}
+      {isLoading && (
+        <OceanPreloader onLoadingComplete={() => setIsLoading(false)} />
+      )}
+
       {/* Scroll-Controlled GSAP WebP Frame Sequence Canvas (Runs continuously across full website) */}
       <OceanVideoCanvas />
 

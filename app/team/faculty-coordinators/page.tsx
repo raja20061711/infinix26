@@ -120,7 +120,7 @@ export default function FacultyCoordinatorsPage() {
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="w-4 h-4 text-[#00D9FF]" />
                 <span className="text-xs font-bold tracking-[0.25em] text-[#00D9FF] uppercase">
-                  DEPARTMENT IE(I) COORDINATOR
+                  DEPARTMENT IE(I) CHAPTER COORDINATOR
                 </span>
               </div>
               <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1" />

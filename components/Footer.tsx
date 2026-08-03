@@ -53,9 +53,6 @@ export default function Footer() {
             <a href="#timeline" className="hover:text-[#00D9FF] transition-colors">
               Timeline
             </a>
-            <a href="#sponsors" className="hover:text-[#00D9FF] transition-colors">
-              Sponsors
-            </a>
             <a href="/committee" className="hover:text-[#00D9FF] transition-colors">
               Committee
             </a>

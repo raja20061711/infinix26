@@ -13,7 +13,7 @@ const faqs = [
   {
     question: 'Is there any registration fee?',
     answer:
-      'No! Participation in INFINIX\'26 is completely FREE of cost. Food, accommodation, and swag kits will be provided for all shortlisted offline finalists.',
+      'Registration takes place officially via the Unstop platform. The registration fee is ₹250 for Internal Ramco Institute of Technology students and ₹350 for External college students.',
   },
   {
     question: 'What is the mode of the hackathon?',

@@ -13,54 +13,84 @@ interface Message {
 
 const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
-    keywords: ['hi', 'hello', 'hey', 'who are you', 'help', 'start', 'assistant', 'moana'],
+    keywords: ['hi', 'hello', 'hey', 'who are you', 'help', 'start', 'assistant', 'moana', 'vanakkam', 'vanakam'],
     response:
-      "Welcome to Moana, your official AI assistant for INFINIX'26!\n\nI can assist you with:\n• Event Details & Timeline (September 10-11, 2026)\n• 7 Hackathon Themes & Problem Statements\n• Total ₹30,000 Prize Pool Breakdown\n• 100% Free Registration via Unstop\n• Website Developers (Behind the Experience)\n• Student Coordinators Contact Info\n• Venue & Location Guide\n\nHow may I help you today?",
+      "Welcome to Moana AI, your official AI assistant for INFINIX'26!\n\nI can assist you with all details regarding INFINIX'26:\n• Executive Leadership & Organizing Committee\n• Faculty Coordinators & Department IE(I) Chapter Coordinator\n• Event Faculty Incharges & Student Coordinators\n• 7 Official Hackathon Themes & Problem Statements\n• Total ₹30,000 Prize Pool Breakdown\n• Registration: ₹250 (Internal Ramco Students) / ₹350 (External Students) via Unstop\n• Event Timeline & Schedule (Sep 10-11, 2026)\n• Hardware Rules & On-Site Facilities (Food & Stay)\n• Website Developers (Behind the Experience)\n• Contact Info & Social Media Links\n\nHow may I help you today?",
   },
   {
-    keywords: ['who built', 'who created', 'developer', 'developers', 'built', 'creator', 'made by', 'behind the experience', 'maharaja', 'sudharshan', 'adshayaa', 'abinaya', 'team'],
+    keywords: ['committee', 'leadership', 'chief patron', 'patron', 'convener', 'organizing committee', 'ganesan', 'rajakarunakaran', 'mariappan', 'principal', 'director'],
     response:
-      "Behind the Experience / Website Developers:\n\nThe INFINIX'26 website was designed and developed by:\n\n• Maharaja T\n• Adshayaa V\n• Sudharshan S\n• Abinaya N\n\nIII Year B.Tech Information Technology,\nDepartment of Information Technology,\nRamco Institute of Technology.",
+      "INFINIX'26 Executive Leadership & Organizing Committee:\n\n👑 Chief Patron:\n• Dr. L. Ganesan — Director, Ramco Institute of Technology\n\n🎓 Patron:\n• Dr. S. Rajakarunakaran — Principal, Ramco Institute of Technology\n\n🏆 Event Convener:\n• Dr. E. Mariappan — Professor & Head, Dept. of Information Technology\n\nOrganized by the Department of Information Technology in association with IE(I) IT Student Chapter.",
   },
   {
-    keywords: ['what is', 'about', 'infinix', 'event', 'summary', 'overview', 'details'],
+    keywords: ['faculty coordinator', 'faculty coordinators', 'faculty', 'rethina', 'rethina kumari', 'alagulakshmi', 'mareeswari', 'ie chapter coordinator', 'department ie coordinator', 'department ie chapter coordinator', 'ie(i)'],
     response:
-      "INFINIX'26 Event Overview:\n\nINFINIX'26 is a 32-Hour National Level Hackathon organized by the Department of Information Technology at Ramco Institute of Technology (Autonomous) in association with IE(I)-IT Student Chapter.\n\n• Format: 32-Hour Non-Stop Offline Hackathon\n• Dates: September 10 – 11, 2026\n• Total Prize Pool: ₹30,000 Worth Rewards\n• Registration: 100% FREE for college students!",
+      "Faculty Coordinators & IE(I) Chapter Leadership:\n\n👩‍🏫 Faculty Coordinators:\n• Mrs. M. Rethina Kumari (Assistant Professor, Dept. of IT)\n• Mrs. A. Alagulakshmi (Assistant Professor, Dept. of IT)\n\n🌐 Department IE(I) Chapter Coordinator:\n• Dr. G. Mareeswari (Assistant Professor, Dept. of IT)",
   },
   {
-    keywords: ['date', 'when', 'time', 'schedule', 'timeline', 'september', 'start', 'end', 'reveal', 'problem'],
+    keywords: ['incharge', 'incharges', 'faculty incharge', 'faculty incharges', 'palraj', 'sakkaravarthi', 'sivasathiya', 'thevahi', 'ramya'],
     response:
-      "Official Event Schedule & Timeline:\n\n• Registrations Open: 01 Aug 2026\n• Team Confirmation: 25 Aug 2026\n• Problem Statements Reveal: 10 Sep 2026\n• Hackathon Begins: 10 Sep 2026, 10:00 AM IST\n• Hackathon Ends: 11 Sep 2026, 10:00 AM IST\n• Results Announcement: 11 Sep 2026, 04:00 PM IST",
+      "Event Faculty Incharges:\n\n• Dr. K. Palraj — Associate Professor\n• Mr. S. Sakkaravarthi — Assistant Professor\n• Mrs. G. Sivasathiya — Assistant Professor\n• Mrs. B. Thevahi — Assistant Professor – I\n• Mrs. P. Ramya — Assistant Professor – I\n\nDepartment of Information Technology, Ramco Institute of Technology.",
   },
   {
-    keywords: ['theme', 'track', 'domain', 'category', 'topic', 'challenge', 'ai', 'cyber', 'health', 'cloud', 'fintech', 'open', 'energy', 'smart'],
+    keywords: ['student coordinator', 'student coordinators', 'student ie chapter coordinator', 'student ie chapter coordinators', 'saravanakumar', 'suresh', 'saranya', 'krishnithi', 'lokesh', 'pranov', 'ginesh', 'enquiry', 'student enquiries', 'phone', 'contact', 'call', 'number', 'mobile'],
     response:
-      "INFINIX'26 7 Official Hackathon Themes:\n\n1. Smart Intelligence (AI/ML)\n   Build intelligent systems using AI, Machine Learning, NLP, Computer Vision, and Generative AI.\n\n2. Secure Computing in the Modern Technical World (Cybersecurity)\n   Develop secure digital solutions focusing on cyber defense, privacy, authentication, and threat detection.\n\n3. Healthcare, Biotechnology & MedTech\n   Create innovative healthcare technologies, medical devices, diagnostics, and digital health solutions.\n\n4. Cloud Computing & DevOps\n   Build scalable cloud-native applications with automation, containers, CI/CD, and DevOps practices.\n\n5. FinTech\n   Design innovative financial solutions including smart banking, fraud detection, digital payments, and analytics.\n\n6. Open Innovation\n   Solve real-world challenges through creative and interdisciplinary technological innovation.\n\n7. Energy Innovation & Smart Grid (EEE & ECE)\n   Develop smart energy systems, renewable energy solutions, smart grids, and intelligent power management.",
+      "Student Coordinators & Contact Information:\n\n👥 Student Coordinators:\n• Saravanakumar V (IV Year B.Tech IT) — 📞 +91 63748 47027\n• Suresh R (III Year B.Tech IT) — 📞 +91 63748 95822\n• Saranya S (III Year B.Tech IT)\n• Krishnithi S (II Year B.Tech IT)\n\n📞 Student Enquiries & Helpdesk:\n• Lokesh R (III Year B.Tech IT) — 📞 +91 96984 23107\n• Sri Pranov Ginesh S S (II Year B.Tech IT) — 📞 +91 93457 76283\n\n📧 Official Email: infinix26@ritrjpm.ac.in",
   },
   {
-    keywords: ['prize', 'reward', 'money', 'cash', 'win', 'amount', 'first', 'second', 'third', 'pool', '30k', '30000'],
+    keywords: ['who built', 'who created', 'developer', 'developers', 'built', 'creator', 'made by', 'behind the experience', 'maharaja', 'sudharshan', 'adshayaa', 'abinaya', 'designer', 'designers', 'web team'],
     response:
-      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹30,000 Worth):\n\n• 🏆 1st Prize: ₹15,000 + Cash Prize & Goodies\n• 🥈 2nd Prize: ₹10,000 + Cash Prize & Goodies\n• 🥉 3rd Prize: ₹5,000 + Cash Prize & Goodies\n\nAll participating teams receive official Certificates & Swag Kits!",
+      "Behind the Experience / Website Developers:\n\nThe INFINIX'26 website was conceptualized and developed by:\n\n💻 Web Development Team:\n• Maharaja T\n• Adshayaa V\n• Sudharshan S\n• Abinaya N\n\n🎓 III Year B.Tech Information Technology,\nDepartment of Information Technology,\nRamco Institute of Technology.",
   },
   {
-    keywords: ['register', 'apply', 'join', 'registration', 'unstop', 'fee', 'cost', 'free', 'deadline'],
+    keywords: ['what is', 'about', 'infinix', 'event', 'summary', 'overview', 'details', '32 hour', '32 hours', 'non-stop', 'hackathon'],
     response:
-      "Registration Details:\n\n• Registration Fee: 100% FREE!\n• Team Size: 2 to 4 Members per team\n• Eligibility: All college undergraduate & postgraduate students\n• Platform: Registered via Unstop\n• Registration Deadline: 25 Aug 2026",
+      "INFINIX'26 Event Summary:\n\nINFINIX'26 is a 32-Hours National Level Non-Stop Offline Hackathon hosted by the Department of Information Technology at Ramco Institute of Technology (Autonomous), Rajapalayam, in association with IE(I)-IT Student Chapter.\n\n• Dates: September 10 – 11, 2026\n• Total Prize Pool: ₹30,000 Cash Prizes & Rewards\n• Entry Fee: ₹250 for Internal Ramco Students & ₹350 for External Students (via Unstop)!",
   },
   {
-    keywords: ['coordinator', 'contact', 'enquiry', 'phone', 'call', 'suresh', 'saravanakumar', 'lokesh', 'pranov', 'number', 'reach', 'email'],
+    keywords: ['date', 'dates', 'when', 'time', 'schedule', 'timeline', 'september', 'start', 'end', 'reveal', 'problem', 'check-in', 'pitching', 'valedictory', 'results'],
     response:
-      "Student Coordinators & Enquiries:\n\nStudent Coordinators:\n• Saravanakumar V (IV Year IT) — +91 63748 47027\n• Suresh R (III Year IT) — +91 63748 95822\n\nStudent Enquiries:\n• Lokesh R (III Year IT) — +91 96984 23107\n• Sri Pranov Ginesh S S (II Year IT) — +91 93457 76283\n\nOfficial Email: infinix26@ritrjpm.ac.in",
+      "Official Event Timeline & Schedule:\n\n📅 Registration Milestones:\n• Aug 01, 2026: Registrations Open on Unstop\n• Aug 25, 2026: Registration Deadline & Team Confirmation\n\n🕒 Day 1 (10 Sep 2026):\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n🕒 Day 2 (11 Sep 2026):\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 04:00 PM: Results Announcement & Valedictory",
   },
   {
-    keywords: ['where', 'venue', 'location', 'place', 'college', 'address', 'ramco', 'rit', 'rajapalayam'],
+    keywords: ['theme', 'themes', 'track', 'tracks', 'domain', 'domains', 'category', 'categories', 'challenge', 'ai', 'ml', 'cyber', 'health', 'medtech', 'cloud', 'devops', 'fintech', 'open innovation', 'energy', 'smart grid'],
     response:
-      "Venue & Location Guide:\n\nRamco Institute of Technology (An Autonomous Institution)\nDepartment of Information Technology\nin association with IE(I)-IT Student Chapter\nRajapalayam, Tamil Nadu.",
+      "INFINIX'26 7 Official Hackathon Themes:\n\n1. 🤖 Smart Intelligence (AI/ML, Generative AI, Vision, NLP)\n2. 🛡️ Secure Computing in the Modern Technical World (Cybersecurity, Privacy, Threat Detection)\n3. 🏥 Healthcare, Biotechnology & MedTech (Digital Health, Medical Devices, Diagnostics)\n4. ☁️ Cloud Computing & DevOps (Cloud-Native, Microservices, CI/CD)\n5. 💳 FinTech (Smart Banking, Fraud Detection, Digital Payments)\n6. 💡 Open Innovation (Interdisciplinary Real-World Solutions)\n7. ⚡ Energy Innovation & Smart Grid (EEE & ECE) (Renewable Energy, Smart Grids)",
   },
   {
-    keywords: ['social', 'instagram', 'linkedin', 'youtube', 'facebook', 'follow', 'link', 'page', 'handle', 'media'],
+    keywords: ['prize', 'prizes', 'reward', 'rewards', 'money', 'cash', 'win', 'amount', 'first', 'second', 'third', '1st', '2nd', '3rd', 'pool', '30k', '30000', 'certificate', 'goodies', 'swag'],
     response:
-      "Official RIT IT Social Media Handles:\n\n• Instagram: https://www.instagram.com/ritrjpmit\n• LinkedIn: https://www.linkedin.com/in/rit-information-technology\n• YouTube: https://youtube.com/@rit_it_dept\n• Facebook: https://www.facebook.com/people/Department-of-IT-Ramco-Institute-of-Technology-Rajapalayam/61551997366114/",
+      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹30,000 Worth Rewards):\n\n🏆 1st Place: ₹15,000 Cash Prize + Trophy & Goodies\n🥈 2nd Place: ₹10,000 Cash Prize + Trophy & Goodies\n🥉 3rd Place: ₹5,000 Cash Prize + Trophy & Goodies\n\n✨ Perks for All Verified Participants:\n• Official Certificates of Participation\n• Swag Kits & Event Goodies\n• Direct Mentorship from Experts",
+  },
+  {
+    keywords: ['register', 'registration', 'apply', 'join', 'fee', 'fees', 'cost', 'free', 'team size', 'members', 'unstop', 'eligibility', 'deadline'],
+    response:
+      "Registration Details:\n\n• Fee Structure:\n  - Internal Students (Ramco Institute of Technology): ₹250\n  - External College Students: ₹350\n• Registration Platform: Exclusively via Unstop\n• Team Size: 2 to 4 Members per team\n• Eligibility: Open to all UG & PG college students\n• Registration Deadline: August 25, 2026",
+  },
+  {
+    keywords: ['hardware', 'sensor', 'sensors', 'iot', 'board', 'boards', 'arduino', 'raspberry', 'microcontroller', 'rules', 'kit'],
+    response:
+      "Hardware Requirements & Rules:\n\n⚠️ Open Innovation & Energy Innovation Tracks:\n• Participants working on Hardware / IoT projects MUST bring their own hardware modules, microcontrollers (Arduino/ESP32/Raspberry Pi), sensors, and development boards.\n\n• General Rules:\n1. 2 to 4 members per team.\n2. Projects must be built during the 32-hour hackathon period.\n3. Pre-existing completed projects are strictly prohibited.",
+  },
+  {
+    keywords: ['where', 'venue', 'location', 'address', 'place', 'college', 'ramco', 'rit', 'rajapalayam', 'food', 'accommodation', 'stay', 'wifi', 'facilities', 'snack', 'rest'],
+    response:
+      "Venue, Location & Facilities:\n\n📍 Venue Address:\nRamco Institute of Technology (Autonomous)\nDepartment of Information Technology\nRajapalayam, Virudhunagar District, Tamil Nadu.\n\n🛠️ Facilities Provided:\n• Continuous High-Speed Wi-Fi & Power Backup\n• Free Food, Snacks & Refreshments provided for all participants during the 32 hours\n• Designated Rest Areas & 24/7 Campus Security",
+  },
+  {
+    keywords: ['portal', 'student portal', 'login', 'qr', 'scan', 'attendance', 'desk', 'team code', 'dashboard', 'announcements'],
+    response:
+      "Live Student Portal Features:\n\n• Click 'PORTAL' in top navigation bar to log in.\n• View your assigned Desk Number, Attendance Status, Real-Time Problem Statement release, and Live Announcements.\n• Physical QR Code Desk check-in at the venue registration counter.",
+  },
+  {
+    keywords: ['social', 'instagram', 'linkedin', 'youtube', 'facebook', 'link', 'links', 'page', 'handle', 'media', 'follow'],
+    response:
+      "Official RIT IT Social Media Handles:\n\n• Instagram: instagram.com/ritrjpmit\n• LinkedIn: linkedin.com/in/rit-information-technology\n• YouTube: youtube.com/@rit_it_dept\n• Facebook: facebook.com/people/Department-of-IT-Ramco-Institute-of-Technology-Rajapalayam/61551997366114/\n• Official Email: infinix26@ritrjpm.ac.in",
+  },
+  {
+    keywords: ['yaar', 'yenna', 'epdi', 'yendha', 'eppa', 'yenga', 'yar', 'enna', 'engu', 'eppo', 'sollo', 'solu'],
+    response:
+      "Moana AI - Quick Overview:\n\nINFINIX'26 is a 32-Hours National Level Offline Hackathon hosted by RIT IT Department on September 10-11, 2026.\n\n• Total Prize Pool: ₹30,000 (₹15k 1st, ₹10k 2nd, ₹5k 3rd)\n• Registration: ₹250 (Internal) / ₹350 (External) via Unstop!\n• 7 Themes: AI/ML, Cybersecurity, MedTech, Cloud/DevOps, FinTech, Open Innovation, Energy Innovation.\n• Student Coordinators: Saravanakumar V (+91 63748 47027) & Suresh R (+91 63748 95822)\n• Developers: Maharaja T, Adshayaa V, Sudharshan S, Abinaya N\n\nAsk me any specific question about themes, prizes, developers, timeline, or venue!",
   },
 ];
 
@@ -68,8 +98,10 @@ const QUICK_PROMPTS = [
   { label: 'What is INFINIX\'26?', query: 'What is INFINIX26?' },
   { label: '7 Hackathon Themes', query: 'Show all 7 hackathon themes' },
   { label: '₹30,000 Prize Pool', query: 'Show cash prize breakdown' },
+  { label: 'Organizing Committee', query: 'Show organizing committee leadership' },
+  { label: 'Faculty & Student Coordinators', query: 'Show faculty and student coordinators' },
   { label: 'Website Developers', query: 'Who built this website?' },
-  { label: 'Student Coordinators', query: 'Show student coordinators' },
+  { label: 'Venue & Facilities', query: 'Where is venue and food info?' },
 ];
 
 export default function MoanaChatbot() {
@@ -80,7 +112,7 @@ export default function MoanaChatbot() {
     {
       id: '1',
       sender: 'ai',
-      text: "Welcome to Moana, your official AI assistant for INFINIX'26!\n\nI am your intelligence guide for INFINIX'26, hosted by the Department of Information Technology at Ramco Institute of Technology. How may I assist you with hackathon themes, ₹30,000 prize pool, free registration, timeline, venue, website developers, or coordinator contacts today?",
+      text: "Welcome to Moana, your official AI assistant for INFINIX'26!\n\nI am your intelligence guide for INFINIX'26, hosted by the Department of Information Technology at Ramco Institute of Technology. How may I assist you with hackathon themes, ₹30,000 prize pool, registration fees (₹250 internal / ₹350 external via Unstop), timeline, venue, website developers, or coordinator contacts today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -115,14 +147,19 @@ export default function MoanaChatbot() {
 
     setTimeout(() => {
       const lowerQuery = query.toLowerCase();
+      const queryTokens = lowerQuery.split(/[\s,?.!/\\_()]+/);
       let bestResponse = '';
       let highestScore = 0;
 
       for (const item of FAQ_KNOWLEDGE_BASE) {
         let score = 0;
         item.keywords.forEach((kw) => {
-          if (lowerQuery.includes(kw)) {
-            score += kw.length;
+          const lowerKw = kw.toLowerCase();
+          if (lowerQuery.includes(lowerKw)) {
+            score += lowerKw.length * 2;
+          }
+          if (queryTokens.includes(lowerKw)) {
+            score += lowerKw.length * 3;
           }
         });
         if (score > highestScore) {
@@ -133,7 +170,7 @@ export default function MoanaChatbot() {
 
       if (!bestResponse) {
         bestResponse =
-          "I am happy to assist! You can inquire about event schedule, domains, cash prizes, free registration, student coordinators, venue location, or accommodation facilities.";
+          "I am happy to assist! You can inquire about event schedule, 7 themes, ₹30,000 prize pool, free registration, faculty & student coordinators, website developers, venue location, hardware rules, or food/accommodation facilities.";
       }
 
       const aiTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

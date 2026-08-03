@@ -57,7 +57,7 @@ export default function AboutSection() {
           </h2>
 
           <p className="mt-5 text-sm sm:text-base text-gray-300 leading-relaxed font-sans font-medium">
-            INFINIX&apos;26 is a 32-Hour National Level Hackathon organized by the Department of Information Technology, Ramco Institute of Technology, in association with the IE(I)-IT Student Chapter. It brings together passionate innovators to collaborate, solve real-world challenges, and transform creative ideas into impactful technological solutions.
+            INFINIX&apos;26 is a 32-Hours National Level Hackathon organized by the Department of Information Technology, Ramco Institute of Technology, in association with the IE(I)-IT Student Chapter. It brings together passionate innovators to collaborate, solve real-world challenges, and transform creative ideas into impactful technological solutions.
           </p>
 
           <a
