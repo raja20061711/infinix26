@@ -39,11 +39,10 @@ export async function syncAttendanceToGoogleSheets(
     DEFAULT_WEBHOOK_URL;
 
   try {
-    // Send POST payload to Google Apps Script Webhook (mode: no-cors prevents browser CORS/302 blocking)
+    // Send POST payload using CORS-safelisted text/plain header so Google Apps Script receives e.postData.contents cleanly
     await fetch(webhookUrl, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
     });
     console.log('✅ Google Sheets Attendance Sync payload posted to:', webhookUrl);
