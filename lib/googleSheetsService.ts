@@ -30,7 +30,9 @@ export async function syncAttendanceToGoogleSheets(
     checkedInBy,
   };
 
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const webhookUrl =
+    process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL ||
+    process.env.GOOGLE_SHEETS_WEBHOOK_URL;
 
   try {
     if (webhookUrl) {
