@@ -13,17 +13,22 @@ DROP TABLE IF EXISTS public.event_config CASCADE;
 
 -- STEP 2: CREATE 5 REQUIRED TABLES FOR INFINIX'26
 
--- 1. TEAMS TABLE
+-- 1. TEAMS TABLE (Matches Unstop Registration Data Collection)
 CREATE TABLE public.teams (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   team_id VARCHAR(50) UNIQUE NOT NULL,
   team_name VARCHAR(255) NOT NULL,
+  team_size INTEGER NOT NULL DEFAULT 4,
   leader_name VARCHAR(255) NOT NULL,
   leader_email VARCHAR(255) NOT NULL,
   leader_phone VARCHAR(50) NOT NULL,
+  gender VARCHAR(50),
   college TEXT NOT NULL,
   department TEXT NOT NULL DEFAULT 'Information Technology',
+  year_of_study VARCHAR(50),
+  roll_number VARCHAR(100),
   members JSONB NOT NULL DEFAULT '[]'::jsonb,
+  accommodation_required BOOLEAN NOT NULL DEFAULT false,
   selected_theme_id VARCHAR(100),
   attendance_status VARCHAR(50) NOT NULL DEFAULT 'Not Checked In',
   check_in_time TIMESTAMP WITH TIME ZONE,

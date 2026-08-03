@@ -6,18 +6,26 @@ export interface TeamMember {
   name: string;
   email: string;
   phone: string;
+  department?: string;
+  yearOfStudy?: string;
+  rollNumber?: string;
   role: 'Leader' | 'Member';
 }
 
 export interface Team {
   teamId: string;
   teamName: string;
+  teamSize?: number;
   leaderName: string;
   leaderEmail: string;
   leaderPhone: string;
+  gender?: string;
   college: string;
   department: string;
+  yearOfStudy?: string;
+  rollNumber?: string;
   members: TeamMember[];
+  accommodationRequired?: boolean;
   selectedThemeId?: string;
   attendanceStatus: 'Checked In' | 'Not Checked In';
   checkInTime?: string;
