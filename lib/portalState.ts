@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 import QRCode from 'qrcode';
-import { isSupabaseConfigured, upsertTeamToSupabase, upsertProblemStatementToSupabase, upsertAnnouncementToSupabase } from './supabaseClient';
+import { isSupabaseConfigured, upsertAllTeamsToSupabase, upsertProblemStatementToSupabase, upsertAnnouncementToSupabase } from './supabaseClient';
 
 export interface TeamMember {
   name: string;
@@ -268,7 +268,7 @@ export function savePortalState(state: PortalState): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     if (isSupabaseConfigured) {
-      state.teams.forEach((team) => upsertTeamToSupabase(team));
+      upsertAllTeamsToSupabase(state.teams);
       state.problemStatements.forEach((ps) => upsertProblemStatementToSupabase(ps));
       state.announcements.forEach((ann) => upsertAnnouncementToSupabase(ann));
     }

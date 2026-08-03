@@ -26,43 +26,54 @@ export async function fetchTeamsFromSupabase() {
   }
 }
 
-// Helper: Sync / Save Team to Supabase
+// Helper: Sync / Save Single Team to Supabase
 export async function upsertTeamToSupabase(team: any) {
   if (!supabase) return null;
+  return upsertAllTeamsToSupabase([team]);
+}
+
+// Helper: Sync / Save ALL Teams to Supabase in Batch with Resilient Fallback
+export async function upsertAllTeamsToSupabase(teams: any[]) {
+  if (!supabase || !teams || teams.length === 0) return null;
   try {
-    const { data, error } = await supabase.from('teams').upsert(
-      {
-        team_id: team.teamId,
-        team_name: team.teamName,
-        team_size: team.teamSize || (team.members ? team.members.length : 4),
-        leader_name: team.leaderName,
-        leader_email: team.leaderEmail,
-        leader_phone: team.leaderPhone,
-        gender: team.gender || null,
-        college: team.college,
-        department: team.department,
-        year_of_study: team.yearOfStudy || null,
-        roll_number: team.rollNumber || null,
-        members: team.members || [],
-        accommodation_required: team.accommodationRequired ?? false,
-        selected_theme_id: team.selectedThemeId || null,
-        attendance_status: team.attendanceStatus || 'Not Checked In',
-        check_in_time: team.checkInTime || null,
-        checked_in_by: team.checkedInBy || null,
-        password_hash: team.password || 'hackathon2026',
-        registration_status: team.registrationStatus || 'Verified',
-        email_status: team.emailStatus || 'Pending',
-        qr_code_url: team.qrCodeUrl || null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'team_id' }
-    );
+    const formattedTeams = teams.map((team) => ({
+      team_id: team.teamId || team.team_id,
+      team_name: team.teamName || team.team_name,
+      team_size: team.teamSize || team.team_size || (team.members ? team.members.length : 4),
+      leader_name: team.leaderName || team.leader_name,
+      leader_email: team.leaderEmail || team.leader_email,
+      leader_phone: team.leaderPhone || team.leader_phone,
+      gender: team.gender || null,
+      college: team.college,
+      department: team.department,
+      year_of_study: team.yearOfStudy || team.year_of_study || null,
+      roll_number: team.rollNumber || team.roll_number || null,
+      members: team.members || [],
+      accommodation_required: team.accommodationRequired ?? team.accommodation_required ?? false,
+      selected_theme_id: team.selectedThemeId || team.selected_theme_id || null,
+      attendance_status: team.attendanceStatus || team.attendance_status || 'Not Checked In',
+      check_in_time: team.checkInTime || team.check_in_time || null,
+      checked_in_by: team.checkedInBy || team.checked_in_by || null,
+      password_hash: team.password || team.password_hash || 'hackathon2026',
+      registration_status: team.registrationStatus || team.registration_status || 'Verified',
+      email_status: team.emailStatus || team.email_status || 'Pending',
+      qr_code_url: team.qrCodeUrl || team.qr_code_url || null,
+      updated_at: new Date().toISOString(),
+    }));
+
+    const { data, error } = await supabase.from('teams').upsert(formattedTeams, { onConflict: 'team_id' }).select();
     if (error) {
-      console.error('Error upserting team to Supabase:', error.message);
+      // Fallback: If new columns are not in Supabase schema yet, sync base columns
+      const fallbackTeams = formattedTeams.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
+      const { data: fbData, error: fbError } = await supabase.from('teams').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
+      if (fbError) {
+        console.error('Fallback batch upsert error:', fbError.message);
+      }
+      return fbData;
     }
     return data;
   } catch (err) {
-    console.error('Supabase team upsert failed:', err);
+    console.error('Supabase all teams batch upsert failed:', err);
     return null;
   }
 }

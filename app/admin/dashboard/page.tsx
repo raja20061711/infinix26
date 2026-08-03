@@ -50,15 +50,17 @@ import {
   savePortalState,
   parseUnstopCSV,
   exportToCSV,
+  generateRandomPassword,
+  generateTeamQRCode,
   PortalState,
   Team,
+  TeamMember,
   Theme,
   ProblemStatement,
   Announcement,
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
-import { sendStudentWelcomeEmail } from '@/lib/emailService';
 
 type AdminTab =
   | 'dashboard'
@@ -109,6 +111,34 @@ export default function AdminDashboardPage() {
   const [scannedTeam, setScannedTeam] = useState<Team | null>(null);
   const [checkInFeedback, setCheckInFeedback] = useState<{ success: boolean; msg: string } | null>(null);
   const [adminCameraOpen, setAdminCameraOpen] = useState(false);
+
+  // TOAST NOTIFICATIONS & TEAM CRUD MODAL STATES
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ type, msg });
+    setTimeout(() => setToastMessage(null), 6000);
+  };
+
+  const [viewingTeam, setViewingTeam] = useState<Team | null>(null);
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
+
+  const [newTeamData, setNewTeamData] = useState({
+    teamId: '',
+    teamName: '',
+    teamSize: 4,
+    leaderName: '',
+    leaderEmail: '',
+    leaderPhone: '',
+    gender: 'Male',
+    college: 'Ramco Institute of Technology',
+    department: 'Information Technology',
+    yearOfStudy: 'III Year',
+    rollNumber: '',
+    membersText: '',
+    accommodationRequired: false,
+    password: '',
+  });
 
   // LOW RISK ACTION MODAL STATE
   const [lowRiskModal, setLowRiskModal] = useState<{
@@ -362,6 +392,139 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     if (!portalState) return;
     const updatedTeams = portalState.teams.map((t) => ({ ...t, selectedThemeId: undefined }));
     updateState({ ...portalState, teams: updatedTeams });
+  };
+
+  // --- TEAM CRUD HANDLERS ---
+  const handleCreateTeamSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!portalState || !newTeamData.teamName.trim() || !newTeamData.leaderName.trim()) return;
+
+    const tId = newTeamData.teamId.trim() || `INF-2026-${String(portalState.teams.length + 101).padStart(3, '0')}`;
+    const generatedPass = newTeamData.password.trim() || generateRandomPassword();
+
+    const parsedMembers: TeamMember[] = [
+      {
+        name: newTeamData.leaderName.trim(),
+        email: newTeamData.leaderEmail.trim(),
+        phone: newTeamData.leaderPhone.trim(),
+        department: newTeamData.department,
+        yearOfStudy: newTeamData.yearOfStudy,
+        rollNumber: newTeamData.rollNumber,
+        role: 'Leader',
+      },
+    ];
+
+    if (newTeamData.membersText.trim()) {
+      const lines = newTeamData.membersText.split('\n').map((l) => l.trim()).filter(Boolean);
+      lines.forEach((line, idx) => {
+        const match = line.match(/(.*?)\((.*?)\)/);
+        const name = match ? match[1].trim() : line;
+        const email = match ? match[2].trim() : `${name.toLowerCase().replace(/\s+/g, '')}@gmail.com`;
+        parsedMembers.push({
+          name: name || `Member ${idx + 2}`,
+          email,
+          phone: newTeamData.leaderPhone,
+          role: 'Member',
+        });
+      });
+    }
+
+    triggerLowRiskModal(
+      `Confirm Add Team "${newTeamData.teamName}"`,
+      `Are you sure you want to add Team ID ${tId} (${newTeamData.teamName}) to the hackathon database?`,
+      async () => {
+        const qrUrl = await generateTeamQRCode(tId);
+        const newTeamObj: Team = {
+          teamId: tId,
+          teamName: newTeamData.teamName.trim(),
+          teamSize: newTeamData.teamSize,
+          leaderName: newTeamData.leaderName.trim(),
+          leaderEmail: newTeamData.leaderEmail.trim(),
+          leaderPhone: newTeamData.leaderPhone.trim(),
+          gender: newTeamData.gender,
+          college: newTeamData.college.trim(),
+          department: newTeamData.department.trim(),
+          yearOfStudy: newTeamData.yearOfStudy,
+          rollNumber: newTeamData.rollNumber.trim(),
+          members: parsedMembers,
+          accommodationRequired: newTeamData.accommodationRequired,
+          attendanceStatus: 'Not Checked In',
+          registrationStatus: 'Verified',
+          emailStatus: 'Pending',
+          password: generatedPass,
+          qrCodeUrl: qrUrl,
+        };
+
+        const updatedState = { ...portalState, teams: [newTeamObj, ...portalState.teams] };
+        updateState(updatedState);
+        setIsAddTeamModalOpen(false);
+        setNewTeamData({
+          teamId: '',
+          teamName: '',
+          teamSize: 4,
+          leaderName: '',
+          leaderEmail: '',
+          leaderPhone: '',
+          gender: 'Male',
+          college: 'Ramco Institute of Technology',
+          department: 'Information Technology',
+          yearOfStudy: 'III Year',
+          rollNumber: '',
+          membersText: '',
+          accommodationRequired: false,
+          password: '',
+        });
+
+        showToast(`🎉 Success! Team "${newTeamObj.teamName}" (${tId}) added & synced to Supabase DB!`);
+      }
+    );
+  };
+
+  const handleSaveEditedTeam = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!portalState || !editingTeam) return;
+
+    triggerLowRiskModal(
+      `Confirm Edit Team ${editingTeam.teamId}`,
+      `Save changes for team "${editingTeam.teamName}" and sync to Supabase Database?`,
+      () => {
+        const updatedTeams = portalState.teams.map((t) => (t.teamId === editingTeam.teamId ? editingTeam : t));
+        updateState({ ...portalState, teams: updatedTeams });
+        setEditingTeam(null);
+        showToast(`✅ Success! Team "${editingTeam.teamName}" (${editingTeam.teamId}) updated!`);
+      }
+    );
+  };
+
+  const handleDeleteTeam = (team: Team) => {
+    triggerLowRiskModal(
+      `Confirm Delete Team "${team.teamName}"`,
+      `Are you sure you want to permanently delete Team ID ${team.teamId} (${team.teamName})? This action cannot be undone.`,
+      () => {
+        if (!portalState) return;
+        const updatedTeams = portalState.teams.filter((t) => t.teamId !== team.teamId);
+        updateState({ ...portalState, teams: updatedTeams });
+        showToast(`🗑️ Team "${team.teamName}" (${team.teamId}) deleted successfully!`, 'error');
+      }
+    );
+  };
+
+  const handleSendTeamEmail = async (team: Team) => {
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`✉️ Verification & QR Code Email sent to ${team.leaderEmail}!`);
+      } else {
+        showToast(`❌ Failed to send email: ${data.error || 'Unknown error'}`, 'error');
+      }
+    } catch (err: any) {
+      showToast(`❌ Failed to send email: ${err.message}`, 'error');
+    }
   };
 
   // --- Problem Statement Management ---
@@ -875,13 +1038,22 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 <p className="text-xs text-gray-400">Search, filter, and manage participant rosters</p>
               </div>
 
-              <button
-                onClick={exportTeamsReport}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-extrabold text-xs uppercase hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,217,255,0.4)] flex items-center gap-2 cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                EXPORT TEAMS CSV
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAddTeamModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-[#00D9FF] text-black font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,217,255,0.5)] flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-black" />
+                  ADD NEW TEAM
+                </button>
+                <button
+                  onClick={exportTeamsReport}
+                  className="px-4 py-2.5 rounded-xl bg-gray-800 border border-[#00D9FF]/30 text-white font-extrabold text-xs uppercase hover:bg-gray-700 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  EXPORT CSV
+                </button>
+              </div>
             </div>
 
             {/* Fast Search & Filters Bar */}
@@ -994,20 +1166,43 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        {team.selectedThemeId && (
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* View Details Button */}
                           <button
-                            onClick={() =>
-                              triggerLowRiskModal(
-                                `Reset Theme for ${team.teamId}`,
-                                `Reset theme selection for team ${team.teamName}. They will be allowed to re-select a theme.`,
-                                () => handleResetTeamTheme(team.teamId)
-                              )
-                            }
-                            className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-bold"
+                            onClick={() => setViewingTeam(team)}
+                            title="View Full Team Details & Roster"
+                            className="p-2 rounded-lg bg-[#00D9FF]/15 hover:bg-[#00D9FF]/30 text-[#00D9FF] border border-[#00D9FF]/30 transition-all cursor-pointer"
                           >
-                            Reset Theme
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
-                        )}
+
+                          {/* Edit Team Button */}
+                          <button
+                            onClick={() => setEditingTeam(team)}
+                            title="Edit Team Details"
+                            className="p-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Send Credentials Email Button */}
+                          <button
+                            onClick={() => handleSendTeamEmail(team)}
+                            title="Send Verification & QR Code Email"
+                            className="p-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete Team Button */}
+                          <button
+                            onClick={() => handleDeleteTeam(team)}
+                            title="Delete Team"
+                            className="p-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -2039,6 +2234,491 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
             </motion.div>
           </div>
         )}
+        {/* ADD NEW TEAM MODAL */}
+        {isAddTeamModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full max-w-2xl my-8 p-6 sm:p-8 rounded-3xl bg-[#04162E] border border-[#00D9FF]/50 shadow-[0_25px_60px_rgba(0,217,255,0.2)] space-y-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-[#00D9FF]/30 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-[#00D9FF]/20 border border-[#00D9FF]/40 text-[#00D9FF]">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-orbitron font-black text-lg text-white uppercase">ADD NEW TEAM</h3>
+                    <p className="text-xs text-gray-400">Register a new team directly into the hackathon database</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsAddTeamModalOpen(false)} className="text-gray-400 hover:text-white p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateTeamSubmit} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Team Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTeamData.teamName}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, teamName: e.target.value })}
+                      placeholder="e.g. Cyber Voyagers"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Team ID (Optional)</label>
+                    <input
+                      type="text"
+                      value={newTeamData.teamId}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, teamId: e.target.value })}
+                      placeholder={`e.g. INF-2026-${String(portalState.teams.length + 101).padStart(3, '0')}`}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Leader Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTeamData.leaderName}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, leaderName: e.target.value })}
+                      placeholder="Full Name"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Leader Email *</label>
+                    <input
+                      type="email"
+                      required
+                      value={newTeamData.leaderEmail}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, leaderEmail: e.target.value })}
+                      placeholder="leader@gmail.com"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Leader Mobile *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTeamData.leaderPhone}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, leaderPhone: e.target.value })}
+                      placeholder="+91 98765 43210"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">College Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTeamData.college}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, college: e.target.value })}
+                      placeholder="College Name"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Department *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTeamData.department}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, department: e.target.value })}
+                      placeholder="e.g. Information Technology"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Year of Study</label>
+                    <select
+                      value={newTeamData.yearOfStudy}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, yearOfStudy: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none"
+                    >
+                      <option value="I Year">I Year</option>
+                      <option value="II Year">II Year</option>
+                      <option value="III Year">III Year</option>
+                      <option value="IV Year">IV Year</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Roll / Register No.</label>
+                    <input
+                      type="text"
+                      value={newTeamData.rollNumber}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, rollNumber: e.target.value })}
+                      placeholder="e.g. 953621104001"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Gender</label>
+                    <select
+                      value={newTeamData.gender}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, gender: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">Portal Password (Optional)</label>
+                    <input
+                      type="text"
+                      value={newTeamData.password}
+                      onChange={(e) => setNewTeamData({ ...newTeamData, password: e.target.value })}
+                      placeholder="Auto-generated if empty"
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#7CE7FF] uppercase mb-1">
+                    Team Members (One per line format: Name (email@example.com))
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={newTeamData.membersText}
+                    onChange={(e) => setNewTeamData({ ...newTeamData, membersText: e.target.value })}
+                    placeholder={"Priya S (priya.s@gmail.com)\nKarthik R (karthik.r@gmail.com)"}
+                    className="w-full p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white focus:outline-none focus:border-[#00D9FF] font-mono text-xs"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/20">
+                  <input
+                    type="checkbox"
+                    id="accReqNew"
+                    checked={newTeamData.accommodationRequired}
+                    onChange={(e) => setNewTeamData({ ...newTeamData, accommodationRequired: e.target.checked })}
+                    className="w-4 h-4 accent-[#00D9FF] rounded cursor-pointer"
+                  />
+                  <label htmlFor="accReqNew" className="text-xs font-bold text-white cursor-pointer">
+                    Hostel Accommodation Required for Team
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-[#00D9FF]/20">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddTeamModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold hover:bg-gray-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-[#00D9FF] text-black font-black uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,217,255,0.4)]"
+                  >
+                    REGISTER TEAM
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* VIEW TEAM DETAILS MODAL */}
+        {viewingTeam && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full max-w-2xl my-8 p-6 sm:p-8 rounded-3xl bg-[#04162E] border border-[#00D9FF]/50 shadow-[0_25px_60px_rgba(0,217,255,0.2)] space-y-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-[#00D9FF]/30 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 rounded-xl bg-[#00D9FF]/20 border border-[#00D9FF] font-orbitron font-bold text-sm text-[#00D9FF]">
+                    {viewingTeam.teamId}
+                  </span>
+                  <div>
+                    <h3 className="font-orbitron font-black text-xl text-white uppercase">{viewingTeam.teamName}</h3>
+                    <p className="text-xs text-[#7CE7FF]">{viewingTeam.college}</p>
+                  </div>
+                </div>
+                <button onClick={() => setViewingTeam(null)} className="text-gray-400 hover:text-white p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Leader Details Card */}
+                <div className="p-4 rounded-2xl bg-[#020b18] border border-[#00D9FF]/20 space-y-2">
+                  <h4 className="font-orbitron font-bold text-[#00D9FF] uppercase flex items-center gap-2">
+                    <Users className="w-4 h-4" /> TEAM LEADER
+                  </h4>
+                  <div className="space-y-1 text-gray-200">
+                    <p><strong className="text-white">Name:</strong> {viewingTeam.leaderName}</p>
+                    <p><strong className="text-white">Email:</strong> {viewingTeam.leaderEmail}</p>
+                    <p><strong className="text-white">Phone:</strong> {viewingTeam.leaderPhone}</p>
+                    <p><strong className="text-white">Department:</strong> {viewingTeam.department}</p>
+                    {viewingTeam.yearOfStudy && <p><strong className="text-white">Year:</strong> {viewingTeam.yearOfStudy}</p>}
+                    {viewingTeam.rollNumber && <p><strong className="text-white">Roll No:</strong> {viewingTeam.rollNumber}</p>}
+                  </div>
+                </div>
+
+                {/* Status & Portal Credentials Card */}
+                <div className="p-4 rounded-2xl bg-[#020b18] border border-[#00D9FF]/20 space-y-2">
+                  <h4 className="font-orbitron font-bold text-emerald-400 uppercase flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4" /> CREDENTIALS & STATUS
+                  </h4>
+                  <div className="space-y-1 text-gray-200">
+                    <p><strong className="text-white">Portal Password:</strong> <code className="px-2 py-0.5 rounded bg-[#00D9FF]/10 text-[#00D9FF] font-mono font-bold">{viewingTeam.password || 'hackathon2026'}</code></p>
+                    <p><strong className="text-white">Attendance:</strong> <span className={viewingTeam.attendanceStatus === 'Checked In' ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>{viewingTeam.attendanceStatus}</span></p>
+                    <p><strong className="text-white">Accommodation:</strong> {viewingTeam.accommodationRequired ? '🏠 Hostel Required' : 'Not Required'}</p>
+                    <p><strong className="text-white">Selected Theme:</strong> {portalState?.themes.find(t => t.id === viewingTeam.selectedThemeId)?.title || 'Not Selected'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Members Roster Table */}
+              <div className="space-y-2">
+                <h4 className="font-orbitron font-bold text-xs text-white uppercase">TEAM MEMBERS ({viewingTeam.members.length})</h4>
+                <div className="rounded-xl border border-white/10 overflow-hidden text-xs">
+                  <table className="w-full text-left">
+                    <thead className="bg-[#021024] text-[#7CE7FF] text-[10px] uppercase font-bold">
+                      <tr>
+                        <th className="p-3">Member Name</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Role</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 bg-[#020b18]">
+                      {viewingTeam.members.map((m, idx) => (
+                        <tr key={idx}>
+                          <td className="p-3 font-semibold text-white">{m.name}</td>
+                          <td className="p-3 text-gray-300">{m.email}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${m.role === 'Leader' ? 'bg-[#00D9FF]/20 text-[#00D9FF]' : 'bg-gray-800 text-gray-300'}`}>
+                              {m.role}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Desk Check-in QR Code */}
+              {viewingTeam.qrCodeUrl && (
+                <div className="p-4 rounded-2xl bg-[#020b18] border border-[#00D9FF]/30 text-center flex flex-col items-center gap-2">
+                  <h4 className="font-orbitron font-bold text-xs text-[#00D9FF] uppercase">OFFICIAL DESK CHECK-IN QR CODE</h4>
+                  <img src={viewingTeam.qrCodeUrl} alt="Team QR" className="w-36 h-36 rounded-xl border-2 border-[#00D9FF] p-2 bg-white" />
+                  <p className="text-[10px] text-gray-400">Scan this QR code at the control counter for instant venue check-in</p>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-4 border-t border-[#00D9FF]/20">
+                <button
+                  onClick={() => handleSendTeamEmail(viewingTeam)}
+                  className="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold hover:bg-emerald-500/30 flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4" /> SEND EMAIL TO LEADER
+                </button>
+                <button
+                  onClick={() => setViewingTeam(null)}
+                  className="px-5 py-2 rounded-xl bg-gray-800 text-white text-xs font-bold hover:bg-gray-700"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* EDIT TEAM MODAL */}
+        {editingTeam && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full max-w-2xl my-8 p-6 sm:p-8 rounded-3xl bg-[#04162E] border border-amber-500/50 shadow-[0_25px_60px_rgba(245,158,11,0.2)] space-y-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                    <Edit className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-orbitron font-black text-lg text-white uppercase">EDIT TEAM: {editingTeam.teamId}</h3>
+                    <p className="text-xs text-amber-300">Modify team roster and account details</p>
+                  </div>
+                </div>
+                <button onClick={() => setEditingTeam(null)} className="text-gray-400 hover:text-white p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditedTeam} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Team Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingTeam.teamName}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, teamName: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Portal Password</label>
+                    <input
+                      type="text"
+                      value={editingTeam.password || ''}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, password: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Leader Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingTeam.leaderName}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, leaderName: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Leader Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={editingTeam.leaderEmail}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, leaderEmail: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Leader Mobile</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingTeam.leaderPhone}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, leaderPhone: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">College Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingTeam.college}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, college: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-300 uppercase mb-1">Department</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingTeam.department}
+                      onChange={(e) => setEditingTeam({ ...editingTeam, department: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-[#020d1e] border border-amber-500/30 text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#020d1e] border border-amber-500/20">
+                  <input
+                    type="checkbox"
+                    id="accReqEdit"
+                    checked={editingTeam.accommodationRequired ?? false}
+                    onChange={(e) => setEditingTeam({ ...editingTeam, accommodationRequired: e.target.checked })}
+                    className="w-4 h-4 accent-amber-400 rounded cursor-pointer"
+                  />
+                  <label htmlFor="accReqEdit" className="text-xs font-bold text-white cursor-pointer">
+                    Hostel Accommodation Required
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-amber-500/20">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTeam(null)}
+                    className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-amber-500 text-black font-black uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)]"
+                  >
+                    SAVE CHANGES
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* FLOATING SUCCESS / ERROR TOAST NOTIFICATION */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ y: 50, opacity: 0, scale: 0.9 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 50, opacity: 0, scale: 0.9 }}
+              className={`fixed bottom-6 right-6 z-50 p-4 max-w-md rounded-2xl border shadow-2xl flex items-center justify-between gap-4 backdrop-blur-xl ${
+                toastMessage.type === 'success'
+                  ? 'bg-[#041c30]/95 border-[#00D9FF] text-white shadow-[0_0_30px_rgba(0,217,255,0.4)]'
+                  : 'bg-red-950/95 border-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {toastMessage.type === 'success' ? (
+                  <CheckCircle2 className="w-6 h-6 text-[#00D9FF] flex-shrink-0 animate-bounce" />
+                ) : (
+                  <AlertTriangle className="w-6 h-6 text-rose-400 flex-shrink-0" />
+                )}
+                <span className="text-xs font-bold leading-relaxed">{toastMessage.msg}</span>
+              </div>
+              <button onClick={() => setToastMessage(null)} className="text-gray-400 hover:text-white p-1">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
