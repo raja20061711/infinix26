@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import QRCode from 'qrcode';
+import { isSupabaseConfigured, upsertTeamToSupabase, upsertProblemStatementToSupabase, upsertAnnouncementToSupabase } from './supabaseClient';
 
 export interface TeamMember {
   name: string;
@@ -257,8 +258,14 @@ export function savePortalState(state: PortalState): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    if (isSupabaseConfigured) {
+      state.teams.forEach((team) => upsertTeamToSupabase(team));
+      state.problemStatements.forEach((ps) => upsertProblemStatementToSupabase(ps));
+      state.announcements.forEach((ann) => upsertAnnouncementToSupabase(ann));
+    }
   } catch (e) {
-    console.error('Error saving portal state to localStorage:', e);
+    console.error('Error saving portal state:', e);
   }
 }
 
