@@ -61,7 +61,7 @@ import {
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
-import { deleteRegistrationFromSupabase } from '@/lib/supabaseClient';
+import { deleteRegistrationFromSupabase, logAttendanceToSupabase } from '@/lib/supabaseClient';
 
 type AdminTab =
   | 'dashboard'
@@ -673,7 +673,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     const themeTitle = portalState.themes.find((th) => th.id === updatedTeamObj.selectedThemeId)?.title;
     const psCode = portalState.problemStatements.find((p) => p.themeId === updatedTeamObj.selectedThemeId)?.psCode;
 
-    // Sync to Google Sheets API
+    // 1. Log attendance check-in event to Supabase attendance table
+    await logAttendanceToSupabase(scannedTeam.teamId, 'Admin Control Desk');
+
+    // 2. Sync to Google Sheets API
     await syncAttendanceToGoogleSheets(updatedTeamObj, themeTitle, psCode, 'Admin Control Desk');
     setCheckInFeedback({ success: true, msg: `Successfully marked ${scannedTeam.teamName} (${scannedTeam.teamId}) as PRESENT!` });
   };
