@@ -34,30 +34,43 @@ export async function upsertRegistrationToSupabase(team: any) {
 export async function upsertAllRegistrationsToSupabase(teams: any[]) {
   if (!teams || teams.length === 0) return null;
   try {
-    const formattedTeams = teams.map((team) => ({
-      team_id: team.teamId || team.team_id,
-      team_name: team.teamName || team.team_name,
-      team_size: team.teamSize || team.team_size || (team.members ? team.members.length : 4),
-      leader_name: team.leaderName || team.leader_name,
-      leader_email: team.leaderEmail || team.leader_email,
-      leader_phone: team.leaderPhone || team.leader_phone,
-      gender: team.gender || null,
-      college: team.college,
-      department: team.department,
-      year_of_study: team.yearOfStudy || team.year_of_study || null,
-      roll_number: team.rollNumber || team.roll_number || null,
-      members: team.members || [],
-      accommodation_required: team.accommodationRequired ?? team.accommodation_required ?? false,
-      selected_theme_id: team.selectedThemeId || team.selected_theme_id || null,
-      attendance_status: team.attendanceStatus || team.attendance_status || 'Not Checked In',
-      check_in_time: team.checkInTime || team.check_in_time || null,
-      checked_in_by: team.checkedInBy || team.checked_in_by || null,
-      password_hash: team.password || team.password_hash || 'hackathon2026',
-      registration_status: team.registrationStatus || team.registration_status || 'Verified',
-      email_status: team.emailStatus || team.email_status || 'Pending',
-      qr_code_url: team.qrCodeUrl || team.qr_code_url || null,
-      updated_at: new Date().toISOString(),
-    }));
+    const formattedTeams = teams.map((team) => {
+      let parsedMembers = [];
+      if (Array.isArray(team.members)) {
+        parsedMembers = team.members;
+      } else if (typeof team.members === 'string') {
+        try {
+          parsedMembers = JSON.parse(team.members);
+        } catch (e) {
+          parsedMembers = [];
+        }
+      }
+
+      return {
+        team_id: team.teamId || team.team_id,
+        team_name: team.teamName || team.team_name,
+        team_size: team.teamSize || team.team_size || (parsedMembers ? parsedMembers.length : 4),
+        leader_name: team.leaderName || team.leader_name,
+        leader_email: team.leaderEmail || team.leader_email,
+        leader_phone: team.leaderPhone || team.leader_phone,
+        gender: team.gender || null,
+        college: team.college,
+        department: team.department,
+        year_of_study: team.yearOfStudy || team.year_of_study || null,
+        roll_number: team.rollNumber || team.roll_number || null,
+        members: parsedMembers,
+        accommodation_required: team.accommodationRequired ?? team.accommodation_required ?? false,
+        selected_theme_id: team.selectedThemeId || team.selected_theme_id || null,
+        attendance_status: team.attendanceStatus || team.attendance_status || 'Not Checked In',
+        check_in_time: team.checkInTime || team.check_in_time || null,
+        checked_in_by: team.checkedInBy || team.checked_in_by || null,
+        password_hash: team.password || team.password_hash || 'hackathon2026',
+        registration_status: team.registrationStatus || team.registration_status || 'Verified',
+        email_status: team.emailStatus || team.email_status || 'Pending',
+        qr_code_url: team.qrCodeUrl || team.qr_code_url || null,
+        updated_at: new Date().toISOString(),
+      };
+    });
 
     const { data, error } = await supabase.from('registrations').upsert(formattedTeams, { onConflict: 'team_id' }).select();
     if (error) {
@@ -190,9 +203,14 @@ export async function fetchAnnouncementsFromSupabase() {
   }
 }
 
-// Helper: Sync Announcement to Supabase
+// Helper: Sync Announcement to Supabase (Safe timestamp parsing for Postgres)
 export async function upsertAnnouncementToSupabase(announcement: any) {
   try {
+    let isoDate = new Date().toISOString();
+    if (announcement.timestamp && !isNaN(Date.parse(announcement.timestamp))) {
+      isoDate = new Date(announcement.timestamp).toISOString();
+    }
+
     const { data, error } = await supabase.from('announcements').upsert(
       {
         id: announcement.id,
@@ -200,7 +218,7 @@ export async function upsertAnnouncementToSupabase(announcement: any) {
         message: announcement.message,
         category: announcement.category || 'General',
         is_published: announcement.isPublished ?? true,
-        created_at: announcement.timestamp || new Date().toISOString(),
+        created_at: isoDate,
       },
       { onConflict: 'id' }
     );
