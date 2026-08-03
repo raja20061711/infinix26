@@ -29,20 +29,6 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
     }
   }
 
-  const smtpUser = process.env.SMTP_USER || '';
-  const smtpPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
-
-  // Production Nodemailer SMTP configuration
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
-    auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-  });
-
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -123,8 +109,52 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
     </html>
   `;
 
-  try {
-    if (smtpUser && smtpPass) {
+  // METHOD 1: Resend API (Recommended - No Gmail Blocking)
+  const resendApiKey = process.env.RESEND_API_KEY || '';
+  if (resendApiKey) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'INFINIX26 Organizers <onboarding@resend.dev>',
+          to: [team.leaderEmail],
+          subject: `[INFINIX'26] Registration Verified & Check-in QR Code - Team ${team.teamId}`,
+          html: htmlContent,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        return { success: true, messageId: data.id };
+      } else {
+        console.error('Resend API Error:', data);
+        return { success: false, error: data.message || 'Resend Email Failed' };
+      }
+    } catch (err: any) {
+      console.error('Resend fetch error:', err);
+    }
+  }
+
+  // METHOD 2: Nodemailer Gmail SMTP
+  const smtpUser = process.env.SMTP_USER || '';
+  const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '';
+  const smtpPass = rawPass.replace(/\s+/g, ''); // Strip spaces automatically
+
+  if (smtpUser && smtpPass) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    try {
       const info = await transporter.sendMail({
         from: `"INFINIX'26 Organizers" <${smtpUser}>`,
         to: team.leaderEmail,
@@ -132,12 +162,17 @@ export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> 
         html: htmlContent,
       });
       return { success: true, messageId: info.messageId };
-    } else {
-      console.warn('SMTP credentials (SMTP_USER & SMTP_PASS) not configured in env. Email simulated.');
-      return { success: false, error: 'SMTP Credentials not configured in Vercel. Please add SMTP_USER & SMTP_PASS in Vercel Environment Variables.' };
+    } catch (e: any) {
+      console.error('SMTP Email send error:', e);
+      return {
+        success: false,
+        error: `Gmail BadCredentials (535): Ensure 2-Step Verification is ON in Google, generate a 16-character App Password, and paste it into SMTP_PASS without normal password.`,
+      };
     }
-  } catch (e: any) {
-    console.error('Email send error:', e);
-    return { success: false, error: e.message || 'Failed to send email' };
   }
+
+  return {
+    success: false,
+    error: 'No Email Provider Configured. Add RESEND_API_KEY or SMTP_USER & SMTP_PASS in Vercel Environment Variables.',
+  };
 }
