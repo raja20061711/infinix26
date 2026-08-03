@@ -61,7 +61,12 @@ import {
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
-import { deleteRegistrationFromSupabase, logAttendanceToSupabase } from '@/lib/supabaseClient';
+import {
+  deleteRegistrationFromSupabase,
+  logAttendanceToSupabase,
+  deleteProblemStatementFromSupabase,
+  deleteAnnouncementFromSupabase,
+} from '@/lib/supabaseClient';
 
 type AdminTab =
   | 'dashboard'
@@ -622,9 +627,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     updateState({ ...portalState, problemStatements: updatedPS });
   };
 
-  const handleDeletePS = (id: string) => {
+  const handleDeletePS = async (id: string) => {
     if (!portalState) return;
     updateState({ ...portalState, problemStatements: portalState.problemStatements.filter((ps) => ps.id !== id) });
+    await deleteProblemStatementFromSupabase(id);
   };
 
   // --- QR Check-In Handler ---
@@ -697,9 +703,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     setNewAnn({ title: '', message: '', category: 'General' });
   };
 
-  const handleDeleteAnnouncement = (id: string) => {
+  const handleDeleteAnnouncement = async (id: string) => {
     if (!portalState) return;
     updateState({ ...portalState, announcements: portalState.announcements.filter((a) => a.id !== id) });
+    await deleteAnnouncementFromSupabase(id);
   };
 
   // --- Reports Exporters ---

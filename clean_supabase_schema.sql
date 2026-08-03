@@ -139,7 +139,7 @@ INSERT INTO public.announcements (id, title, message, category, is_published) VA
 INSERT INTO public.registrations (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
 ('INF-2026-001', 'Cyber Voyagers', 'Arun Kumar', 'raja20061711@gmail.com', '+91 98765 43210', 'Ramco Institute of Technology', 'Information Technology', '[{"name": "Arun Kumar", "email": "raja20061711@gmail.com", "role": "Leader"}, {"name": "Priya Sharma", "email": "priya.s@gmail.com", "role": "Member"}]'::jsonb, 'hackathon2026', 'Verified', 'Sent');
 
--- STEP 4: ROW LEVEL SECURITY & PERMISSIONS
+-- STEP 4: ROW LEVEL SECURITY & PERMISSIONS (FULL CRUD)
 ALTER TABLE public.registrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.themes ENABLE ROW LEVEL SECURITY;
@@ -148,21 +148,14 @@ ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chatbot_knowledge ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
--- Allow Public & Authenticated Read/Write Access for Hackathon App
-CREATE POLICY "Public Read Access Registrations" ON public.registrations FOR SELECT USING (true);
-CREATE POLICY "Public Insert Registrations" ON public.registrations FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public Update Registrations" ON public.registrations FOR UPDATE USING (true);
-
-CREATE POLICY "Public Read Attendance" ON public.attendance FOR SELECT USING (true);
-CREATE POLICY "Public Insert Attendance" ON public.attendance FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Public Read Themes" ON public.themes FOR SELECT USING (true);
-CREATE POLICY "Public Read PS" ON public.problem_statements FOR SELECT USING (true);
-CREATE POLICY "Public Read Announcements" ON public.announcements FOR SELECT USING (true);
-CREATE POLICY "Public Read Chatbot Knowledge" ON public.chatbot_knowledge FOR SELECT USING (true);
-
-CREATE POLICY "Public Insert Contact Messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
-CREATE POLICY "Service Read Contact Messages" ON public.contact_messages FOR SELECT USING (auth.role() = 'service_role');
+-- Allow Public & Authenticated Read/Write/Delete Access for Hackathon App
+CREATE POLICY "Public Full Access Registrations" ON public.registrations FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access Attendance" ON public.attendance FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access Themes" ON public.themes FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access PS" ON public.problem_statements FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access Announcements" ON public.announcements FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access Chatbot Knowledge" ON public.chatbot_knowledge FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Full Access Contact Messages" ON public.contact_messages FOR ALL USING (true) WITH CHECK (true);
 
 -- Grant Table Access to Anon & Authenticated Roles
 GRANT ALL ON TABLE public.registrations TO anon, authenticated, service_role;
@@ -170,7 +163,5 @@ GRANT ALL ON TABLE public.attendance TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.themes TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.problem_statements TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.announcements TO anon, authenticated, service_role;
-GRANT SELECT ON TABLE public.chatbot_knowledge TO anon, authenticated;
-GRANT ALL ON TABLE public.chatbot_knowledge TO service_role;
-GRANT INSERT ON TABLE public.contact_messages TO anon, authenticated;
-GRANT ALL ON TABLE public.contact_messages TO service_role;
+GRANT ALL ON TABLE public.chatbot_knowledge TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.contact_messages TO anon, authenticated, service_role;

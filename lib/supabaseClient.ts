@@ -1,18 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase URL & Anon Key from Environment Variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Supabase URL & Anon Key from Environment Variables with direct fallback
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zznpxqtyalvrekqlkpel.supabase.co';
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_vAzKzuE0elAuVnbPMdxdPA_CjV3Zll_';
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper: Fetch all Registrations from Supabase PostgreSQL
 export async function fetchRegistrationsFromSupabase() {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
     if (error) {
@@ -28,13 +27,12 @@ export async function fetchRegistrationsFromSupabase() {
 
 // Helper: Sync / Save Single Registration to Supabase
 export async function upsertRegistrationToSupabase(team: any) {
-  if (!supabase) return null;
   return upsertAllRegistrationsToSupabase([team]);
 }
 
 // Helper: Sync / Save ALL Registrations to Supabase in Batch with Resilient Fallback
 export async function upsertAllRegistrationsToSupabase(teams: any[]) {
-  if (!supabase || !teams || teams.length === 0) return null;
+  if (!teams || teams.length === 0) return null;
   try {
     const formattedTeams = teams.map((team) => ({
       team_id: team.teamId || team.team_id,
@@ -63,7 +61,8 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
 
     const { data, error } = await supabase.from('registrations').upsert(formattedTeams, { onConflict: 'team_id' }).select();
     if (error) {
-      // Fallback: If new columns are not in Supabase schema yet, sync base columns
+      console.error('Supabase batch upsert notice:', error.message);
+      // Fallback: Sync base columns
       const fallbackTeams = formattedTeams.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
       const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
       if (fbError) {
@@ -73,12 +72,12 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
     }
     return data;
   } catch (err) {
+    console.error('Supabase batch upsert exception:', err);
   }
 }
 
 // Helper: Delete Registration from Supabase (throws on failure)
 export async function deleteRegistrationFromSupabase(teamId: string) {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('registrations').delete().eq('team_id', teamId);
     if (error) {
@@ -95,7 +94,6 @@ export async function deleteRegistrationFromSupabase(teamId: string) {
 
 // Helper: Log Attendance Check-in Event to Supabase
 export async function logAttendanceToSupabase(teamId: string, checkedInBy: string, notes?: string) {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('attendance').insert({
       team_id: teamId,
@@ -117,7 +115,6 @@ export async function logAttendanceToSupabase(teamId: string, checkedInBy: strin
 
 // Helper: Fetch Problem Statements from Supabase
 export async function fetchProblemStatementsFromSupabase() {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from('problem_statements')
@@ -136,7 +133,6 @@ export async function fetchProblemStatementsFromSupabase() {
 
 // Helper: Sync Problem Statement to Supabase
 export async function upsertProblemStatementToSupabase(ps: any) {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('problem_statements').upsert(
       {
@@ -164,9 +160,20 @@ export async function upsertProblemStatementToSupabase(ps: any) {
   }
 }
 
+// Helper: Delete Problem Statement from Supabase
+export async function deleteProblemStatementFromSupabase(id: string) {
+  try {
+    const { data, error } = await supabase.from('problem_statements').delete().eq('id', id);
+    if (error) console.error('Error deleting PS from Supabase:', error.message);
+    return data;
+  } catch (err) {
+    console.error('Supabase PS delete failed:', err);
+    return null;
+  }
+}
+
 // Helper: Fetch Announcements from Supabase
 export async function fetchAnnouncementsFromSupabase() {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from('announcements')
@@ -185,7 +192,6 @@ export async function fetchAnnouncementsFromSupabase() {
 
 // Helper: Sync Announcement to Supabase
 export async function upsertAnnouncementToSupabase(announcement: any) {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('announcements').upsert(
       {
@@ -208,9 +214,20 @@ export async function upsertAnnouncementToSupabase(announcement: any) {
   }
 }
 
+// Helper: Delete Announcement from Supabase
+export async function deleteAnnouncementFromSupabase(id: string) {
+  try {
+    const { data, error } = await supabase.from('announcements').delete().eq('id', id);
+    if (error) console.error('Error deleting announcement from Supabase:', error.message);
+    return data;
+  } catch (err) {
+    console.error('Supabase announcement delete failed:', err);
+    return null;
+  }
+}
+
 // Helper: Fetch Chatbot Knowledge from Supabase
 export async function fetchChatbotKnowledgeFromSupabase() {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from('chatbot_knowledge')
@@ -236,7 +253,6 @@ export async function insertContactMessageToSupabase(message: {
   subject?: string;
   message: string;
 }) {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase.from('contact_messages').insert({
       name: message.name,
