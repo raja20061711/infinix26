@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { upsertRegistrationToSupabase, uploadPaymentSlipToSupabase } from '@/lib/supabaseClient';
-import { sendStudentWelcomeEmail, sendAdminNotificationEmail } from '@/lib/emailService';
+import { sendAdminNotificationEmail } from '@/lib/emailService';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
+
+export const maxDuration = 60; // Allow up to 60 seconds for Vercel Serverless Function execution
 
 export async function POST(req: NextRequest) {
   try {
@@ -89,14 +91,17 @@ export async function POST(req: NextRequest) {
     // Save to Supabase PostgreSQL DB
     const supabaseResult = await upsertRegistrationToSupabase(newTeam);
 
-    // Automatic Live Mirror Sync to Google Sheets (Non-blocking backup)
-    await syncToGoogleSheets(newTeam, 'create');
+    // Parallel Execution: Run Google Sheets mirror sync & Admin Email concurrently for fast response
+    const [sheetResult, adminEmailResult] = await Promise.allSettled([
+      syncToGoogleSheets(newTeam, 'create'),
+      sendAdminNotificationEmail(newTeam),
+    ]);
 
-    // Send Admin notification email immediately so Admin can verify payment
-    try {
-      await sendAdminNotificationEmail(newTeam);
-    } catch (adminEmailErr) {
-      console.error('Admin notification email error:', adminEmailErr);
+    if (sheetResult.status === 'rejected') {
+      console.error('[Register API] Sheet Sync error:', sheetResult.reason);
+    }
+    if (adminEmailResult.status === 'rejected') {
+      console.error('[Register API] Admin Email error:', adminEmailResult.reason);
     }
 
     return NextResponse.json({

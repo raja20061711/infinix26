@@ -147,14 +147,10 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
       const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(safeTeams, { onConflict: 'team_id' }).select();
       if (fbError) {
         console.error('Fallback batch upsert error:', fbError.message);
-      } else {
-        formattedTeams.forEach((t) => syncToGoogleSheets(t, 'update'));
       }
       return fbData;
     }
 
-    // Sync mirror to Google Sheets for each updated team
-    formattedTeams.forEach((t) => syncToGoogleSheets(t, 'update'));
     return data;
   } catch (err) {
     console.error('Supabase batch upsert exception:', err);
