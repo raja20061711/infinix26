@@ -213,9 +213,10 @@ function findRowIndexByRegId(sheet, regId) {
 }
 
 function formatTeamRow(data, overrideId, contents, action) {
+  data = data || {};
   var regId = overrideId || data.registrationId || data.teamId || data.team_id || "";
   var teamName = data.teamName || data.team_name || "";
-  var college = data.college || "";
+  var college = String(data.college || "");
   var isRamco = college.toLowerCase().indexOf("ramco") !== -1;
   var collegeType = isRamco ? "Internal (Ramco)" : "External College";
   var leaderName = data.leaderName || data.leader_name || "";

@@ -29,7 +29,10 @@ export function formatAppsScriptPayload(
     registrationId: regId,
   };
 
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID || process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || '';
+  const spreadsheetId =
+    process.env.GOOGLE_SHEET_ID ||
+    process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID ||
+    '1I60wEQUYeDtQQUy-nxF8mSjkzZqvkrUrE848ZZ-_D8E';
 
   if (action === 'delete') {
     return {
