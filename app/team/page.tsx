@@ -6,7 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Crown, Users, BookOpen, UserCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Crown, Users, BookOpen, UserCheck, ArrowRight, ArrowLeft, Wrench } from 'lucide-react';
 import OceanVideoCanvas from '@/components/video/OceanVideoCanvas';
 import Navbar from '@/components/Navbar';
 import SocialSidebar from '@/components/SocialSidebar';
@@ -49,6 +49,14 @@ const teamCategories = [
     href: '/team/student-coordinators',
     icon: UserCheck,
     gradient: 'from-[#00D9FF]/20 to-[#04162E]/40',
+  },
+  {
+    title: 'Technical Support Staff',
+    description: 'IT Lab Technicians managing technical & lab infrastructure',
+    count: '2 Technical Staff',
+    href: '/committee',
+    icon: Wrench,
+    gradient: 'from-[#7CE7FF]/20 to-[#0284c7]/20',
   },
 ];
 
