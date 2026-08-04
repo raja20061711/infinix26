@@ -27,7 +27,7 @@ export default function StudentLoginPage() {
     const foundTeam = state.teams.find((t) => t.teamId.toUpperCase() === teamId.trim().toUpperCase());
 
     if (!foundTeam) {
-      setError('Invalid Team ID. Please check your credentials or register on Unstop.');
+      setError('Invalid Team ID. Please check your credentials or register on our website.');
       return;
     }
 

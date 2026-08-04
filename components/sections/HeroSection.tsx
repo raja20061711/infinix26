@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ExternalLink, Play, ChevronDown, Download } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
@@ -181,30 +182,18 @@ export default function HeroSection() {
             <span className="text-[#7CE7FF] font-bold">IE(I)-IT Student Chapter</span>
           </p>
 
-          {/* Powered by Unstop Badge */}
+          {/* Direct Registration Live Badge */}
           <div className="flex items-center gap-2.5 mt-2">
-            <span className="font-orbitron font-extrabold text-xs sm:text-sm tracking-[0.25em] text-[#7CE7FF] uppercase drop-shadow-[0_0_8px_rgba(0,217,255,0.6)]">
-              POWERED BY
-            </span>
-            <a
-              href="https://unstop.com"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/30 hover:border-[#00D9FF]/70 hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/40 hover:border-[#00D9FF] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
               data-hoverable="true"
             >
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md overflow-hidden shadow-[0_0_8px_rgba(0,217,255,0.3)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/unstop-logo.png"
-                  alt="Unstop"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="font-orbitron font-extrabold text-xs sm:text-sm text-white group-hover:text-[#00D9FF] transition-colors tracking-wider drop-shadow-[0_0_8px_rgba(0,217,255,0.5)]">
-                UNSTOP
+              <span className="w-2 h-2 rounded-full bg-[#00D9FF] animate-pulse" />
+              <span className="font-orbitron font-extrabold text-xs sm:text-sm text-[#7CE7FF] group-hover:text-white transition-colors tracking-wider drop-shadow-[0_0_8px_rgba(0,217,255,0.5)]">
+                REGISTRATION LIVE • DIRECT ONLINE ENTRY
               </span>
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -282,10 +271,8 @@ export default function HeroSection() {
         className="mt-6 flex flex-wrap items-center justify-center gap-5 z-10"
       >
         {/* Register Now Primary Button */}
-        <a
-          href="https://unstop.com"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          href="/register"
           className="relative group overflow-hidden px-8 py-3.5 rounded-full bg-gradient-to-r from-[#00D9FF] via-[#4CCFFF] to-[#00D9FF] text-black font-extrabold text-xs tracking-widest uppercase shadow-[0_0_30px_rgba(0,217,255,0.6)] hover:shadow-[0_0_55px_rgba(0,217,255,1)] hover:scale-105 transition-all duration-300 flex items-center gap-2.5"
         >
           <span className="relative z-10 flex items-center gap-2">
@@ -293,7 +280,7 @@ export default function HeroSection() {
             <ExternalLink className="w-4 h-4 text-black group-hover:rotate-12 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-        </a>
+        </Link>
 
         {/* Explore More Secondary Button */}
         <a

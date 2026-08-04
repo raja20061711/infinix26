@@ -6,6 +6,7 @@ export interface TeamMember {
   name: string;
   email: string;
   phone: string;
+  college?: string;
   department?: string;
   yearOfStudy?: string;
   rollNumber?: string;
@@ -32,7 +33,11 @@ export interface Team {
   checkedInBy?: string;
   qrCodeUrl?: string;
   password?: string;
-  registrationStatus: 'Verified' | 'Pending';
+  upiTransactionId?: string;
+  paymentProofUrl?: string;
+  paymentAmount?: number;
+  paymentStatus?: 'Pending Verification' | 'Verified' | 'Rejected';
+  registrationStatus: 'Verified' | 'Pending' | 'Pending Payment Verification';
   emailStatus: 'Sent' | 'Pending' | 'Failed';
 }
 

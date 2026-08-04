@@ -15,4 +15,4 @@ export async function POST(request: Request) {
     console.error('API Send Email error:', error);
     return NextResponse.json({ success: false, error: error.message || 'Failed to send email' }, { status: 500 });
   }
-}
+} // updated

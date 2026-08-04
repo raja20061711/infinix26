@@ -9,8 +9,8 @@ import { getPortalState, Announcement } from '@/lib/portalState';
 const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-default-1',
-    title: "🚀 Registrations Open on Unstop!",
-    message: "Registration via Unstop: ₹250 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
+    title: "🚀 Registrations Now Open!",
+    message: "Direct Registration: ₹250 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
     category: 'Urgent',
     timestamp: 'Just Now',
     isPublished: true,
@@ -155,10 +155,8 @@ export default function Navbar() {
             </button>
 
             {/* Register Now Glass CTA Button */}
-            <a
-              href="https://unstop.com"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/register"
               className="relative group inline-flex items-center gap-2 overflow-hidden px-6 py-2.5 rounded-full glass-panel border border-[#00D9FF]/50 text-xs font-extrabold tracking-widest text-white hover:text-black transition-all duration-300 shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_35px_rgba(0,217,255,0.8)]"
               data-hoverable="true"
             >
@@ -167,7 +165,7 @@ export default function Navbar() {
                 <ExternalLink className="w-3.5 h-3.5 text-[#00D9FF] group-hover:text-black transition-colors" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#00D9FF] via-[#4CCFFF] to-[#7CE7FF] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Right Controls */}
@@ -218,15 +216,14 @@ export default function Navbar() {
                   </a>
                 ))}
 
-                <a
-                  href="https://unstop.com"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
                   className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#4CCFFF] text-black font-extrabold text-xs tracking-widest uppercase shadow-[0_0_20px_#00D9FF] text-center flex items-center justify-center gap-2 active:scale-98 transition-all"
                 >
-                  REGISTER ON UNSTOP
+                  REGISTER NOW
                   <ExternalLink className="w-4 h-4" />
-                </a>
+                </Link>
               </div>
             </motion.div>
           )}

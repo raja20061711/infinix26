@@ -13,7 +13,7 @@ const faqs = [
   {
     question: 'Is there any registration fee?',
     answer:
-      'Registration takes place officially via the Unstop platform. The registration fee is ₹250 for Internal Ramco Institute of Technology students and ₹350 for External college students.',
+      'Registration takes place directly on our official website (/register). The registration fee is ₹250 for Internal Ramco Institute of Technology students and ₹350 for External college students.',
   },
   {
     question: 'What is the mode of the hackathon?',

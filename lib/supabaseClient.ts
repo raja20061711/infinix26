@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { syncToGoogleSheets } from '@/utils/sheetSync';
 
 // Supabase URL & Anon Key from Environment Variables with direct fallback
 const supabaseUrl =
@@ -61,11 +62,15 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
         members: parsedMembers,
         accommodation_required: team.accommodationRequired ?? team.accommodation_required ?? false,
         selected_theme_id: team.selectedThemeId || team.selected_theme_id || null,
+        upi_transaction_id: team.upiTransactionId || team.upi_transaction_id || null,
+        payment_proof_url: team.paymentProofUrl || team.payment_proof_url || null,
+        payment_amount: team.paymentAmount || team.payment_amount || null,
+        payment_status: team.paymentStatus || team.payment_status || 'Pending Verification',
         attendance_status: team.attendanceStatus || team.attendance_status || 'Not Checked In',
         check_in_time: team.checkInTime || team.check_in_time || null,
         checked_in_by: team.checkedInBy || team.checked_in_by || null,
         password_hash: team.password || team.password_hash || 'hackathon2026',
-        registration_status: team.registrationStatus || team.registration_status || 'Verified',
+        registration_status: team.registrationStatus || team.registration_status || 'Pending Payment Verification',
         email_status: team.emailStatus || team.email_status || 'Pending',
         qr_code_url: team.qrCodeUrl || team.qr_code_url || null,
         updated_at: new Date().toISOString(),
@@ -75,14 +80,26 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
     const { data, error } = await supabase.from('registrations').upsert(formattedTeams, { onConflict: 'team_id' }).select();
     if (error) {
       console.error('Supabase batch upsert notice:', error.message);
-      // Fallback: Sync base columns
-      const fallbackTeams = formattedTeams.map(({ team_size, gender, year_of_study, roll_number, accommodation_required, ...rest }) => rest);
-      const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(fallbackTeams, { onConflict: 'team_id' }).select();
+      // Resilient Fallback: strip payment columns if remote Supabase schema hasn't added them yet
+      const safeTeams = formattedTeams.map(({
+        upi_transaction_id,
+        payment_proof_url,
+        payment_amount,
+        payment_status,
+        ...rest
+      }) => rest);
+
+      const { data: fbData, error: fbError } = await supabase.from('registrations').upsert(safeTeams, { onConflict: 'team_id' }).select();
       if (fbError) {
         console.error('Fallback batch upsert error:', fbError.message);
+      } else {
+        formattedTeams.forEach((t) => syncToGoogleSheets(t, 'update'));
       }
       return fbData;
     }
+
+    // Sync mirror to Google Sheets for each updated team
+    formattedTeams.forEach((t) => syncToGoogleSheets(t, 'update'));
     return data;
   } catch (err) {
     console.error('Supabase batch upsert exception:', err);
@@ -98,6 +115,9 @@ export async function deleteRegistrationFromSupabase(teamId: string) {
       throw new Error(error.message);
     }
     console.log('✅ Registration', teamId, 'deleted from Supabase DB');
+    
+    // Sync deletion mirror to Google Sheets
+    await syncToGoogleSheets({ team_id: teamId }, 'delete');
     return data;
   } catch (err: any) {
     console.error('Supabase registration delete failed:', err);

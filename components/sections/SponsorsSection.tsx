@@ -8,8 +8,8 @@ const sponsorTiers = [
   {
     tier: 'TITLE PARTNER',
     badge: 'Platinum Sponsor',
-    status: 'Official Platform Partner',
-    partners: ['Unstop (Official Platform Partner)'],
+    status: 'IE(I)-IT Student Chapter',
+    partners: ['IE(I)-IT Student Chapter & RIT IT Department'],
     icon: ShieldCheck,
   },
   {

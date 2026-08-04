@@ -61,7 +61,10 @@ import {
   CSVImportResult,
 } from '@/lib/portalState';
 import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
+import { syncToGoogleSheets } from '@/utils/sheetSync';
 import {
+  fetchRegistrationsFromSupabase,
+  upsertAllRegistrationsToSupabase,
   deleteRegistrationFromSupabase,
   logAttendanceToSupabase,
   deleteProblemStatementFromSupabase,
@@ -83,6 +86,65 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [portalState, setPortalState] = useState<PortalState | null>(null);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+
+  const loadFromSupabase = async (showToastNotice = false) => {
+    setIsSyncingSupabase(true);
+    try {
+      const dbTeams = await fetchRegistrationsFromSupabase();
+      if (dbTeams && Array.isArray(dbTeams)) {
+        setPortalState((prev) => {
+          const baseState = prev || getPortalState();
+          const mappedTeams: Team[] = dbTeams.map((row: any) => {
+            const localTeam = baseState.teams.find((t) => t.teamId === row.team_id);
+            return {
+              teamId: row.team_id,
+              teamName: row.team_name,
+              teamSize: row.team_size || localTeam?.teamSize || 4,
+              leaderName: row.leader_name,
+              leaderEmail: row.leader_email,
+              leaderPhone: row.leader_phone,
+              gender: row.gender || localTeam?.gender || 'Other',
+              college: row.college,
+              department: row.department,
+              yearOfStudy: row.year_of_study || localTeam?.yearOfStudy || '',
+              rollNumber: row.roll_number || localTeam?.rollNumber || '',
+              members: Array.isArray(row.members)
+                ? row.members
+                : typeof row.members === 'string'
+                ? JSON.parse(row.members || '[]')
+                : localTeam?.members || [],
+              accommodationRequired: row.accommodation_required ?? localTeam?.accommodationRequired ?? false,
+              selectedThemeId: row.selected_theme_id || localTeam?.selectedThemeId || undefined,
+              upiTransactionId: row.upi_transaction_id || localTeam?.upiTransactionId || undefined,
+              paymentProofUrl: row.payment_proof_url || localTeam?.paymentProofUrl || undefined,
+              paymentAmount: row.payment_amount || localTeam?.paymentAmount || undefined,
+              paymentStatus: row.payment_status || localTeam?.paymentStatus || 'Pending Verification',
+              attendanceStatus: row.attendance_status || localTeam?.attendanceStatus || 'Not Checked In',
+              checkInTime: row.check_in_time || localTeam?.checkInTime || undefined,
+              checkedInBy: row.checked_in_by || localTeam?.checkedInBy || undefined,
+              password: row.password_hash || localTeam?.password || 'hackathon2026',
+              registrationStatus: row.registration_status || localTeam?.registrationStatus || 'Pending Payment Verification',
+              emailStatus: row.email_status || localTeam?.emailStatus || 'Pending',
+              qrCodeUrl: row.qr_code_url || localTeam?.qrCodeUrl || undefined,
+            };
+          });
+
+          const updatedState = { ...baseState, teams: mappedTeams };
+          savePortalState(updatedState);
+          return updatedState;
+        });
+
+        if (showToastNotice) {
+          showToast(`⚡ Synced ${dbTeams.length} teams directly from Supabase DB!`);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching live registrations from Supabase:', err);
+    } finally {
+      setIsSyncingSupabase(false);
+    }
+  };
 
   // Search & Filter State
   const [teamSearch, setTeamSearch] = useState('');
@@ -174,6 +236,10 @@ export default function AdminDashboardPage() {
   const [credSuccessMsg, setCredSuccessMsg] = useState('');
   const [credErrorMsg, setCredErrorMsg] = useState('');
 
+  // PAYMENT PROOF PREVIEW & APPROVAL STATE
+  const [viewingPaymentProofUrl, setViewingPaymentProofUrl] = useState<string | null>(null);
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+
   useEffect(() => {
     const adminAuth = localStorage.getItem('admin_session_auth');
     if (!adminAuth) {
@@ -182,6 +248,9 @@ export default function AdminDashboardPage() {
     }
     const state = getPortalState();
     setPortalState(state);
+
+    // Fetch live registrations from Supabase Database
+    loadFromSupabase();
 
     if (state.themes.length > 0 && !newPS.themeId) {
       setNewPS((prev) => ({ ...prev, themeId: state.themes[0].id }));
@@ -249,6 +318,47 @@ export default function AdminDashboardPage() {
     setNewAdminPassword('');
     setConfirmAdminPassword('');
     setCredSuccessMsg('Admin credentials updated successfully! Use these credentials for your next login.');
+  };
+
+  // --- APPROVE PAYMENT & TRIGGER EMAIL ---
+  const handleApprovePayment = async (team: Team) => {
+    if (!portalState) return;
+    setSendingEmailId(team.teamId);
+
+    const updatedTeams = portalState.teams.map((t) => {
+      if (t.teamId === team.teamId) {
+        return {
+          ...t,
+          registrationStatus: 'Verified' as const,
+          paymentStatus: 'Verified' as const,
+          emailStatus: 'Sent' as const,
+        };
+      }
+      return t;
+    });
+
+    const updatedTeamObj = updatedTeams.find((t) => t.teamId === team.teamId)!;
+    const newState = { ...portalState, teams: updatedTeams };
+    updateState(newState);
+
+    // Sync updated team to Supabase
+    await upsertAllRegistrationsToSupabase([updatedTeamObj]);
+
+    // Mirror payment verification update to Google Sheets
+    await syncToGoogleSheets(updatedTeamObj, 'approve', 'Admin');
+
+    // Trigger verification email via API
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team: updatedTeamObj }),
+      });
+    } catch (e) {
+      console.error('Email send failed:', e);
+    } finally {
+      setSendingEmailId(null);
+    }
   };
 
   // Helper to trigger Low Risk Modal
@@ -794,7 +904,6 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
             {[
               { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard },
               { id: 'teams', label: `Teams (${portalState.teams.length})`, icon: Users },
-              { id: 'csv', label: 'CSV Import (Unstop)', icon: Upload },
               { id: 'themes', label: 'Domain Management', icon: Layers },
               { id: 'ps', label: 'Problem Statements', icon: FileText },
               { id: 'qr', label: 'QR Check-In', icon: QrCode },
@@ -968,7 +1077,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 <span className="font-orbitron font-black text-3xl text-white block">
                   {totalTeamsCount}
                 </span>
-                <span className="text-[10px] text-[#7CE7FF]">Imported from Unstop</span>
+                <span className="text-[10px] text-[#7CE7FF]">Direct Website Registrations</span>
               </div>
 
               <div className="p-5 rounded-2xl bg-[#04162E]/80 backdrop-blur-xl border border-[#00D9FF]/30 shadow-lg space-y-2">
@@ -1063,6 +1172,16 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
               <div className="flex items-center gap-3">
                 <button
+                  onClick={() => loadFromSupabase(true)}
+                  disabled={isSyncingSupabase}
+                  className="px-4 py-2.5 rounded-xl bg-[#021838] border border-[#00D9FF]/50 text-[#00D9FF] font-extrabold text-xs uppercase hover:bg-[#00D9FF]/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  title="Pull live registrations from Supabase database"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncingSupabase ? 'animate-spin' : ''}`} />
+                  <span>SYNC DB</span>
+                </button>
+
+                <button
                   onClick={() => setIsAddTeamModalOpen(true)}
                   className="px-4 py-2.5 rounded-xl bg-[#00D9FF] text-black font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,217,255,0.5)] flex items-center gap-2 cursor-pointer"
                 >
@@ -1149,8 +1268,8 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                     <th className="p-4">Team Name</th>
                     <th className="p-4">Leader Name & Contact</th>
                     <th className="p-4">College & Dept</th>
-                    <th className="p-4">Selected Theme</th>
-                    <th className="p-4">Attendance</th>
+                    <th className="p-4">Payment & UTR</th>
+                    <th className="p-4">Status</th>
                     <th className="p-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -1169,27 +1288,57 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                         <span className="text-[10px] text-[#7CE7FF]">{team.department || 'CSE'}</span>
                       </td>
                       <td className="p-4">
-                        {team.selectedThemeId ? (
-                          <span className="px-2.5 py-1 rounded-full bg-[#00D9FF]/15 border border-[#00D9FF]/40 text-[10px] font-bold text-[#00D9FF]">
-                            {portalState.themes.find((t) => t.id === team.selectedThemeId)?.title ?? 'Theme Picked'}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-gray-500 font-semibold">Not Selected</span>
+                        <span className="block font-bold text-emerald-400 font-orbitron">
+                          ₹{team.paymentAmount || (team.college.toLowerCase().includes('ramco') ? 250 * (team.teamSize || 3) : 350 * (team.teamSize || 3))}
+                        </span>
+                        <span className="text-[10px] font-mono text-gray-300 block">
+                          Ref: {team.upiTransactionId || 'N/A'}
+                        </span>
+                        {team.paymentProofUrl && (
+                          <button
+                            onClick={() => setViewingPaymentProofUrl(team.paymentProofUrl!)}
+                            className="mt-1 text-[10px] text-[#00D9FF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                          >
+                            📸 View Payment Slip
+                          </button>
                         )}
                       </td>
                       <td className="p-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            team.attendanceStatus === 'Checked In'
-                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
-                              : 'bg-amber-950 text-amber-300 border border-amber-500/30'
-                          }`}
-                        >
-                          {team.attendanceStatus}
-                        </span>
+                        <div className="space-y-1">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit ${
+                              team.registrationStatus === 'Verified'
+                                ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
+                                : 'bg-amber-950 text-amber-300 border border-amber-500/40'
+                            }`}
+                          >
+                            {team.registrationStatus === 'Verified' ? 'Verified' : 'Pending Payment'}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit ${
+                              team.attendanceStatus === 'Checked In'
+                                ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
+                                : 'bg-gray-900 text-gray-400 border border-gray-700'
+                            }`}
+                          >
+                            {team.attendanceStatus}
+                          </span>
+                        </div>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {team.registrationStatus !== 'Verified' && (
+                            <button
+                              onClick={() => handleApprovePayment(team)}
+                              disabled={sendingEmailId === team.teamId}
+                              title="Approve Payment & Send Verification Email"
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[10px] tracking-wider transition-all cursor-pointer flex items-center gap-1 shadow-[0_0_10px_rgba(16,185,129,0.4)] disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {sendingEmailId === team.teamId ? 'APPROVING...' : 'APPROVE'}
+                            </button>
+                          )}
+
                           {/* View Details Button */}
                           <button
                             onClick={() => setViewingTeam(team)}
@@ -1231,97 +1380,6 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: CSV IMPORT (UNSTOP PAPAPARSE) */}
-        {activeTab === 'csv' && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h2 className="font-orbitron font-extrabold text-xl text-white uppercase">
-                UNSTOP CSV IMPORT (PAPAPARSE ENGINE)
-              </h2>
-              <p className="text-xs text-gray-400">
-                Upload official Unstop CSV exports. Automatically parses Team ID, Name, Leader, College, Department, Members, generates secure passwords and QR Codes.
-              </p>
-            </div>
-
-            {/* File Dropzone & One-Click Options */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* File Dropzone */}
-              <div className="p-5 rounded-2xl bg-[#021630] border border-[#00D9FF]/40 border-dashed text-center flex flex-col items-center justify-center gap-3">
-                <FileUp className="w-8 h-8 text-[#00D9FF]" />
-                <div>
-                  <h4 className="font-bold text-xs text-white uppercase">Upload Unstop CSV File</h4>
-                  <p className="text-[10px] text-gray-400">Select `.csv` exported from Unstop</p>
-                </div>
-                <label className="px-4 py-2 rounded-xl bg-[#00D9FF] text-black font-extrabold text-xs cursor-pointer hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,217,255,0.4)]">
-                  SELECT CSV FILE
-                  <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
-                </label>
-              </div>
-
-              {/* Quick Sample Load */}
-              <div className="p-5 rounded-2xl bg-[#021630] border border-[#00D9FF]/30 flex flex-col items-center justify-center text-center gap-3">
-                <FileSpreadsheet className="w-8 h-8 text-emerald-400" />
-                <div>
-                  <h4 className="font-bold text-xs text-white uppercase">Sample Unstop Data</h4>
-                  <p className="text-[10px] text-gray-400">Test import with pre-formatted teams</p>
-                </div>
-                <button
-                  onClick={loadSampleUnstopData}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-extrabold text-xs cursor-pointer hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,217,255,0.4)]"
-                >
-                  LOAD SAMPLE CSV
-                </button>
-              </div>
-            </div>
-
-            {/* Feedback Alert Stats */}
-            {csvFeedback && (
-              <div className="p-5 rounded-2xl bg-[#04162E] border border-emerald-500/50 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-emerald-300 uppercase font-orbitron">Import Summary</span>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                  <div className="p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/30">
-                    <span className="text-[10px] text-gray-400 block">IMPORTED</span>
-                    <span className="font-bold text-emerald-300 text-sm">{csvFeedback.importedCount} Teams</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-amber-950/60 border border-amber-500/30">
-                    <span className="text-[10px] text-gray-400 block">SKIPPED (DUPLICATES)</span>
-                    <span className="font-bold text-amber-300 text-sm">{csvFeedback.skippedCount} Teams</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-red-950/60 border border-red-500/30">
-                    <span className="text-[10px] text-gray-400 block">FAILED ROWS</span>
-                    <span className="font-bold text-red-300 text-sm">{csvFeedback.failedCount} Rows</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* CSV Textarea Upload Area */}
-            <div className="p-6 rounded-3xl bg-[#04162E]/80 backdrop-blur-2xl border border-[#00D9FF]/30 space-y-4">
-              <label className="block text-xs font-bold text-[#7CE7FF] uppercase tracking-wider">
-                Or Paste Unstop CSV Text:
-              </label>
-              <textarea
-                rows={8}
-                value={csvText}
-                onChange={(e) => setCsvText(e.target.value)}
-                placeholder={`Team ID,Team Name,Leader Name,Leader Email,Leader Phone,College,Department,Member 1,Member 2,Member 3,Member 4\nINF-2026-101,AeroCoders,Anil Kumar,anil@gmail.com,+91 99000 11111,Anna University,CSE,"Anil Kumar (anil@gmail.com)","Sangeetha (sangeetha@gmail.com)",,`}
-                className="w-full p-4 rounded-2xl bg-[#020d1e] border border-[#00D9FF]/30 text-xs font-mono text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#00D9FF]"
-              />
-
-              <button
-                onClick={() => handleCSVProcess(csvText)}
-                disabled={!csvText.trim()}
-                className="px-6 py-3 rounded-xl bg-[#00D9FF] text-black font-extrabold text-xs tracking-widest uppercase cursor-pointer hover:scale-105 disabled:opacity-40 transition-all shadow-[0_0_20px_rgba(0,217,255,0.5)]"
-              >
-                PROCESS & PARSE UNSTOP CSV DATA
-              </button>
             </div>
           </div>
         )}
@@ -2528,7 +2586,9 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                     <thead className="bg-[#021024] text-[#7CE7FF] text-[10px] uppercase font-bold">
                       <tr>
                         <th className="p-3">Member Name</th>
-                        <th className="p-3">Email</th>
+                        <th className="p-3">Email & Contact</th>
+                        <th className="p-3">College & Department</th>
+                        <th className="p-3">Year / Roll No</th>
                         <th className="p-3">Role</th>
                       </tr>
                     </thead>
@@ -2536,10 +2596,21 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       {viewingTeam.members.map((m, idx) => (
                         <tr key={idx}>
                           <td className="p-3 font-semibold text-white">{m.name}</td>
-                          <td className="p-3 text-gray-300">{m.email}</td>
+                          <td className="p-3 text-gray-300">
+                            <span className="block">{m.email}</span>
+                            <span className="text-[10px] text-gray-400">{m.phone || viewingTeam.leaderPhone}</span>
+                          </td>
+                          <td className="p-3 text-gray-300">
+                            <span className="block font-medium text-gray-200">{m.college || viewingTeam.college}</span>
+                            <span className="text-[10px] text-[#7CE7FF]">{m.department || viewingTeam.department}</span>
+                          </td>
+                          <td className="p-3 text-gray-300">
+                            <span className="block text-gray-200">{m.yearOfStudy || viewingTeam.yearOfStudy || 'N/A'}</span>
+                            <span className="text-[10px] font-mono text-gray-400">{m.rollNumber || viewingTeam.rollNumber || ''}</span>
+                          </td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${m.role === 'Leader' ? 'bg-[#00D9FF]/20 text-[#00D9FF]' : 'bg-gray-800 text-gray-300'}`}>
-                              {m.role}
+                              {m.role || (idx === 0 ? 'Leader' : 'Member')}
                             </span>
                           </td>
                         </tr>
@@ -2742,6 +2813,41 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* PAYMENT SLIP PREVIEW MODAL */}
+        {viewingPaymentProofUrl && (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#04162E] border border-[#00D9FF]/40 rounded-3xl p-6 max-w-lg w-full space-y-4 text-center shadow-[0_0_50px_rgba(0,217,255,0.3)]">
+              <div className="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 className="font-orbitron text-sm font-bold text-white uppercase tracking-wider">
+                  PAYMENT SLIP / RECEIPT PROOF
+                </h3>
+                <button
+                  onClick={() => setViewingPaymentProofUrl(null)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-auto rounded-2xl border border-gray-800 bg-black p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={viewingPaymentProofUrl}
+                  alt="Payment Slip Screenshot"
+                  className="w-full object-contain rounded-xl"
+                />
+              </div>
+
+              <button
+                onClick={() => setViewingPaymentProofUrl(null)}
+                className="w-full py-3 rounded-xl bg-[#00D9FF] text-black font-extrabold text-xs uppercase font-orbitron tracking-widest hover:bg-[#7CE7FF] transition-all"
+              >
+                CLOSE PREVIEW
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

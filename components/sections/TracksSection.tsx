@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   BrainCircuit,
@@ -91,15 +92,13 @@ export default function TracksSection() {
           </h2>
         </div>
 
-        <a
-          href="https://unstop.com"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          href="/register"
           className="px-5 py-2.5 rounded-full glass-panel border border-[#00D9FF]/40 text-xs font-bold tracking-widest text-[#7CE7FF] hover:text-white hover:border-[#00D9FF] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 inline-flex items-center gap-2 self-start md:self-auto"
           data-hoverable="true"
         >
-          REGISTER ON UNSTOP
-        </a>
+          REGISTER NOW
+        </Link>
       </div>
 
       {/* Core Themes Compact Grid */}
