@@ -10,9 +10,29 @@ export interface EmailResult {
 
 export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/J77QEl8Iig7DdeaAVYmu8A?s=cl&p=a&ilr=1';
 
+function getAppBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
+  if (envUrl && envUrl.trim()) {
+    let url = envUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/+$/, '');
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://infinix26.ritrjpm.ac.in';
+}
+
 export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> {
   const teamIdClean = team.teamId.trim();
   const publicQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(teamIdClean)}`;
+  const baseUrl = getAppBaseUrl();
+  const studentLoginUrl = `${baseUrl}/student/login`;
 
   // Generate PNG Buffer for Nodemailer CID Inline Attachment (Gmail / Outlook 100% compatible)
   let qrBuffer: Buffer | null = null;
@@ -37,7 +57,7 @@ Your registration for INFINIX'26 Hackathon at Ramco Institute of Technology has 
 YOUR CREDENTIALS:
 - Team ID: ${team.teamId}
 - Student Portal Password: ${team.password || 'hackathon2026'}
-- Student Portal URL: https://infinix26.ritrjpm.ac.in/student/login
+- Student Portal URL: ${studentLoginUrl}
 
 IMPORTANT — JOIN OFFICIAL WHATSAPP COMMUNITY:
 Please join our official INFINIX'26 WhatsApp Community for instant announcements, schedule updates & participant coordination:
@@ -180,7 +200,7 @@ Ramco Institute of Technology
 
               <!-- Student Portal CTA Button -->
               <div style="text-align: center; margin: 28px 0 16px 0;">
-                <a href="https://infinix26.ritrjpm.ac.in/student/login" style="background: linear-gradient(90deg, #00D9FF 0%, #38bdf8 100%); color: #040914; font-weight: 900; font-size: 13px; text-decoration: none; padding: 14px 32px; border-radius: 30px; display: inline-block; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 0 25px rgba(0, 217, 255, 0.4);">
+                <a href="${studentLoginUrl}" style="background: linear-gradient(90deg, #00D9FF 0%, #38bdf8 100%); color: #040914; font-weight: 900; font-size: 13px; text-decoration: none; padding: 14px 32px; border-radius: 30px; display: inline-block; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 0 25px rgba(0, 217, 255, 0.4);">
                   LOG IN TO STUDENT PORTAL
                 </a>
               </div>
@@ -304,6 +324,9 @@ export async function sendAdminNotificationEmail(newTeam: any): Promise<EmailRes
   const smtpUser = (process.env.SMTP_USER && !process.env.SMTP_USER.includes('infinix.itrit26') ? process.env.SMTP_USER : 'admininfinixrit@gmail.com').trim();
   const smtpPass = (process.env.SMTP_PASS && process.env.SMTP_PASS.includes(' ') ? process.env.SMTP_PASS : 'ztqn kbcj utfu udbr').trim();
 
+  const baseUrl = getAppBaseUrl();
+  const adminDashboardUrl = `${baseUrl}/admin/dashboard`;
+
   const members: any[] = newTeam.members || [];
   const membersText = members.map((m, i) => `  - Member ${i + 2}: ${m.name} (${m.email || 'No email'}) | Phone: ${m.phone || 'N/A'}`).join('\n');
 
@@ -334,7 +357,7 @@ ${membersText || '  (No additional members specified)'}
 LOGISTICS:
 - Accommodation Requested: ${newTeam.accommodation_required ? 'YES' : 'NO'}
 
-Direct Dashboard Link: https://infinix26.ritrjpm.ac.in/admin/dashboard
+Direct Dashboard Link: ${adminDashboardUrl}
 `.trim();
 
   const htmlContent = `
@@ -360,7 +383,7 @@ Direct Dashboard Link: https://infinix26.ritrjpm.ac.in/admin/dashboard
           </table>
 
           <div style="text-align: center; margin-top: 24px;">
-            <a href="https://infinix26.ritrjpm.ac.in/admin/dashboard" style="background: #00D9FF; color: #040914; font-weight: bold; text-decoration: none; padding: 12px 28px; border-radius: 20px; display: inline-block;">
+            <a href="${adminDashboardUrl}" style="background: #00D9FF; color: #040914; font-weight: bold; text-decoration: none; padding: 12px 28px; border-radius: 20px; display: inline-block;">
               OPEN ADMIN DASHBOARD
             </a>
           </div>
