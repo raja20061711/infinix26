@@ -142,12 +142,19 @@ export default function Footer() {
 
           <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF] shadow-[0_0_8px_#00D9FF] opacity-80 hidden lg:inline-block shrink-0" />
 
-          {/* Sudharshan S (No LinkedIn) */}
-          <span className="group relative inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white transition-all duration-300 hover:text-[#00D9FF] hover:brightness-125 cursor-default filter hover:drop-shadow-[0_0_8px_rgba(0,217,255,0.8)]">
+          {/* Sudharshan S M */}
+          <a
+            href="https://www.linkedin.com/in/sudharshan-s-m-75b684314?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+            target="_blank"
+            rel="noreferrer"
+            className="group relative inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white transition-all duration-300 hover:text-[#00D9FF] hover:brightness-125 cursor-pointer filter hover:drop-shadow-[0_0_8px_rgba(0,217,255,0.8)]"
+            data-hoverable="true"
+          >
             <span className="relative py-0.5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#00D9FF] after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">
-              Sudharshan S
+              Sudharshan S M
             </span>
-          </span>
+            <FaLinkedinIn className="w-3 h-3 text-[#00D9FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_0_6px_#00D9FF] shrink-0" />
+          </a>
 
           <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF] shadow-[0_0_8px_#00D9FF] opacity-80 hidden lg:inline-block shrink-0" />
 

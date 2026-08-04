@@ -40,7 +40,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['who built', 'who created', 'developer', 'developers', 'built', 'creator', 'made by', 'behind the experience', 'maharaja', 'sudharshan', 'adshayaa', 'abinaya', 'designer', 'designers', 'web team'],
     response:
-      "Behind the Experience / Website Developers:\n\nThe INFINIX'26 website was conceptualized and developed by:\n\n💻 Web Development Team:\n• Maharaja T\n• Adshayaa V\n• Sudharshan S\n• Abinaya N\n\n🎓 III Year B.Tech Information Technology,\nDepartment of Information Technology,\nRamco Institute of Technology.",
+      "Behind the Experience / Website Developers:\n\nThe INFINIX'26 website was conceptualized and developed by:\n\n💻 Web Development Team:\n• Maharaja T\n• Adshayaa V\n• Sudharshan S M\n• Abinaya N\n\n🎓 III Year B.Tech Information Technology,\nDepartment of Information Technology,\nRamco Institute of Technology.",
   },
   {
     keywords: ['what is', 'about', 'infinix', 'event', 'summary', 'overview', 'details', '32 hour', '32 hours', 'non-stop', 'hackathon'],
@@ -90,7 +90,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['yaar', 'yenna', 'epdi', 'yendha', 'eppa', 'yenga', 'yar', 'enna', 'engu', 'eppo', 'sollo', 'solu'],
     response:
-      "Moana AI - Quick Overview:\n\nINFINIX'26 is a 32-Hours National Level Offline Hackathon hosted by RIT IT Department on September 10-11, 2026.\n\n• Total Prize Pool: ₹30,000 (₹15k 1st, ₹10k 2nd, ₹5k 3rd)\n• Registration: ₹250 (Internal) / ₹350 (External) directly on website (/register)!\n• 7 Themes: AI/ML, Cybersecurity, MedTech, Cloud/DevOps, FinTech, Open Innovation, Energy Innovation.\n• Student Coordinators: Saravanakumar V (+91 63748 47027) & Suresh R (+91 63748 95822)\n• Developers: Maharaja T, Adshayaa V, Sudharshan S, Abinaya N\n\nAsk me any specific question about themes, prizes, developers, timeline, or venue!",
+      "Moana AI - Quick Overview:\n\nINFINIX'26 is a 32-Hours National Level Offline Hackathon hosted by RIT IT Department on September 10-11, 2026.\n\n• Total Prize Pool: ₹30,000 (₹15k 1st, ₹10k 2nd, ₹5k 3rd)\n• Registration: ₹250 (Internal) / ₹350 (External) directly on website (/register)!\n• 7 Themes: AI/ML, Cybersecurity, MedTech, Cloud/DevOps, FinTech, Open Innovation, Energy Innovation.\n• Student Coordinators: Saravanakumar V (+91 63748 47027) & Suresh R (+91 63748 95822)\n• Developers: Maharaja T, Adshayaa V, Sudharshan S M, Abinaya N\n\nAsk me any specific question about themes, prizes, developers, timeline, or venue!",
   },
 ];
 
