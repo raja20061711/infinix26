@@ -11,6 +11,61 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Upload Base64 Payment Slip Image to Supabase Storage Bucket ('payment-proofs')
+ * Converts long base64 string into a clean, compact public HTTP image URL.
+ */
+export async function uploadPaymentSlipToSupabase(
+  base64Data: string,
+  teamId: string
+): Promise<string> {
+  if (!base64Data || typeof base64Data !== 'string' || !base64Data.startsWith('data:')) {
+    return base64Data || '';
+  }
+
+  try {
+    const matches = base64Data.match(/^data:(image\/[a-zA-Z0-9+\-]+);base64,(.+)$/);
+    if (!matches || matches.length < 3) {
+      return base64Data;
+    }
+
+    const contentType = matches[1];
+    const rawBase64 = matches[2];
+    const extension = contentType.split('/')[1] || 'png';
+    const filePath = `payment_slips/${teamId}_${Date.now()}.${extension}`;
+
+    // Convert base64 to Buffer / Uint8Array
+    const buffer = Buffer.from(rawBase64, 'base64');
+
+    // Attempt upload to 'payment-proofs' storage bucket
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .upload(filePath, buffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (error) {
+      console.warn('[Supabase Storage Warning]:', error.message);
+      // Fallback: Check if public URL can be constructed
+      const { data: pubData } = supabase.storage
+        .from('payment-proofs')
+        .getPublicUrl(filePath);
+      return pubData?.publicUrl || base64Data;
+    }
+
+    const { data: pubData } = supabase.storage
+      .from('payment-proofs')
+      .getPublicUrl(data.path);
+
+    console.log(`✅ Payment Slip uploaded to Supabase Storage: ${pubData.publicUrl}`);
+    return pubData.publicUrl;
+  } catch (err: any) {
+    console.error('Failed to upload payment slip to Supabase Storage:', err);
+    return base64Data;
+  }
+}
+
 // Helper: Fetch all Registrations from Supabase PostgreSQL
 export async function fetchRegistrationsFromSupabase() {
   try {

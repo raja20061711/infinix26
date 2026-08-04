@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { upsertRegistrationToSupabase } from '@/lib/supabaseClient';
+import { upsertRegistrationToSupabase, uploadPaymentSlipToSupabase } from '@/lib/supabaseClient';
 import { sendStudentWelcomeEmail, sendAdminNotificationEmail } from '@/lib/emailService';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
 
@@ -55,6 +55,12 @@ export async function POST(req: NextRequest) {
     const teamId = `INF26-${randomDigits}`;
     const password = `inf26-${Math.random().toString(36).substring(2, 7)}`;
 
+    // Upload base64 payment slip image to Supabase Storage bucket to get short public HTTP URL
+    let finalPaymentProofUrl = paymentProofUrl || null;
+    if (paymentProofUrl && typeof paymentProofUrl === 'string' && paymentProofUrl.startsWith('data:')) {
+      finalPaymentProofUrl = await uploadPaymentSlipToSupabase(paymentProofUrl, teamId);
+    }
+
     const newTeam = {
       team_id: teamId,
       team_name: teamName.trim(),
@@ -71,7 +77,7 @@ export async function POST(req: NextRequest) {
       members: members || [],
       accommodation_required: Boolean(accommodationRequired),
       upi_transaction_id: upiTransactionId.trim(),
-      payment_proof_url: paymentProofUrl || null,
+      payment_proof_url: finalPaymentProofUrl,
       payment_amount: calculatedPaymentAmount,
       payment_status: 'Pending Verification',
       attendance_status: 'Not Checked In',
