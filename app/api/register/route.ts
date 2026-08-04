@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       attendance_status: 'Not Checked In',
       password_hash: password,
       registration_status: 'Pending Payment Verification',
-      email_status: 'Sent',
+      email_status: 'Not Sent',
     };
 
     // Save to Supabase PostgreSQL DB
@@ -86,30 +86,7 @@ export async function POST(req: NextRequest) {
     // Automatic Live Mirror Sync to Google Sheets (Non-blocking backup)
     await syncToGoogleSheets(newTeam, 'create');
 
-    // Send instant registration welcome email with Team ID & Password to Team Leader
-    let emailSent = false;
-    try {
-      const emailPayload = {
-        teamId: newTeam.team_id,
-        teamName: newTeam.team_name,
-        leaderName: newTeam.leader_name,
-        leaderEmail: newTeam.leader_email,
-        leaderPhone: newTeam.leader_phone,
-        college: newTeam.college,
-        department: newTeam.department,
-        members: newTeam.members,
-        password: password,
-        registrationStatus: 'Pending Payment Verification' as const,
-        attendanceStatus: 'Not Checked In' as const,
-        emailStatus: 'Sent' as const,
-      };
-      const emailResult = await sendStudentWelcomeEmail(emailPayload);
-      emailSent = emailResult.success;
-    } catch (emailErr) {
-      console.error('Registration email error:', emailErr);
-    }
-
-    // Send Admin notification email
+    // Send Admin notification email immediately so Admin can verify payment
     try {
       await sendAdminNotificationEmail(newTeam);
     } catch (adminEmailErr) {
@@ -121,8 +98,8 @@ export async function POST(req: NextRequest) {
       teamId,
       password,
       team: newTeam,
-      emailSent,
-      message: 'Registration submitted! Team ID & Password sent to your email address.',
+      emailSent: false,
+      message: 'Registration submitted! Credentials & Pass will be emailed to you after Admin verifies payment.',
       supabaseResult,
     });
   } catch (error: any) {

@@ -306,15 +306,15 @@ export default function DirectRegistrationPage() {
                 </div>
               </div>
 
-              <div className="text-xs text-emerald-300 mb-6 max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl space-y-2 text-left">
-                <p className="font-bold flex items-center gap-1.5 text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  Email Sent to Team Leader!
+              <div className="text-xs text-amber-300 mb-6 max-w-md mx-auto bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl space-y-2 text-left">
+                <p className="font-bold flex items-center gap-1.5 text-amber-400">
+                  <Clock className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  Registration Received — Pending Admin Verification!
                 </p>
                 <p className="text-gray-300">
-                  📩 An official email containing your <strong>Team ID ({registeredData.teamId})</strong>, <strong>Portal Password ({registeredData.password})</strong>, and Check-in QR Pass has been sent to <strong>{leaderEmail}</strong>.<br /><br />
-                  1. Admin will verify your <strong>UPI Transaction ID & Payment Slip</strong>.<br />
-                  2. Use your Team ID and Password to log in to the Student Portal!
+                  📋 Your registration has been submitted to the organizers.<br /><br />
+                  1. Admin will verify your <strong>UPI UTR Number & Payment Slip</strong>.<br />
+                  2. Once Admin approves your payment, an official confirmation email containing your <strong>Team ID ({registeredData.teamId})</strong>, <strong>Portal Password ({registeredData.password})</strong>, and Check-in Pass will be sent to <strong>{leaderEmail}</strong>!
                 </p>
               </div>
 
