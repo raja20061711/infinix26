@@ -17,7 +17,9 @@ function getAppBaseUrl(): string {
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = `https://${url}`;
     }
-    return url.replace(/\/+$/, '');
+    if (!url.includes('your-actual') && !url.includes('example.com') && !url.includes('your-domain')) {
+      return url.replace(/\/+$/, '');
+    }
   }
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
@@ -25,7 +27,7 @@ function getAppBaseUrl(): string {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'https://infinix26.ritrjpm.ac.in';
+  return 'https://ritinfinix.vercel.app';
 }
 
 export async function sendStudentWelcomeEmail(team: Team): Promise<EmailResult> {
