@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,6 +21,7 @@ import {
   Check,
   MessageCircle,
   Copy,
+  Lock,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -37,6 +38,21 @@ interface TeamMember {
 }
 
 export default function RegisterPage() {
+  const [isRegOpen, setIsRegOpen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/registration-status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.isOpen === 'boolean') {
+          setIsRegOpen(data.isOpen);
+        } else {
+          setIsRegOpen(true);
+        }
+      })
+      .catch(() => setIsRegOpen(true));
+  }, []);
+
   const [step, setStep] = useState<1 | 2>(1);
 
   // Step 1: Team & Leader Info
@@ -210,6 +226,48 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (isRegOpen === false) {
+    return (
+      <main className="relative min-h-screen bg-[#01040d] text-white pt-24 pb-16 flex flex-col justify-between selection:bg-[#00D9FF] selection:text-black">
+        <Navbar />
+
+        <div className="max-w-4xl mx-auto px-6 text-center my-auto flex flex-col items-center justify-center py-16 z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-24 h-24 rounded-3xl bg-red-500/10 border-2 border-red-500/50 flex items-center justify-center text-red-400 mb-8 shadow-[0_0_40px_rgba(239,68,68,0.35)] animate-pulse">
+              <Lock className="w-12 h-12 text-red-400" />
+            </div>
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-bold font-orbitron tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+              <ShieldAlert className="w-4 h-4" />
+              <span>REGISTRATIONS PAUSED</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl font-black font-orbitron text-white uppercase tracking-tight max-w-3xl mb-4 leading-tight">
+              THERE IS NO LONGER ACCEPTING <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-rose-400 to-red-500">REGISTRATIONS</span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-gray-400 max-w-xl mb-10 leading-relaxed font-sans">
+              Team registrations for INFINIX&apos;26 National Level Hackathon are currently paused / closed. Thank you for your overwhelming interest!
+            </p>
+
+            <Link
+              href="/"
+              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#00D9FF] to-[#7CE7FF] text-black font-orbitron font-extrabold text-xs tracking-widest uppercase shadow-[0_0_20px_rgba(0,217,255,0.4)] hover:shadow-[0_0_30px_rgba(0,217,255,0.7)] transition-all transform hover:-translate-y-0.5"
+            >
+              RETURN TO HOMEPAGE
+            </Link>
+          </motion.div>
+        </div>
+
+        <Footer />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#060b13] text-white selection:bg-[#00D9FF]/30 selection:text-[#7CE7FF]">

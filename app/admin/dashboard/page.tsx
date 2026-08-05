@@ -187,6 +187,43 @@ export default function AdminDashboardPage() {
     setTimeout(() => setToastMessage(null), 6000);
   };
 
+  // REGISTRATION PAUSE / STOP CONTROL STATE
+  const [isRegistrationOpenState, setIsRegistrationOpenState] = useState<boolean>(true);
+  const [isTogglingRegistration, setIsTogglingRegistration] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetch('/api/admin/registration-status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.isOpen === 'boolean') {
+          setIsRegistrationOpenState(data.isOpen);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleToggleRegistration = async (newStatus: boolean) => {
+    setIsTogglingRegistration(true);
+    try {
+      const res = await fetch('/api/admin/registration-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOpen: newStatus }),
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        setIsRegistrationOpenState(data.isOpen);
+        showToast(data.message, 'success');
+      } else {
+        showToast(data?.error || 'Failed to update registration status', 'error');
+      }
+    } catch (e: any) {
+      showToast(e.message || 'Error updating registration status', 'error');
+    } finally {
+      setIsTogglingRegistration(false);
+    }
+  };
+
   const [viewingTeam, setViewingTeam] = useState<Team | null>(null);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
@@ -1008,6 +1045,61 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
               <p className="text-xs text-gray-400 mt-1">
                 RAMCO INSTITUTE OF TECHNOLOGY • INFINIX&apos;26 HACKATHON MANAGEMENT
               </p>
+            </div>
+
+            {/* REGISTRATION PAUSE / STOP CONTROL CARD */}
+            <div className={`p-6 sm:p-8 rounded-3xl border-2 backdrop-blur-2xl transition-all shadow-2xl ${
+              isRegistrationOpenState
+                ? 'bg-gradient-to-r from-[#031d1a]/90 via-[#042823]/95 to-[#021512]/90 border-emerald-500/60 shadow-[0_0_35px_rgba(16,185,129,0.2)]'
+                : 'bg-gradient-to-r from-[#2a040b]/90 via-[#3a0610]/95 to-[#1c0206]/90 border-red-500/60 shadow-[0_0_35px_rgba(239,68,68,0.2)]'
+            }`}>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-lg ${
+                    isRegistrationOpenState
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : 'bg-red-500/20 border-red-400 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+                  }`}>
+                    {isRegistrationOpenState ? <CheckCircle2 className="w-8 h-8" /> : <Lock className="w-8 h-8" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-bold font-orbitron tracking-[0.2em] uppercase px-2.5 py-0.5 rounded-full border ${
+                        isRegistrationOpenState
+                          ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                          : 'bg-red-500/20 border-red-400/40 text-red-300'
+                      }`}>
+                        {isRegistrationOpenState ? '🟢 REGISTRATIONS ACTIVE & OPEN' : '🔴 REGISTRATIONS PAUSED / STOPPED'}
+                      </span>
+                    </div>
+                    <h3 className="font-orbitron font-black text-xl text-white tracking-wide uppercase">
+                      TEAM REGISTRATION PORTAL CONTROL
+                    </h3>
+                    <p className="text-xs text-gray-300 mt-1 max-w-xl">
+                      {isRegistrationOpenState
+                        ? 'Form is active. Students can submit team registrations on /register.'
+                        : 'Registration form is locked. Anyone visiting /register or submitting requests sees "There is no longer accepting registrations".'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleToggleRegistration(!isRegistrationOpenState)}
+                  disabled={isTogglingRegistration}
+                  className={`px-6 py-3.5 rounded-2xl font-orbitron font-black text-xs tracking-wider uppercase transition-all shadow-xl flex items-center gap-2.5 cursor-pointer self-stretch md:self-auto justify-center ${
+                    isRegistrationOpenState
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white border border-red-400 hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] hover:scale-[1.02]'
+                      : 'bg-gradient-to-r from-emerald-400 to-teal-500 text-black border border-emerald-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:scale-[1.02]'
+                  }`}
+                >
+                  {isRegistrationOpenState ? <Lock className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                  {isTogglingRegistration
+                    ? 'UPDATING STATUS...'
+                    : isRegistrationOpenState
+                    ? 'PAUSE / STOP REGISTRATIONS'
+                    : 'ACTIVATE & RESUME REGISTRATIONS'}
+                </button>
+              </div>
             </div>
 
             {/* MASTER GO LIVE SWITCH HERO CARD */}

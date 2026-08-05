@@ -2,11 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { upsertRegistrationToSupabase, uploadPaymentSlipToSupabase } from '@/lib/supabaseClient';
 import { sendAdminNotificationEmail } from '@/lib/emailService';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
+import { isRegistrationOpen } from '@/lib/registrationSettings';
 
 export const maxDuration = 60; // Allow up to 60 seconds for Vercel Serverless Function execution
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if registrations are currently open
+    const isOpen = await isRegistrationOpen();
+    if (!isOpen) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "There is no longer accepting registrations. Thank you for your interest in INFINIX'26!",
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const {
       teamName,
