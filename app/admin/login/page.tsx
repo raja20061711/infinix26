@@ -9,23 +9,10 @@ import OceanPortalBackground from '@/components/portal/OceanPortalBackground';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@infinix.ritrjpm.ac.in');
-  const [password, setPassword] = useState('admin2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  React.useEffect(() => {
-    try {
-      const savedCreds = localStorage.getItem('admin_credentials');
-      if (savedCreds) {
-        const parsed = JSON.parse(savedCreds);
-        if (parsed.email) setEmail(parsed.email);
-        if (parsed.password) setPassword(parsed.password);
-      }
-    } catch (e) {
-      console.error('Error reading admin_credentials:', e);
-    }
-  }, []);
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +26,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     setTimeout(() => {
-      let validEmail = 'admin@infinix.ritrjpm.ac.in';
+      let validEmails = ['admininfinixrit@gmail.com', 'admin@infinix.ritrjpm.ac.in'];
       let validPassword = 'admin2026';
       let hasCustomCreds = false;
 
@@ -48,7 +35,7 @@ export default function AdminLoginPage() {
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
           if (parsed.email) {
-            validEmail = parsed.email;
+            validEmails.push(parsed.email.toLowerCase());
             hasCustomCreds = true;
           }
           if (parsed.password) {
@@ -56,16 +43,17 @@ export default function AdminLoginPage() {
             hasCustomCreds = true;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const inputEmail = email.trim().toLowerCase();
       const inputPass = password.trim();
 
       // Session validation logic
-      if (inputEmail === validEmail.toLowerCase() && inputPass === validPassword) {
+      const isEmailValid = validEmails.includes(inputEmail);
+      if (isEmailValid && inputPass === validPassword) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
-      } else if (!hasCustomCreds && (inputEmail.includes('admin') || inputPass.length >= 4)) {
+      } else if (!hasCustomCreds && (inputEmail.includes('admin') || inputEmail === 'admininfinixrit@gmail.com') && inputPass.length >= 4) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {

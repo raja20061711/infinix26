@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
   const [passwordError, setPasswordError] = useState('');
 
   // ADMIN CREDENTIALS MANAGEMENT STATE
-  const [adminEmail, setAdminEmail] = useState('admin@infinix.ritrjpm.ac.in');
+  const [adminEmail, setAdminEmail] = useState('admininfinixrit@gmail.com');
   const [adminPassword, setAdminPassword] = useState('admin2026');
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
@@ -269,7 +269,7 @@ export default function AdminDashboardPage() {
           setAdminPassword(parsed.password);
         }
       } else {
-        setNewAdminEmail('admin@infinix.ritrjpm.ac.in');
+        setNewAdminEmail('admininfinixrit@gmail.com');
       }
     } catch (e) {
       console.error('Failed to load admin credentials:', e);
