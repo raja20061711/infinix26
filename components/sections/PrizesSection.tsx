@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ArrowRight, Award, Gift, Briefcase, Sparkles, ShieldCheck, Users } from 'lucide-react';
+import { Crown, ArrowRight, Award, Gift, Briefcase, Sparkles, ShieldCheck, Users, Medal } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
 
 export default function PrizesSection() {
@@ -37,7 +37,7 @@ export default function PrizesSection() {
 
       {/* 3 Podium Cards Layout with 3D Tilt */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end max-w-5xl mx-auto mb-16">
-        {/* 1st Prize Elevated Podium Card (Order 1 on mobile, Order 2 / Center on desktop) */}
+        {/* 1st Prize Elevated Card (Order 1 on mobile, Order 2 / Center on desktop) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -58,9 +58,9 @@ export default function PrizesSection() {
                 1
               </div>
 
-              {/* 3D Glowing Trophy Graphic */}
+              {/* 3D Glowing Crown Graphic */}
               <div className="relative my-2 flex items-center justify-center">
-                <Trophy className="w-20 h-20 text-[#FFD700] drop-shadow-[0_0_30px_rgba(255,215,0,0.95)] animate-float-slow" />
+                <Crown className="w-20 h-20 text-[#FFD700] drop-shadow-[0_0_30px_rgba(255,215,0,0.95)] animate-float-slow" />
                 <div className="absolute inset-0 bg-[#FFD700]/25 blur-2xl rounded-full pointer-events-none" />
               </div>
 
@@ -80,13 +80,13 @@ export default function PrizesSection() {
                 </span>
                 <span className="px-3 py-1 rounded-full bg-[#FFD700]/15 border border-[#FFD700]/30 text-[#FFD700] text-[10px] font-bold font-orbitron flex items-center justify-center gap-1.5 w-full">
                   <Award className="w-3.5 h-3.5" />
-                  Trophy + Winner Certificate + Swag
+                  Winner Certificate + Swag Kit
                 </span>
               </div>
 
-              {/* Golden Glass Base Pedestal */}
+              {/* Golden Base Pedestal */}
               <div className="mt-6 w-full py-2 rounded-full bg-gradient-to-r from-[#FFD700]/10 via-[#FFD700]/20 to-[#FFD700]/10 border border-[#FFD700]/40 text-[10px] font-extrabold font-orbitron tracking-[0.2em] text-[#FFD700] uppercase">
-                👑 GRAND CHAMPION PEDESTAL
+                👑 GRAND CHAMPION WINNER
               </div>
             </div>
           </TiltCard>
@@ -122,7 +122,7 @@ export default function PrizesSection() {
                 </span>
                 <span className="px-3 py-1 rounded-full bg-[#00D9FF]/15 border border-[#00D9FF]/30 text-[#7CE7FF] text-[10px] font-semibold font-orbitron flex items-center justify-center gap-1.5 w-full">
                   <Gift className="w-3.5 h-3.5" />
-                  Trophy + Winner Certificate + Swag
+                  Winner Certificate + Swag Kit
                 </span>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function PrizesSection() {
                 </span>
                 <span className="px-3 py-1 rounded-full bg-[#00D9FF]/15 border border-[#00D9FF]/30 text-[#7CE7FF] text-[10px] font-semibold font-orbitron flex items-center justify-center gap-1.5 w-full">
                   <Gift className="w-3.5 h-3.5" />
-                  Trophy + Winner Certificate + Swag
+                  Winner Certificate + Swag Kit
                 </span>
               </div>
             </div>

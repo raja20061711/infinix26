@@ -60,7 +60,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['prize', 'prizes', 'reward', 'rewards', 'money', 'cash', 'win', 'amount', 'first', 'second', 'third', '1st', '2nd', '3rd', 'pool', '40k', '40000', 'internship', 'certificate', 'goodies', 'swag'],
     response:
-      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹40,000 Worth Rewards):\n\n🏆 1st Place: ₹20,000 Cash Prize + Internship Opportunity + Trophy & Goodies\n🥈 2nd Place: ₹15,000 Cash Prize + Trophy & Goodies\n🥉 3rd Place: ₹5,000 Cash Prize + Trophy & Goodies\n\n✨ Perks for All Verified Participants:\n• Official Certificates of Participation\n• Swag Kits & Event Goodies\n• Direct Mentorship from Experts",
+      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹40,000 Worth Rewards):\n\n🥇 1st Place: ₹20,000 Cash Prize + Internship Opportunity + Winner Certificate & Swag Kit\n🥈 2nd Place: ₹15,000 Cash Prize + Internship Opportunity + Winner Certificate & Swag Kit\n🥉 3rd Place: ₹5,000 Cash Prize + Internship Opportunity + Winner Certificate & Swag Kit\n\n✨ Perks for All Verified Participants:\n• Official Hardcopy / Digital Certificates of Participation\n• Swag Kits & Event Goodies\n• Direct Mentorship from Industry Experts",
   },
   {
     keywords: ['register', 'registration', 'apply', 'join', 'fee', 'fees', 'cost', 'free', 'team size', 'members', 'eligibility', 'deadline'],

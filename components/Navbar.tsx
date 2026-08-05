@@ -9,8 +9,8 @@ import { getPortalState, Announcement } from '@/lib/portalState';
 const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-default-1',
-    title: "🚀 Registrations Now Open!",
-    message: "Direct Registration: ₹250 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
+    title: "🚀 Official Registrations Open!",
+    message: "Registration Fee: ₹200 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
     category: 'Urgent',
     timestamp: 'Just Now',
     isPublished: true,
