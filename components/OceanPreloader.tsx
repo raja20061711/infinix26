@@ -348,8 +348,8 @@ export default function OceanPreloader({ onLoadingComplete }: OceanPreloaderProp
         progressObj.current,
         {
           value: 100,
-          duration: 4.8,
-          ease: 'power1.inOut',
+          duration: 2.2,
+          ease: 'power2.out',
           onUpdate: () => {
             setProgress(Math.round(progressObj.current.value));
           },
@@ -366,6 +366,14 @@ export default function OceanPreloader({ onLoadingComplete }: OceanPreloaderProp
       ref={containerRef}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-between py-8 px-6 bg-[#00030d] text-white select-none overflow-hidden"
     >
+      {/* Top Right Skip Intro Button */}
+      <button
+        onClick={onLoadingComplete}
+        className="absolute top-4 right-4 z-50 px-3.5 py-1.5 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 text-[#00D9FF] hover:text-white hover:border-[#00D9FF] hover:shadow-[0_0_25px_rgba(0,217,255,0.8)] text-[10px] font-orbitron font-extrabold tracking-widest uppercase transition-all duration-300 backdrop-blur-md shadow-[0_0_15px_rgba(0,217,255,0.3)] cursor-pointer"
+      >
+        SKIP INTRO ➔
+      </button>
+
       {/* Dynamic Caustic Water Texture Background Layer */}
       <div className="absolute inset-0 z-0 opacity-25 mix-blend-screen pointer-events-none overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
