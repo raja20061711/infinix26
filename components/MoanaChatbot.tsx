@@ -55,7 +55,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['date', 'dates', 'when', 'time', 'schedule', 'timeline', 'september', 'start', 'end', 'reveal', 'problem', 'check-in', 'pitching', 'valedictory', 'results'],
     response:
-      "Official Event Timeline & Schedule:\n\n📅 Registration Milestones:\n• Aug 01, 2026: Direct Registrations Open on Official Website\n• Aug 25, 2026: Registration Deadline & Team Confirmation\n\n🕒 Day 1 (10 Sep 2026):\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n🕒 Day 2 (11 Sep 2026):\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 04:00 PM: Results Announcement & Valedictory",
+      "Official Event Timeline & Schedule:\n\n📅 Registration Milestones:\n• Aug 06, 2026: Official Registrations Open on Website\n• Sep 05, 2026: Registration Deadline\n\n🕒 Day 1 (10 Sep 2026):\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n🕒 Day 2 (11 Sep 2026):\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 04:00 PM: Results Announcement & Valedictory",
   },
   {
     keywords: ['theme', 'themes', 'track', 'tracks', 'domain', 'domains', 'category', 'categories', 'challenge', 'ai', 'ml', 'cyber', 'health', 'medtech', 'cloud', 'devops', 'fintech', 'open innovation', 'energy', 'smart grid'],
@@ -70,7 +70,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['register', 'registration', 'apply', 'join', 'fee', 'fees', 'cost', 'free', 'team size', 'members', 'eligibility', 'deadline'],
     response:
-      "Registration Details:\n\n• Fee Structure:\n  - Internal Students (Ramco Institute of Technology): ₹200\n  - External College Students: ₹350\n• Registration Platform: Directly on our official website (/register)\n• Team Size: 3 to 5 Members per team\n• Eligibility: Open to all UG & PG college students\n• Registration Deadline: August 25, 2026",
+      "Registration Details:\n\n• Fee Structure:\n  - Internal Students (Ramco Institute of Technology): ₹200\n  - External College Students: ₹350\n• Registration Platform: Directly on our official website (/register)\n• Team Size: 3 to 5 Members per team\n• Eligibility: Open to all UG & PG college students\n• Registration Deadline: September 05, 2026",
   },
   {
     keywords: ['hardware', 'sensor', 'sensors', 'iot', 'board', 'boards', 'arduino', 'raspberry', 'microcontroller', 'rules', 'kit'],

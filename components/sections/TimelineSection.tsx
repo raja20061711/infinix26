@@ -15,12 +15,12 @@ import {
 const milestones = [
   {
     title: 'Registrations Open',
-    date: '01 Aug 2026',
+    date: '06 Aug 2026',
     icon: Calendar,
   },
   {
-    title: 'Team Confirmation',
-    date: '25 Aug 2026',
+    title: 'Registration Deadline',
+    date: '05 Sep 2026',
     icon: CheckCircle2,
   },
   {
