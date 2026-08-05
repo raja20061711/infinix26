@@ -48,12 +48,24 @@ export default function AdminLoginPage() {
       const inputEmail = email.trim().toLowerCase();
       const inputPass = password.trim();
 
-      // Session validation logic
-      const isEmailValid = validEmails.includes(inputEmail);
-      if (isEmailValid && inputPass === validPassword) {
-        localStorage.setItem('admin_session_auth', 'true');
-        router.push('/admin/dashboard');
-      } else if (!hasCustomCreds && (inputEmail.includes('admin') || inputEmail === 'admininfinixrit@gmail.com') && inputPass.length >= 4) {
+      let allowedEmails = ['admininfinixrit@gmail.com', 'admin@infinix.ritrjpm.ac.in'];
+      let allowedPassword = 'admin2026';
+
+      try {
+        const savedCreds = localStorage.getItem('admin_credentials');
+        if (savedCreds) {
+          const parsed = JSON.parse(savedCreds);
+          if (parsed.email) {
+            allowedEmails = [parsed.email.trim().toLowerCase(), 'admininfinixrit@gmail.com'];
+          }
+          if (parsed.password) {
+            allowedPassword = parsed.password.trim();
+          }
+        }
+      } catch (e) {}
+
+      // Strict Exact Credentials Validation - Reject all unauthorized emails/passwords
+      if (allowedEmails.includes(inputEmail) && inputPass === allowedPassword) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
@@ -109,7 +121,7 @@ export default function AdminLoginPage() {
         )}
 
         {/* Form Fields */}
-        <form onSubmit={handleAdminLogin} className="space-y-5">
+        <form onSubmit={handleAdminLogin} autoComplete="off" className="space-y-5">
           <div>
             <label className="block text-[11px] font-bold tracking-widest text-[#7CE7FF] uppercase mb-2">
               Admin Email
@@ -118,6 +130,8 @@ export default function AdminLoginPage() {
               <Mail className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
+                name="admin_email_field"
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder=""
@@ -134,6 +148,8 @@ export default function AdminLoginPage() {
               <Lock className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
+                name="admin_password_field"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
