@@ -323,6 +323,43 @@ export default function CommitteeSection() {
             </div>
           </div>
         </motion.div>
+
+        {/* SUPPORTING STAFF */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-col gap-6"
+        >
+          <div className="flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
+              <Users className="w-4 h-4 text-[#00D9FF]" />
+              <span>SUPPORTING STAFF</span>
+            </div>
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto w-full">
+            <div className="group rounded-2xl bg-[#030d1d]/70 border border-white/10 p-6 text-center shadow-[0_0_12px_rgba(0,217,255,0.08)] hover:border-[#00D9FF]/50 hover:shadow-[0_0_20px_rgba(0,217,255,0.2)] hover:-translate-y-1 transition-all duration-300 backdrop-blur-xl">
+              <h4 className="text-lg sm:text-xl font-bold font-orbitron text-white tracking-wide mb-1 group-hover:text-[#00D9FF] transition-colors">
+                Mrs. V. Rajalakshmi
+              </h4>
+              <p className="text-xs font-semibold text-[#00D9FF] uppercase tracking-wider">
+                Junior Assistant
+              </p>
+            </div>
+
+            <div className="group rounded-2xl bg-[#030d1d]/70 border border-white/10 p-6 text-center shadow-[0_0_12px_rgba(0,217,255,0.08)] hover:border-[#00D9FF]/50 hover:shadow-[0_0_20px_rgba(0,217,255,0.2)] hover:-translate-y-1 transition-all duration-300 backdrop-blur-xl">
+              <h4 className="text-lg sm:text-xl font-bold font-orbitron text-white tracking-wide mb-1 group-hover:text-[#00D9FF] transition-colors">
+                Mrs. S. Rajeswari
+              </h4>
+              <p className="text-xs font-semibold text-[#00D9FF] uppercase tracking-wider">
+                Office Assistant
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
