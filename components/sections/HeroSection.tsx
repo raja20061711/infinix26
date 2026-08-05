@@ -205,9 +205,9 @@ export default function HeroSection() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/iei-logo.png"
+            src="/chapter-logo.png"
             alt="IE(I)-IT Student Chapter Official Logo"
-            className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+            className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)] p-1"
           />
         </motion.div>
       </motion.div>
