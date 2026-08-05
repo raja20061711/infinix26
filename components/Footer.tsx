@@ -102,10 +102,6 @@ export default function Footer() {
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
             className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] origin-center my-0.5"
           />
-
-          <p className="text-[11px] sm:text-xs font-medium text-[#94A3B8] tracking-wider uppercase">
-            The Team Behind INFINIX&apos;26
-          </p>
         </div>
 
         {/* Developer Names Layout (Responsive: Desktop 1 Row, Tablet 2 Rows, Mobile 1 Row) */}
