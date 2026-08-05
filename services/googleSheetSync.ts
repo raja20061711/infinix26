@@ -80,12 +80,18 @@ export function formatAppsScriptPayload(
  * Direct fetch caller to GOOGLE_SCRIPT_URL with strict JSON headers & audit logging
  */
 export async function sendToGoogleAppsScript(payload: AppsScriptSyncPayload): Promise<{ success: boolean; message?: string }> {
-  const scriptUrl =
+  const ACTIVE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKzE8_cUGd__1N5z5tj1kUqrOXN4oiT8vZIpu_1vk3Y5tU50kcSB8f9q3c28E4nRA/exec';
+  let scriptUrl =
     process.env.GOOGLE_SCRIPT_URL ||
     process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
-    'https://script.google.com/macros/s/AKfycbxKzE8_cUGd__1N5z5tj1kUqrOXN4oiT8vZIpu_1vk3Y5tU50kcSB8f9q3c28E4nRA/exec';
+    ACTIVE_SCRIPT_URL;
+
+  // Sanity check: If env var holds old URL, force override to active URL
+  if (!scriptUrl.includes('AKfycbxKzE8_cUGd__1N5z5tj1kUqrOXN4oiT8vZIpu_1vk3Y5tU50kcSB8f9q3c28E4nRA')) {
+    scriptUrl = ACTIVE_SCRIPT_URL;
+  }
 
   console.log(`[Google Sync] Executing action: ${payload.action} -> URL: ${scriptUrl}`);
   console.log(`[Google Sync] Payload:`, JSON.stringify(payload, null, 2));
