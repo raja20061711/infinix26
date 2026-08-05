@@ -216,9 +216,11 @@ function formatTeamRow(data, overrideId, contents, action) {
   data = data || {};
   var regId = overrideId || data.registrationId || data.teamId || data.team_id || "";
   var teamName = data.teamName || data.team_name || "";
-  var college = String(data.college || "");
-  var isRamco = college.toLowerCase().indexOf("ramco") !== -1;
+  var rawCollege = String(data.college || "");
+  var colLower = rawCollege.toLowerCase();
+  var isRamco = colLower.indexOf("ramco") !== -1 || colLower.indexOf("rit") !== -1;
   var collegeType = isRamco ? "Internal (Ramco)" : "External College";
+  var college = isRamco ? "Ramco Institute of Technology" : rawCollege;
   var leaderName = data.leaderName || data.leader_name || "";
   var leaderEmail = data.leaderEmail || data.leader_email || "";
   var leaderPhone = data.leaderPhone || data.leader_phone || "";
@@ -255,7 +257,7 @@ function formatTeamRow(data, overrideId, contents, action) {
   var m5Email = members[3] ? (members[3].email || members[3].memberEmail || "") : "";
   var m5College = getMemCollege(members[3]);
 
-  var totalFee = data.paymentAmount || data.payment_amount || (teamSize * (isRamco ? 250 : 350));
+  var totalFee = data.paymentAmount || data.payment_amount || (teamSize * (isRamco ? 200 : 350));
   var upiTxId = data.upiTransactionId || data.upi_transaction_id || "";
   var rawPaymentProof = data.paymentProofUrl || data.payment_proof_url || "";
   var paymentProofUrl = rawPaymentProof;

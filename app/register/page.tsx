@@ -72,8 +72,9 @@ export default function DirectRegistrationPage() {
   } | null>(null);
 
   const totalMembers = 1 + members.length;
-  const isRamcoStudent = college.trim().toLowerCase().includes('ramco');
-  const perParticipantFee = isRamcoStudent ? 250 : 350;
+  const colLower = college.trim().toLowerCase();
+  const isRamcoStudent = colLower.includes('ramco') || colLower.includes('rit');
+  const perParticipantFee = isRamcoStudent ? 200 : 350;
   const totalFee = totalMembers * perParticipantFee;
 
   const handleAddMember = () => {
@@ -453,7 +454,7 @@ export default function DirectRegistrationPage() {
                     {college && (
                       <p className="text-[11px] text-[#7CE7FF] mt-1 font-semibold">
                         {isRamcoStudent
-                          ? '✅ Ramco Student Rate Applied: ₹250 / participant'
+                          ? '✅ Internal (Ramco Institute of Technology) Student Rate Applied: ₹200 / participant'
                           : '🌐 External College Rate Applied: ₹350 / participant'}
                       </p>
                     )}

@@ -48,9 +48,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Fee calculation (per participant)
-    const isRamcoStudent = college.trim().toLowerCase().includes('ramco');
-    const feePerHead = isRamcoStudent ? 250 : 350;
+    const colLower = college.trim().toLowerCase();
+    const isRamcoStudent = colLower.includes('ramco') || colLower.includes('rit');
+    const feePerHead = isRamcoStudent ? 200 : 350;
     const calculatedPaymentAmount = totalMembers * feePerHead;
+    const normalizedCollege = isRamcoStudent ? 'Ramco Institute of Technology' : college.trim();
 
     // Generate unique Team ID (e.g. INF26-7842)
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
       leader_email: leaderEmail.trim().toLowerCase(),
       leader_phone: leaderPhone.trim(),
       gender: gender || 'Other',
-      college: college.trim(),
+      college: normalizedCollege,
       department: department.trim(),
       year_of_study: yearOfStudy || '3rd Year',
       roll_number: rollNumber?.trim() || '',
