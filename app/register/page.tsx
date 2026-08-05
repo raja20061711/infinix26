@@ -51,7 +51,7 @@ export default function RegisterPage() {
       }
     } catch (e) {}
 
-    fetch('/api/admin/registration-status')
+    fetch('/api/admin/registration-status', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data && typeof data.isOpen === 'boolean') {

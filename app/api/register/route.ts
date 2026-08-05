@@ -5,6 +5,8 @@ import { syncToGoogleSheets } from '@/utils/sheetSync';
 import { isRegistrationOpen } from '@/lib/registrationSettings';
 
 export const maxDuration = 60; // Allow up to 60 seconds for Vercel Serverless Function execution
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
@@ -125,11 +127,13 @@ export async function POST(req: NextRequest) {
     // Save to Supabase PostgreSQL DB
     const supabaseResult = await upsertRegistrationToSupabase(newTeam);
 
-    // Non-blocking Background Execution: Fire Google Sheets mirror sync & Admin Alert concurrently
-    Promise.allSettled([
-      syncToGoogleSheets(newTeam, 'create'),
-      sendAdminNotificationEmail(newTeam),
-    ]).then(([sheetResult, adminEmailResult]) => {
+    // Guaranteed Server Execution: Await Google Sheets mirror sync & Admin Alert before returning
+    try {
+      const [sheetResult, adminEmailResult] = await Promise.allSettled([
+        syncToGoogleSheets(newTeam, 'create'),
+        sendAdminNotificationEmail(newTeam),
+      ]);
+
       if (sheetResult.status === 'rejected') {
         console.error('[Register API Background] Sheet Sync error:', sheetResult.reason);
       } else {
@@ -140,7 +144,9 @@ export async function POST(req: NextRequest) {
       } else {
         console.log('[Register API Background] ✅ Admin Notification Email complete!');
       }
-    });
+    } catch (bgErr) {
+      console.warn('[Register API Background Sync Error]:', bgErr);
+    }
 
     return NextResponse.json({
       success: true,
