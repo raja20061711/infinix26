@@ -287,7 +287,7 @@ export default function CommitteeSection() {
           </div>
         </motion.div>
 
-        {/* TECHNICAL SUPPORT STAFF */}
+        {/* TECHNICAL SUPPORT STAFFS */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -298,7 +298,7 @@ export default function CommitteeSection() {
           <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
               <Wrench className="w-4 h-4 text-[#00D9FF]" />
-              <span>TECHNICAL SUPPORT STAFF</span>
+              <span>TECHNICAL SUPPORT STAFFS</span>
             </div>
             <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
           </div>
@@ -324,7 +324,7 @@ export default function CommitteeSection() {
           </div>
         </motion.div>
 
-        {/* SUPPORTING STAFF */}
+        {/* SUPPORTING STAFFS */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -335,7 +335,7 @@ export default function CommitteeSection() {
           <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.25em] text-[#00D9FF] uppercase">
               <Users className="w-4 h-4 text-[#00D9FF]" />
-              <span>SUPPORTING STAFF</span>
+              <span>SUPPORTING STAFFS</span>
             </div>
             <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00D9FF] to-transparent shadow-[0_0_8px_#00D9FF] rounded-full mt-1.5" />
           </div>

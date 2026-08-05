@@ -33,9 +33,9 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
       "Event Faculty Incharges:\n\n• Dr. K. Palraj — Associate Professor\n• Mr. S. Sakkaravarthi — Assistant Professor\n• Mrs. G. Sivasathiya — Assistant Professor\n• Mrs. B. Thevahi — Assistant Professor – I\n• Mrs. P. Ramya — Assistant Professor – I\n\nDepartment of Information Technology, Ramco Institute of Technology.",
   },
   {
-    keywords: ['supporting staff', 'support staff', 'rajalakshmi', 'rajeswari', 'junior assistant', 'office assistant', 'technician', 'saravanakumar', 'sathish'],
+    keywords: ['supporting staff', 'supporting staffs', 'support staff', 'rajalakshmi', 'rajeswari', 'junior assistant', 'office assistant', 'technician', 'saravanakumar', 'sathish'],
     response:
-      "Supporting & Technical Staff:\n\n🤝 Supporting Staff:\n• Mrs. V. Rajalakshmi — Junior Assistant\n• Mrs. S. Rajeswari — Office Assistant\n\n🔧 Technical Support Staff:\n• Mr. M. Saravanakumar — Lab Technician\n• Mr. M. Sathish — Lab Technician",
+      "Supporting & Technical Staffs:\n\n🤝 Supporting Staffs:\n• Mrs. V. Rajalakshmi — Junior Assistant\n• Mrs. S. Rajeswari — Office Assistant\n\n🔧 Technical Support Staffs:\n• Mr. M. Saravanakumar — Lab Technician\n• Mr. M. Sathish — Lab Technician",
   },
   {
     keywords: ['student coordinator', 'student coordinators', 'student ie chapter coordinator', 'student ie chapter coordinators', 'saravanakumar', 'suresh', 'saranya', 'krishnithi', 'lokesh', 'pranov', 'ginesh', 'enquiry', 'student enquiries', 'phone', 'contact', 'call', 'number', 'mobile'],
