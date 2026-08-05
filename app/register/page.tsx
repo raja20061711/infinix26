@@ -20,6 +20,7 @@ import {
   Building,
   Check,
   MessageCircle,
+  Copy,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -28,23 +29,22 @@ interface TeamMember {
   name: string;
   email: string;
   phone: string;
-  college: string;
-  department: string;
-  rollNumber: string;
-  gender: string;
+  college?: string;
+  department?: string;
+  rollNumber?: string;
+  role?: string;
+  gender?: string;
 }
 
-export default function DirectRegistrationPage() {
-  // Step 1 vs Step 2 State
+export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1);
 
+  // Step 1: Team & Leader Info
   const [teamName, setTeamName] = useState('');
-
-  // Leader Info
   const [leaderName, setLeaderName] = useState('');
   const [leaderEmail, setLeaderEmail] = useState('');
   const [leaderPhone, setLeaderPhone] = useState('');
-  const [college, setCollege] = useState('');
+  const [college, setCollege] = useState('Ramco Institute of Technology');
   const [department, setDepartment] = useState('Information Technology');
   const [yearOfStudy, setYearOfStudy] = useState('3rd Year');
   const [gender, setGender] = useState('Male');
@@ -60,6 +60,15 @@ export default function DirectRegistrationPage() {
   // Step 2: Payment Details
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [paymentProofUrl, setPaymentProofUrl] = useState<string | null>(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  const handleCopyUpi = () => {
+    try {
+      navigator.clipboard.writeText('ritotherfees700@fbl');
+      setCopiedUpi(true);
+      setTimeout(() => setCopiedUpi(false), 2500);
+    } catch (e) {}
+  };
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -718,17 +727,44 @@ export default function DirectRegistrationPage() {
 
                 {/* UPI QR Code & Instructions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                  {/* QR Box */}
-                  <div className="p-4 rounded-xl bg-[#060b13] border border-gray-800 text-center flex flex-col items-center">
-                    <div className="w-44 h-44 rounded-xl bg-white p-2 flex items-center justify-center shadow-[0_0_25px_rgba(0,217,255,0.3)]">
-                      <QrCode className="w-36 h-36 text-black" />
+                  {/* Official RIT Payment QR Box */}
+                  <div className="p-5 rounded-2xl bg-[#060b13] border border-[#00D9FF]/30 text-center flex flex-col items-center shadow-[0_0_25px_rgba(0,217,255,0.15)]">
+                    <div className="w-52 h-52 rounded-xl bg-white p-2.5 flex items-center justify-center shadow-[0_0_30px_rgba(0,217,255,0.35)] relative overflow-hidden group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/rit-payment-qr.png"
+                        alt="RIT Official Payment QR Code"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <span className="mt-3 text-xs font-orbitron text-[#7CE7FF] font-bold">
-                      UPI ID: infinix26@upi
-                    </span>
-                    <span className="text-[10px] text-gray-400">
-                      Scan via GPay / PhonePe / Paytm / BHIM
-                    </span>
+
+                    <div className="mt-4 space-y-1.5 w-full">
+                      <div className="text-[11px] font-orbitron font-extrabold text-white tracking-wider uppercase">
+                        ACCOUNT NAME: <span className="text-[#00D9FF]">RIT OTHER FEES</span>
+                      </div>
+
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0c1424] border border-[#00D9FF]/40 text-xs font-mono font-bold text-[#7CE7FF] mt-1">
+                        <span>ritotherfees700@fbl</span>
+                        <button
+                          type="button"
+                          onClick={handleCopyUpi}
+                          className="p-1 hover:text-white transition-colors cursor-pointer"
+                          title="Copy UPI ID"
+                        >
+                          {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-[#00D9FF]" />}
+                        </button>
+                      </div>
+
+                      {copiedUpi && (
+                        <p className="text-[10px] text-emerald-400 font-semibold animate-pulse">
+                          ✅ UPI ID Copied to Clipboard!
+                        </p>
+                      )}
+
+                      <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                        Scan via GPay / PhonePe / Paytm / BHIM / Cred / Any UPI App
+                      </p>
+                    </div>
                   </div>
 
                   {/* Payment Inputs */}
