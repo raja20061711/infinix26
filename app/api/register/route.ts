@@ -112,18 +112,22 @@ export async function POST(req: NextRequest) {
     // Save to Supabase PostgreSQL DB
     const supabaseResult = await upsertRegistrationToSupabase(newTeam);
 
-    // Parallel Execution: Run Google Sheets mirror sync & Admin Email concurrently for fast response
-    const [sheetResult, adminEmailResult] = await Promise.allSettled([
+    // Non-blocking Background Execution: Fire Google Sheets mirror sync & Admin Alert concurrently
+    Promise.allSettled([
       syncToGoogleSheets(newTeam, 'create'),
       sendAdminNotificationEmail(newTeam),
-    ]);
-
-    if (sheetResult.status === 'rejected') {
-      console.error('[Register API] Sheet Sync error:', sheetResult.reason);
-    }
-    if (adminEmailResult.status === 'rejected') {
-      console.error('[Register API] Admin Email error:', adminEmailResult.reason);
-    }
+    ]).then(([sheetResult, adminEmailResult]) => {
+      if (sheetResult.status === 'rejected') {
+        console.error('[Register API Background] Sheet Sync error:', sheetResult.reason);
+      } else {
+        console.log('[Register API Background] ✅ Google Sheets sync complete!');
+      }
+      if (adminEmailResult.status === 'rejected') {
+        console.error('[Register API Background] Admin Email error:', adminEmailResult.reason);
+      } else {
+        console.log('[Register API Background] ✅ Admin Notification Email complete!');
+      }
+    });
 
     return NextResponse.json({
       success: true,
