@@ -20,11 +20,12 @@ const sponsorTiers = [
     icon: Award,
   },
   {
-    tier: 'ECOSYSTEM & MEDIA PARTNERS',
-    badge: 'Community Partners',
-    status: 'Announcing Soon',
-    partners: ['Student Chapters & Media Networks'],
+    tier: 'MEDIA PARTNER',
+    badge: 'Official Media Partner',
+    status: 'Powered by Unstop',
+    partners: ['Unstop (formerly Dare2Compete)'],
     icon: Users2,
+    url: 'https://unstop.com',
   },
 ];
 
@@ -74,18 +75,26 @@ export default function SponsorsSection() {
 
                   {/* Partner Names Stack */}
                   <div className="w-full flex flex-col gap-3 mt-2">
-                    {tier.partners.map((partner, pIdx) => (
-                      <div
-                        key={pIdx}
-                        className="p-3.5 rounded-xl bg-[#020d20]/80 border border-[#00D9FF]/20 flex items-center justify-between text-xs font-semibold text-gray-200 group-hover:border-[#00D9FF]/40 transition-colors"
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF] shadow-[0_0_8px_#00D9FF]" />
-                          {partner}
-                        </span>
-                        <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#00D9FF]" />
-                      </div>
-                    ))}
+                    {tier.partners.map((partner, pIdx) => {
+                      const Container = tier.url ? 'a' : 'div';
+                      const linkProps = tier.url
+                        ? { href: tier.url, target: '_blank', rel: 'noopener noreferrer' }
+                        : {};
+
+                      return (
+                        <Container
+                          key={pIdx}
+                          {...linkProps}
+                          className="p-3.5 rounded-xl bg-[#020d20]/80 border border-[#00D9FF]/20 flex items-center justify-between text-xs font-semibold text-gray-200 group-hover:border-[#00D9FF]/40 transition-all hover:bg-[#00D9FF]/10 cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF] shadow-[0_0_8px_#00D9FF]" />
+                            {partner}
+                          </span>
+                          <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#00D9FF]" />
+                        </Container>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
