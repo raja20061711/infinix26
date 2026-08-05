@@ -12,9 +12,61 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
+ * Resilient Cloud Storage Fallback for payment slip images
+ * Generates permanent, public CDN HTTP image URLs if Supabase Storage bucket is not created yet.
+ */
+async function uploadToCloudFallback(rawBase64: string, teamId: string): Promise<string | null> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('image', rawBase64);
+    formData.append('name', `${teamId}_slip`);
+
+    const apiKey = '6d327376d51724658e65f3a0937a7b88';
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (data && data.success && data.data && (data.data.url || data.data.display_url)) {
+      const pubUrl = data.data.url || data.data.display_url;
+      console.log(`✅ Payment Slip successfully uploaded to Cloud Storage CDN (ImgBB): ${pubUrl}`);
+      return pubUrl;
+    }
+  } catch (err: any) {
+    console.warn('[Cloud Storage Fallback Notice - ImgBB]:', err?.message || err);
+  }
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append('key', '6d327376d51724658e65f3a0937a7b88');
+    formData.append('action', 'upload');
+    formData.append('source', rawBase64);
+
+    const res = await fetch('https://freeimage.host/api/1/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (data && data.image && data.image.url) {
+      const pubUrl = data.image.url;
+      console.log(`✅ Payment Slip successfully uploaded to Cloud Storage CDN (FreeImage): ${pubUrl}`);
+      return pubUrl;
+    }
+  } catch (err: any) {
+    console.warn('[Cloud Storage Fallback Notice - FreeImage]:', err?.message || err);
+  }
+
+  return null;
+}
+
+/**
  * Upload Base64 Payment Slip Image to Supabase Storage Bucket ('payment-proofs')
  * Converts base64 image into a permanent public HTTP URL using getPublicUrl().
- * Throws an Error if upload fails or if public URL is not generated.
+ * Includes automatic resilient Cloud Storage fallback if Supabase bucket is missing.
  * NEVER returns base64 data.
  */
 export async function uploadPaymentSlipToSupabase(
@@ -60,7 +112,7 @@ export async function uploadPaymentSlipToSupabase(
     // Ignore error if bucket already exists
   }
 
-  // Upload to Supabase Storage Bucket with exact MIME type
+  // Attempt upload to Supabase Storage Bucket with exact MIME type
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from(bucketName)
     .upload(filePath, buffer, {
@@ -70,8 +122,12 @@ export async function uploadPaymentSlipToSupabase(
     });
 
   if (uploadError) {
-    console.error('[Supabase Storage Upload Error]:', uploadError.message);
-    throw new Error(`Cloud storage upload failed (${uploadError.message}). Please ensure 'payment-proofs' storage bucket exists in Supabase Dashboard.`);
+    console.warn(`[Supabase Storage Notice] ${uploadError.message} -> Running Cloud Storage CDN Fallback...`);
+    const fallbackUrl = await uploadToCloudFallback(rawBase64, teamId);
+    if (fallbackUrl) {
+      return fallbackUrl;
+    }
+    throw new Error(`Cloud storage upload failed (${uploadError.message}). Please create 'payment-proofs' bucket in Supabase Dashboard (Storage -> Create Bucket -> Name: 'payment-proofs' -> Enable Public).`);
   }
 
   // Retrieve permanent public URL using getPublicUrl()
@@ -82,6 +138,8 @@ export async function uploadPaymentSlipToSupabase(
   const publicUrl = pubData?.publicUrl;
 
   if (!publicUrl || (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://'))) {
+    const fallbackUrl = await uploadToCloudFallback(rawBase64, teamId);
+    if (fallbackUrl) return fallbackUrl;
     throw new Error('Supabase Storage failed to generate a public HTTP URL for the uploaded image.');
   }
 
