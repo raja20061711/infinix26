@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ArrowRight, Award, Gift } from 'lucide-react';
+import { Trophy, ArrowRight, Award, Gift, Briefcase } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
 
 export default function PrizesSection() {
@@ -13,7 +13,7 @@ export default function PrizesSection() {
         <div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 backdrop-blur-md mb-3">
             <span className="text-xs font-bold tracking-[0.25em] text-[#FFD700] uppercase">
-              TOTAL PRIZE POOL WORTH ₹30,000
+              TOTAL PRIZE POOL WORTH ₹40,000
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-orbitron tracking-tight uppercase text-white">
@@ -36,42 +36,13 @@ export default function PrizesSection() {
 
       {/* 3 Podium Cards Layout with 3D Tilt */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end max-w-5xl mx-auto">
-        {/* 2nd Prize Card (Left) */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <TiltCard className="rounded-3xl">
-            <div
-              className="glass-panel glass-panel-hover p-8 rounded-3xl border border-[#00D9FF]/20 flex flex-col items-center text-center relative group"
-              data-hoverable="true"
-            >
-              <div className="w-12 h-12 rounded-full bg-[#04162E] border border-[#00D9FF]/40 flex items-center justify-center font-orbitron font-extrabold text-xl text-[#00D9FF] mb-4">
-                2
-              </div>
-              <span className="text-xs font-bold tracking-widest text-gray-300 uppercase">
-                SECOND PRIZE
-              </span>
-              <h3 className="mt-4 font-orbitron font-extrabold text-3xl sm:text-4xl text-white group-hover:text-[#00D9FF] transition-colors">
-                ₹10,000
-              </h3>
-              <p className="mt-2 text-xs font-semibold text-[#7CE7FF] flex items-center gap-1.5">
-                <Gift className="w-3.5 h-3.5" />
-                Cash Prize + Goodies
-              </p>
-            </div>
-          </TiltCard>
-        </motion.div>
-
-        {/* 1st Prize Elevated Podium Center Card */}
+        {/* 1st Prize Elevated Podium Card (Order 1 on mobile, Order 2 / Center on desktop) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="-translate-y-4"
+          className="order-1 md:order-2 md:-translate-y-4"
         >
           <TiltCard className="rounded-3xl">
             <div
@@ -96,13 +67,19 @@ export default function PrizesSection() {
               </span>
 
               <h3 className="mt-3 font-orbitron font-black text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFF59D] via-[#FFD700] to-[#FFA000] drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]">
-                ₹15,000
+                ₹20,000
               </h3>
 
-              <p className="mt-2 text-xs font-semibold text-[#FFD700] flex items-center gap-1.5">
-                <Award className="w-4 h-4" />
-                Cash Prize + Goodies
-              </p>
+              <div className="mt-3 flex flex-col items-center gap-1.5">
+                <p className="text-xs font-bold text-[#FFD700] flex items-center gap-1.5">
+                  <Award className="w-4 h-4" />
+                  Cash Prize + Goodies
+                </p>
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold font-orbitron flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  + INTERNSHIP OPPORTUNITY
+                </span>
+              </div>
 
               {/* Golden Glass Base Pedestal */}
               <div className="mt-6 w-full py-1.5 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 text-[10px] font-bold tracking-[0.2em] text-[#FFD700] uppercase">
@@ -112,12 +89,43 @@ export default function PrizesSection() {
           </TiltCard>
         </motion.div>
 
-        {/* 3rd Prize Card (Right) */}
+        {/* 2nd Prize Card (Order 2 on mobile, Order 1 / Left on desktop) */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="order-2 md:order-1"
+        >
+          <TiltCard className="rounded-3xl">
+            <div
+              className="glass-panel glass-panel-hover p-8 rounded-3xl border border-[#00D9FF]/20 flex flex-col items-center text-center relative group"
+              data-hoverable="true"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#04162E] border border-[#00D9FF]/40 flex items-center justify-center font-orbitron font-extrabold text-xl text-[#00D9FF] mb-4">
+                2
+              </div>
+              <span className="text-xs font-bold tracking-widest text-gray-300 uppercase">
+                SECOND PRIZE
+              </span>
+              <h3 className="mt-4 font-orbitron font-extrabold text-3xl sm:text-4xl text-white group-hover:text-[#00D9FF] transition-colors">
+                ₹15,000
+              </h3>
+              <p className="mt-2 text-xs font-semibold text-[#7CE7FF] flex items-center gap-1.5">
+                <Gift className="w-3.5 h-3.5" />
+                Cash Prize + Goodies
+              </p>
+            </div>
+          </TiltCard>
+        </motion.div>
+
+        {/* 3rd Prize Card (Order 3 on mobile, Order 3 / Right on desktop) */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2 }}
+          className="order-3 md:order-3"
         >
           <TiltCard className="rounded-3xl">
             <div
