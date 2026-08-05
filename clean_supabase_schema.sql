@@ -169,3 +169,17 @@ GRANT ALL ON TABLE public.problem_statements TO anon, authenticated, service_rol
 GRANT ALL ON TABLE public.announcements TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.chatbot_knowledge TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.contact_messages TO anon, authenticated, service_role;
+
+-- STEP 5: SUPABASE STORAGE BUCKET CONFIGURATION FOR PAYMENT PROOFS
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('payment-proofs', 'payment-proofs', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- Allow Public Read & Upload Access for payment-proofs Bucket
+DROP POLICY IF EXISTS "Public Read Access for Payment Proofs" ON storage.objects;
+DROP POLICY IF EXISTS "Public Upload Access for Payment Proofs" ON storage.objects;
+DROP POLICY IF EXISTS "Public Update Access for Payment Proofs" ON storage.objects;
+
+CREATE POLICY "Public Read Access for Payment Proofs" ON storage.objects FOR SELECT USING (bucket_id = 'payment-proofs');
+CREATE POLICY "Public Upload Access for Payment Proofs" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'payment-proofs');
+CREATE POLICY "Public Update Access for Payment Proofs" ON storage.objects FOR UPDATE USING (bucket_id = 'payment-proofs');

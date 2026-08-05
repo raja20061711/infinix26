@@ -60,9 +60,28 @@ export async function POST(req: NextRequest) {
     const password = `inf26-${Math.random().toString(36).substring(2, 7)}`;
 
     // Upload base64 payment slip image to Supabase Storage bucket to get short public HTTP URL
-    let finalPaymentProofUrl = paymentProofUrl || null;
-    if (paymentProofUrl && typeof paymentProofUrl === 'string' && paymentProofUrl.startsWith('data:')) {
-      finalPaymentProofUrl = await uploadPaymentSlipToSupabase(paymentProofUrl, teamId);
+    let finalPaymentProofUrl: string | null = null;
+    if (paymentProofUrl && typeof paymentProofUrl === 'string') {
+      if (paymentProofUrl.startsWith('data:')) {
+        try {
+          finalPaymentProofUrl = await uploadPaymentSlipToSupabase(paymentProofUrl, teamId);
+        } catch (uploadErr: any) {
+          console.error('[Register API] Image Upload Error:', uploadErr);
+          return NextResponse.json(
+            { error: `Payment slip upload failed: ${uploadErr.message || 'Storage error'}. Please try re-uploading your payment proof.` },
+            { status: 400 }
+          );
+        }
+      } else if (paymentProofUrl.startsWith('http://') || paymentProofUrl.startsWith('https://')) {
+        finalPaymentProofUrl = paymentProofUrl;
+      }
+    }
+
+    if (!finalPaymentProofUrl || (!finalPaymentProofUrl.startsWith('http://') && !finalPaymentProofUrl.startsWith('https://'))) {
+      return NextResponse.json(
+        { error: 'A valid payment proof image is required. Please upload your payment slip image.' },
+        { status: 400 }
+      );
     }
 
     const newTeam = {

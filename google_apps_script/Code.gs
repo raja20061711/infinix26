@@ -258,11 +258,10 @@ function formatTeamRow(data, overrideId, contents, action) {
   var m5College = getMemCollege(members[3]);
 
   var totalFee = data.paymentAmount || data.payment_amount || (teamSize * (isRamco ? 200 : 350));
-  var upiTxId = data.upiTransactionId || data.upi_transaction_id || "";
   var rawPaymentProof = data.paymentProofUrl || data.payment_proof_url || "";
-  var paymentProofUrl = rawPaymentProof;
+  var paymentProofUrl = "N/A";
 
-  if (rawPaymentProof && (rawPaymentProof.indexOf("http://") === 0 || rawPaymentProof.indexOf("https://") === 0)) {
+  if (rawPaymentProof && typeof rawPaymentProof === "string" && (rawPaymentProof.indexOf("http://") === 0 || rawPaymentProof.indexOf("https://") === 0)) {
     paymentProofUrl = '=HYPERLINK("' + rawPaymentProof + '", "📸 View Slip")';
   }
 

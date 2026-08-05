@@ -13,57 +13,80 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
  * Upload Base64 Payment Slip Image to Supabase Storage Bucket ('payment-proofs')
- * Converts long base64 string into a clean, compact public HTTP image URL.
+ * Converts base64 image into a permanent public HTTP URL using getPublicUrl().
+ * Throws an Error if upload fails or if public URL is not generated.
+ * NEVER returns base64 data.
  */
 export async function uploadPaymentSlipToSupabase(
   base64Data: string,
   teamId: string
 ): Promise<string> {
-  if (!base64Data || typeof base64Data !== 'string' || !base64Data.startsWith('data:')) {
-    return base64Data || '';
+  if (!base64Data || typeof base64Data !== 'string') {
+    throw new Error('No payment slip image data provided.');
   }
 
-  try {
-    const matches = base64Data.match(/^data:(image\/[a-zA-Z0-9+\-]+);base64,(.+)$/);
-    if (!matches || matches.length < 3) {
-      return base64Data;
-    }
-
-    const contentType = matches[1];
-    const rawBase64 = matches[2];
-    const extension = contentType.split('/')[1] || 'png';
-    const filePath = `payment_slips/${teamId}_${Date.now()}.${extension}`;
-
-    // Convert base64 to Buffer / Uint8Array
-    const buffer = Buffer.from(rawBase64, 'base64');
-
-    // Attempt upload to 'payment-proofs' storage bucket
-    const { data, error } = await supabase.storage
-      .from('payment-proofs')
-      .upload(filePath, buffer, {
-        contentType,
-        upsert: true,
-      });
-
-    if (error) {
-      console.warn('[Supabase Storage Warning]:', error.message);
-      // Fallback: Check if public URL can be constructed
-      const { data: pubData } = supabase.storage
-        .from('payment-proofs')
-        .getPublicUrl(filePath);
-      return pubData?.publicUrl || base64Data;
-    }
-
-    const { data: pubData } = supabase.storage
-      .from('payment-proofs')
-      .getPublicUrl(data.path);
-
-    console.log(`✅ Payment Slip uploaded to Supabase Storage: ${pubData.publicUrl}`);
-    return pubData.publicUrl;
-  } catch (err: any) {
-    console.error('Failed to upload payment slip to Supabase Storage:', err);
+  // If already a valid public HTTP/HTTPS URL, return directly
+  if (base64Data.startsWith('http://') || base64Data.startsWith('https://')) {
     return base64Data;
   }
+
+  if (!base64Data.startsWith('data:')) {
+    throw new Error('Invalid image format. Expected base64 data URI.');
+  }
+
+  const matches = base64Data.match(/^data:(image\/[a-zA-Z0-9+\-]+);base64,(.+)$/);
+  if (!matches || matches.length < 3) {
+    throw new Error('Failed to parse base64 image encoding.');
+  }
+
+  const contentType = matches[1]; // e.g. 'image/jpeg', 'image/png'
+  const rawBase64 = matches[2];
+  const extension = contentType.split('/')[1]?.split('+')[0] || 'png';
+  const filePath = `payment_slips/${teamId}_${Date.now()}.${extension}`;
+
+  // Convert base64 to Buffer
+  const buffer = Buffer.from(rawBase64, 'base64');
+
+  if (!buffer || buffer.length === 0) {
+    throw new Error('Empty image payload after base64 decoding.');
+  }
+
+  const bucketName = 'payment-proofs';
+
+  // Attempt auto-creating bucket if it does not exist yet
+  try {
+    await supabase.storage.createBucket(bucketName, { public: true });
+  } catch (e) {
+    // Ignore error if bucket already exists
+  }
+
+  // Upload to Supabase Storage Bucket with exact MIME type
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(bucketName)
+    .upload(filePath, buffer, {
+      contentType,
+      cacheControl: '3600',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error('[Supabase Storage Upload Error]:', uploadError.message);
+    throw new Error(`Cloud storage upload failed (${uploadError.message}). Please ensure 'payment-proofs' storage bucket exists in Supabase Dashboard.`);
+  }
+
+  // Retrieve permanent public URL using getPublicUrl()
+  const { data: pubData } = supabase.storage
+    .from(bucketName)
+    .getPublicUrl(uploadData.path);
+
+  const publicUrl = pubData?.publicUrl;
+
+  if (!publicUrl || (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://'))) {
+    throw new Error('Supabase Storage failed to generate a public HTTP URL for the uploaded image.');
+  }
+
+  console.log(`✅ Payment Slip successfully uploaded to Supabase Storage: ${publicUrl}`);
+  return publicUrl;
 }
 
 // Helper: Fetch all Registrations from Supabase PostgreSQL

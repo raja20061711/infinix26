@@ -22,11 +22,18 @@ export function formatAppsScriptPayload(
   const regId = teamData?.teamId || teamData?.team_id || teamData?.registrationId || '';
   const nowStr = new Date().toISOString();
 
+  let cleanPaymentProofUrl = teamData?.paymentProofUrl || teamData?.payment_proof_url || '';
+  if (typeof cleanPaymentProofUrl === 'string' && cleanPaymentProofUrl.startsWith('data:')) {
+    cleanPaymentProofUrl = '';
+  }
+
   const normalizedTeam = {
     ...teamData,
     teamId: regId,
     team_id: regId,
     registrationId: regId,
+    paymentProofUrl: cleanPaymentProofUrl,
+    payment_proof_url: cleanPaymentProofUrl,
   };
 
   const spreadsheetId =
