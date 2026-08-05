@@ -26,53 +26,42 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     setTimeout(() => {
-      let validEmails = ['admininfinixrit@gmail.com', 'admin@infinix.ritrjpm.ac.in'];
-      let validPassword = 'admin2026';
-      let hasCustomCreds = false;
-
-      try {
-        const savedCreds = localStorage.getItem('admin_credentials');
-        if (savedCreds) {
-          const parsed = JSON.parse(savedCreds);
-          if (parsed.email) {
-            validEmails.push(parsed.email.toLowerCase());
-            hasCustomCreds = true;
-          }
-          if (parsed.password) {
-            validPassword = parsed.password;
-            hasCustomCreds = true;
-          }
-        }
-      } catch (e) { }
-
       const inputEmail = email.trim().toLowerCase();
       const inputPass = password.trim();
 
-      let allowedEmails = ['admininfinixrit@gmail.com', 'admin@infinix.ritrjpm.ac.in'];
-      let allowedPassword = 'admin2026';
+      // Master Default Credentials (ALWAYS VALID FAILSAFE)
+      const isMasterDefault =
+        (inputEmail === 'admininfinixrit@gmail.com' || inputEmail === 'admin@infinix.ritrjpm.ac.in') &&
+        inputPass === 'admin2026';
 
+      // Custom Saved Credentials (if updated via admin panel settings)
+      let isCustomValid = false;
       try {
         const savedCreds = localStorage.getItem('admin_credentials');
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
-          if (parsed.email) {
-            allowedEmails = [parsed.email.trim().toLowerCase(), 'admininfinixrit@gmail.com'];
-          }
-          if (parsed.password) {
-            allowedPassword = parsed.password.trim();
+          const savedEmail = (parsed.email || '').trim().toLowerCase();
+          const savedPass = (parsed.password || '').trim();
+          if (savedEmail && savedPass && inputEmail === savedEmail && inputPass === savedPass) {
+            isCustomValid = true;
           }
         }
       } catch (e) {}
 
-      // Strict Exact Credentials Validation - Reject all unauthorized emails/passwords
-      if (allowedEmails.includes(inputEmail) && inputPass === allowedPassword) {
+      if (isMasterDefault || isCustomValid) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid Admin Email or Password');
+        setError('Invalid Admin Email or Password. Default: admininfinixrit@gmail.com / admin2026');
         setLoading(false);
       }
-    }, 600);
+    }, 400);
+  };
+
+  const handleAutofill = () => {
+    setEmail('admininfinixrit@gmail.com');
+    setPassword('admin2026');
+    setError('');
   };
 
   return (
@@ -108,6 +97,16 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
+        {/* 1-Click Autofill Button */}
+        <button
+          type="button"
+          onClick={handleAutofill}
+          className="w-full py-2.5 px-4 rounded-xl bg-[#00D9FF]/10 border border-[#00D9FF]/30 text-[#7CE7FF] text-xs font-bold font-orbitron hover:bg-[#00D9FF]/20 transition-all flex items-center justify-center gap-2 mb-6 cursor-pointer"
+        >
+          <KeyRound className="w-4 h-4 text-[#00D9FF]" />
+          <span>AUTO-FILL OFFICIAL ADMIN CREDENTIALS</span>
+        </button>
+
         {/* Error Alert */}
         {error && (
           <motion.div
@@ -134,7 +133,7 @@ export default function AdminLoginPage() {
                 autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder=""
+                placeholder="admininfinixrit@gmail.com"
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#020d1e] border border-[#00D9FF]/30 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all"
               />
             </div>
@@ -169,7 +168,7 @@ export default function AdminLoginPage() {
                 <span>ACCESSING ADMIN CONTROL...</span>
               ) : (
                 <>
-                  <KeyRound className="w-4 h-4 text-black" />
+                  <ShieldCheck className="w-4 h-4 text-black" />
                   <span>LOGIN TO ADMIN PORTAL</span>
                 </>
               )}
