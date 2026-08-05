@@ -41,16 +41,29 @@ export default function RegisterPage() {
   const [isRegOpen, setIsRegOpen] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Check client localStorage fallback first for instant response
+    try {
+      const localVal = localStorage.getItem('infinix_reg_open');
+      if (localVal === 'false') {
+        setIsRegOpen(false);
+      } else if (localVal === 'true') {
+        setIsRegOpen(true);
+      }
+    } catch (e) {}
+
     fetch('/api/admin/registration-status')
       .then((res) => res.json())
       .then((data) => {
         if (data && typeof data.isOpen === 'boolean') {
           setIsRegOpen(data.isOpen);
+          try {
+            localStorage.setItem('infinix_reg_open', String(data.isOpen));
+          } catch (e) {}
         } else {
           setIsRegOpen(true);
         }
       })
-      .catch(() => setIsRegOpen(true));
+      .catch(() => {});
   }, []);
 
   const [step, setStep] = useState<1 | 2>(1);

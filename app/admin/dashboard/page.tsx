@@ -205,6 +205,10 @@ export default function AdminDashboardPage() {
   const handleToggleRegistration = async (newStatus: boolean) => {
     setIsTogglingRegistration(true);
     try {
+      try {
+        localStorage.setItem('infinix_reg_open', String(newStatus));
+      } catch (e) {}
+
       const res = await fetch('/api/admin/registration-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -213,6 +217,9 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data && data.success) {
         setIsRegistrationOpenState(data.isOpen);
+        try {
+          localStorage.setItem('infinix_reg_open', String(data.isOpen));
+        } catch (e) {}
         showToast(data.message, 'success');
       } else {
         showToast(data?.error || 'Failed to update registration status', 'error');
