@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: "INFINIX'26 | 32-Hours National Level Underwater Hackathon",
   description:
-    "Dive into innovation and build the future at INFINIX'26 - Premier 32-Hours National Level Hackathon featuring AI, Web3, Cloud, Robotics, and ₹1,90,000+ Prize Pool.",
+    "Dive into innovation and build the future at INFINIX'26 - Premier 32-Hours National Level Hackathon featuring AI, Web3, Cloud, Robotics, ₹15,000 Cash Prize Pool & Internship Offers.",
   keywords: [
     "INFINIX26",
     "Hackathon",

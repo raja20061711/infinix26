@@ -17,7 +17,7 @@ const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   },
   {
     id: 'ann-default-2',
-    title: '🏆 Total ₹40,000 Prize Pool',
+    title: '🏆 Total ₹15,000 Prize Pool',
     message: 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!',
     category: 'Update',
     timestamp: 'Just Now',

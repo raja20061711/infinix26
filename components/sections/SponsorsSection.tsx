@@ -1,120 +1,163 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Award, Users2, Mail, ExternalLink } from 'lucide-react';
+import { Mail, ExternalLink, Sparkles, Instagram, MapPin } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
 
-const sponsorTiers = [
+const sponsorList = [
   {
-    tier: 'TITLE PARTNER',
-    badge: 'Platinum Sponsor',
-    status: 'IE(I)-IT Student Chapter',
-    partners: ['IE(I)-IT Student Chapter & RIT IT Department'],
-    icon: ShieldCheck,
+    name: 'IE(I) IT STUDENT CHAPTER',
+    badge: 'Host Chapter',
+    tier: 'ORGANIZING ACADEMIC PARTNER',
+    tagline: 'Dept. of IT, Ramco Institute of Technology',
+    logo: '/iei-logo.png',
   },
   {
-    tier: 'TRACK SPONSORS',
-    badge: 'Domain Partners',
-    status: 'Announcing Soon',
-    partners: ['Revealing Official Industry Partners Soon'],
-    icon: Award,
+    name: 'CADD TECHNOLYNX',
+    badge: 'Official Sponsor',
+    tier: 'DESIGN & PLACEMENT PARTNER',
+    tagline: 'INNOVATE • DESIGN • PLACEMENT',
+    logo: '/cadd-technolynx-logo.png',
+    url: 'https://caddtechnolynx.com/index.html',
   },
   {
-    tier: 'MEDIA PARTNER',
-    badge: 'Official Media Partner',
-    status: 'Powered by Unstop',
-    partners: ['Unstop (formerly Dare2Compete)'],
-    icon: Users2,
+    name: 'BRASSY ACADEMY',
+    badge: 'Official Sponsor',
+    tier: 'SOFTWARE • RESEARCH • EDUCATION',
+    tagline: 'SOFTWARE | RESEARCH | EDUCATION',
+    logo: '/brassy-academy-logo.png',
+    url: 'https://brassyacademy.com/',
+  },
+  {
+    name: 'THE THREE MONKEYS FOOD CORNER',
+    badge: 'Merchandise Partner',
+    tier: 'OFFICIAL MERCHANDISE PARTNER',
+    tagline: 'Official Merchandise & Apparel Partner',
+    logo: '/three-monkeys-logo.png',
+    url: 'https://www.instagram.com/threemonkeyscafe/?hl=en',
+    locationUrl: 'https://share.google/XFJajlhSNoMjInKfj',
+  },
+  {
+    name: 'UNSTOP',
+    badge: 'Media Partner',
+    tier: 'PLATFORM & MEDIA PARTNER',
+    tagline: 'Official Online Platform',
+    logo: '/unstop-logo.png',
     url: 'https://unstop.com',
   },
 ];
 
 export default function SponsorsSection() {
   return (
-    <section id="sponsors" className="relative py-14 sm:py-16 px-6 max-w-7xl mx-auto z-10">
+    <section id="sponsors" className="relative py-12 sm:py-16 px-6 max-w-7xl mx-auto z-10">
+      {/* Compact Header */}
       <div className="text-center mb-8 sm:mb-10">
-        <span className="text-xs font-bold tracking-[0.3em] text-[#00D9FF] uppercase mb-2 block">
-          OUR SPONSORS & PARTNERS
-        </span>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-orbitron tracking-tight uppercase text-white">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/30 text-[#00D9FF] text-[11px] font-bold font-orbitron tracking-widest uppercase mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-[#00D9FF]" />
+          <span>OFFICIAL EVENT SPONSORS</span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-orbitron tracking-tight uppercase text-white">
           POWERED BY{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] via-[#7CE7FF] to-[#4CCFFF]">
             INDUSTRY LEADERS
           </span>
         </h2>
-        <p className="mt-3 text-xs sm:text-sm text-gray-300 max-w-xl mx-auto font-medium">
-          Interested in partnering with INFINIX&apos;26? Connect with our team to explore sponsorship tiers.
-        </p>
       </div>
 
-      {/* Sponsor Tier Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-        {sponsorTiers.map((tier, idx) => {
-          const Icon = tier.icon;
+      {/* Compact Neat Sponsors Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-10">
+        {sponsorList.map((item, idx) => {
+          const Container = item.url ? 'a' : 'div';
+          const linkProps = item.url
+            ? { href: item.url, target: '_blank', rel: 'noopener noreferrer' }
+            : {};
+
           return (
-            <TiltCard key={idx} className="rounded-3xl">
-              <div className="glass-panel p-8 rounded-3xl border border-[#00D9FF]/25 flex flex-col justify-between h-full relative group hover:border-[#00D9FF] transition-colors bg-[#04162E]/60 backdrop-blur-xl">
+            <TiltCard key={idx} className="rounded-3xl h-full">
+              <Container
+                {...linkProps}
+                className="glass-panel p-5 rounded-3xl border border-[#00D9FF]/30 bg-gradient-to-b from-[#051c38]/90 via-[#04162e]/95 to-[#020a16] flex flex-col justify-between h-full relative group hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.3)] transition-all cursor-pointer backdrop-blur-2xl"
+              >
                 <div>
-                  {/* Top Badge */}
-                  <div className="flex items-center justify-between w-full mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-[#020d20] border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] group-hover:scale-110 transition-transform">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <span className="text-[10px] font-bold tracking-widest text-[#7CE7FF] uppercase px-3 py-1 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/30">
-                      {tier.badge}
+                  {/* Top Badge & Links */}
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <span className="text-[9px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full border bg-[#00D9FF]/10 text-[#7CE7FF] border-[#00D9FF]/30">
+                      {item.badge}
                     </span>
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      {item.locationUrl && (
+                        <a
+                          href={item.locationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Google Maps Location"
+                          className="p-1 rounded-full bg-white/10 hover:bg-[#00D9FF] text-gray-300 hover:text-black transition-all"
+                        >
+                          <MapPin className="w-3 h-3" />
+                        </a>
+                      )}
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Official Page"
+                          className="p-1 rounded-full bg-white/10 hover:bg-[#00D9FF] text-gray-300 hover:text-black transition-all"
+                        >
+                          {item.url.includes('instagram.com') ? (
+                            <Instagram className="w-3 h-3" />
+                          ) : (
+                            <ExternalLink className="w-3 h-3" />
+                          )}
+                        </a>
+                      )}
+                    </div>
                   </div>
 
-                  <h3 className="font-orbitron font-extrabold text-lg text-white mb-2 uppercase tracking-wider">
-                    {tier.tier}
+                  {/* High-Contrast Crisp Logo Container Box */}
+                  <div className="w-full h-24 mb-3.5 p-2 rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-[1.04] bg-white border-2 border-[#00D9FF]/40 shadow-[0_4px_25px_rgba(0,217,255,0.2)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.logo}
+                      alt={item.name}
+                      loading="eager"
+                      decoding="async"
+                      className="max-h-full max-w-full object-contain p-0.5"
+                    />
+                  </div>
+
+                  {/* Sponsor Name & Details */}
+                  <h3 className="font-orbitron font-extrabold text-xs tracking-wider uppercase mb-1 text-white group-hover:text-[#00D9FF] transition-colors min-h-[2.2rem] flex items-center leading-tight">
+                    {item.name}
                   </h3>
 
-                  <span className="text-[11px] font-semibold text-[#00D9FF] tracking-wider uppercase block mb-4">
-                    {tier.status}
+                  <span className="text-[10px] font-bold text-[#00D9FF] tracking-wider uppercase block mb-1">
+                    {item.tier}
                   </span>
 
-                  {/* Partner Names Stack */}
-                  <div className="w-full flex flex-col gap-3 mt-2">
-                    {tier.partners.map((partner, pIdx) => {
-                      const Container = tier.url ? 'a' : 'div';
-                      const linkProps = tier.url
-                        ? { href: tier.url, target: '_blank', rel: 'noopener noreferrer' }
-                        : {};
-
-                      return (
-                        <Container
-                          key={pIdx}
-                          {...linkProps}
-                          className="p-3.5 rounded-xl bg-[#020d20]/80 border border-[#00D9FF]/20 flex items-center justify-between text-xs font-semibold text-gray-200 group-hover:border-[#00D9FF]/40 transition-all hover:bg-[#00D9FF]/10 cursor-pointer"
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF] shadow-[0_0_8px_#00D9FF]" />
-                            {partner}
-                          </span>
-                          <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#00D9FF]" />
-                        </Container>
-                      );
-                    })}
-                  </div>
+                  {item.tagline && (
+                    <p className="text-[10px] text-gray-300 font-medium line-clamp-2 leading-relaxed">
+                      {item.tagline}
+                    </p>
+                  )}
                 </div>
-              </div>
+              </Container>
             </TiltCard>
           );
         })}
       </div>
 
-      {/* Become a Sponsor CTA Banner */}
+      {/* Become a Sponsor CTA */}
       <div className="flex items-center justify-center">
         <a
           href="mailto:infinix26@ritrjpm.ac.in"
-          className="px-8 py-3.5 rounded-full glass-panel border border-[#00D9FF]/50 text-xs font-extrabold tracking-widest text-white hover:text-black hover:bg-[#00D9FF] hover:shadow-[0_0_30px_#00D9FF] transition-all duration-300 flex items-center gap-2.5"
+          className="px-6 py-2.5 rounded-full glass-panel border border-[#00D9FF]/40 text-xs font-bold font-orbitron tracking-widest text-white hover:text-black hover:bg-[#00D9FF] hover:shadow-[0_0_25px_#00D9FF] transition-all flex items-center gap-2"
           data-hoverable="true"
         >
-          <Mail className="w-4 h-4 text-[#00D9FF] group-hover:text-black" />
+          <Mail className="w-3.5 h-3.5 text-[#00D9FF] group-hover:text-black" />
           <span>BECOME A SPONSOR</span>
         </a>
       </div>
     </section>
   );
 }
-

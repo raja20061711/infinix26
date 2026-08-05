@@ -29,36 +29,58 @@ export default function AdminLoginPage() {
       const inputEmail = email.trim().toLowerCase();
       const inputPass = password.trim();
 
-      // Master Default Credentials (ALWAYS VALID FAILSAFE)
-      const isMasterDefault =
-        (inputEmail === 'admininfinixrit@gmail.com' || inputEmail === 'admin@infinix.ritrjpm.ac.in') &&
-        inputPass === 'admin2026';
+      // Check if custom admin credentials exist in localStorage
+      let hasCustomCreds = false;
+      let customEmail = 'admininfinixrit@gmail.com';
+      let customPass = 'admin2026';
 
-      // Custom Saved Credentials (if updated via admin panel settings)
-      let isCustomValid = false;
       try {
         const savedCreds = localStorage.getItem('admin_credentials');
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
-          const savedEmail = (parsed.email || '').trim().toLowerCase();
-          const savedPass = (parsed.password || '').trim();
-          if (savedEmail && savedPass && inputEmail === savedEmail && inputPass === savedPass) {
-            isCustomValid = true;
+          if (parsed.email && parsed.password) {
+            customEmail = (parsed.email || '').trim().toLowerCase();
+            customPass = (parsed.password || '').trim();
+            hasCustomCreds = true;
           }
         }
       } catch (e) {}
 
-      if (isMasterDefault || isCustomValid) {
+      let isValid = false;
+      if (hasCustomCreds) {
+        // If user set custom credentials, ONLY custom email & password will work!
+        isValid = inputEmail === customEmail && inputPass === customPass;
+      } else {
+        // Default credentials if no custom password set yet
+        const isDefaultEmail =
+          inputEmail === 'admininfinixrit@gmail.com' || inputEmail === 'admin@infinix.ritrjpm.ac.in';
+        isValid = isDefaultEmail && inputPass === 'admin2026';
+      }
+
+      if (isValid) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid Admin Email or Password. Default: admininfinixrit@gmail.com / admin2026');
+        setError('Invalid Admin Email or Password.');
         setLoading(false);
       }
     }, 400);
   };
 
   const handleAutofill = () => {
+    try {
+      const savedCreds = localStorage.getItem('admin_credentials');
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.email && parsed.password) {
+          setEmail(parsed.email.trim());
+          setPassword(parsed.password.trim());
+          setError('');
+          return;
+        }
+      }
+    } catch (e) {}
+
     setEmail('admininfinixrit@gmail.com');
     setPassword('admin2026');
     setError('');
