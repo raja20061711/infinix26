@@ -85,7 +85,7 @@ export async function sendToGoogleAppsScript(payload: AppsScriptSyncPayload): Pr
     process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
-    'https://script.google.com/macros/s/AKfycby6_r2F5QSEkZ232uDQRvPNghCBS2Z7AeLuPuecG1lT8lrLJ1FC4lkV-tkfxVcKJEbo/exec';
+    'https://script.google.com/macros/s/AKfycbxKzE8_cUGd__1N5z5tj1kUqrOXN4oiT8vZIpu_1vk3Y5tU50kcSB8f9q3c28E4nRA/exec';
 
   console.log(`[Google Sync] Executing action: ${payload.action} -> URL: ${scriptUrl}`);
   console.log(`[Google Sync] Payload:`, JSON.stringify(payload, null, 2));

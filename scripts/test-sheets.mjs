@@ -1,6 +1,6 @@
 // Native Node.js fetch test script
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby6_r2F5QSEkZ232uDQRvPNghCBS2Z7AeLuPuecG1lT8lrLJ1FC4lkV-tkfxVcKJEbo/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKzE8_cUGd__1N5z5tj1kUqrOXN4oiT8vZIpu_1vk3Y5tU50kcSB8f9q3c28E4nRA/exec';
 
 const payload = {
   action: 'create',

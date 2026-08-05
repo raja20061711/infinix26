@@ -28,6 +28,7 @@ import {
   Eye,
   FileUp,
   X,
+  ExternalLink,
   Lock,
   ShieldCheck,
   Zap,
@@ -1389,19 +1390,24 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       </td>
                       <td className="p-4">
                         <span className="block font-bold text-emerald-400 font-orbitron">
-                          ₹{team.paymentAmount || (team.college.toLowerCase().includes('ramco') ? 250 * (team.teamSize || 3) : 350 * (team.teamSize || 3))}
+                          ₹{team.paymentAmount || (team.college.toLowerCase().includes('ramco') ? 200 * (team.teamSize || 3) : 350 * (team.teamSize || 3))}
                         </span>
                         <span className="text-[10px] font-mono text-gray-300 block">
-                          Ref: {team.upiTransactionId || 'N/A'}
+                          Ref: {team.upiTransactionId || (team as any).upi_transaction_id || 'N/A'}
                         </span>
-                        {team.paymentProofUrl && (
-                          <button
-                            onClick={() => setViewingPaymentProofUrl(team.paymentProofUrl!)}
-                            className="mt-1 text-[10px] text-[#00D9FF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                          >
-                            📸 View Payment Slip
-                          </button>
-                        )}
+                        {(() => {
+                          const proofUrl = team.paymentProofUrl || (team as any).payment_proof_url;
+                          return proofUrl ? (
+                            <button
+                              onClick={() => setViewingPaymentProofUrl(proofUrl)}
+                              className="mt-1 text-[10px] text-[#00D9FF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                            >
+                              📸 View Payment Slip
+                            </button>
+                          ) : (
+                            <span className="text-[9px] text-gray-500 block mt-0.5">No Slip Uploaded</span>
+                          );
+                        })()}
                       </td>
                       <td className="p-4">
                         <div className="space-y-1">
@@ -2924,27 +2930,38 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 </h3>
                 <button
                   onClick={() => setViewingPaymentProofUrl(null)}
-                  className="text-gray-400 hover:text-white p-1"
+                  className="text-gray-400 hover:text-white p-1 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="max-h-[60vh] overflow-auto rounded-2xl border border-gray-800 bg-black p-2">
+              <div className="max-h-[60vh] overflow-auto rounded-2xl border border-gray-800 bg-black p-2 flex items-center justify-center min-h-[220px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={viewingPaymentProofUrl}
                   alt="Payment Slip Screenshot"
-                  className="w-full object-contain rounded-xl"
+                  className="w-full max-h-[50vh] object-contain rounded-xl"
                 />
               </div>
 
-              <button
-                onClick={() => setViewingPaymentProofUrl(null)}
-                className="w-full py-3 rounded-xl bg-[#00D9FF] text-black font-extrabold text-xs uppercase font-orbitron tracking-widest hover:bg-[#7CE7FF] transition-all"
-              >
-                CLOSE PREVIEW
-              </button>
+              <div className="flex items-center gap-3">
+                <a
+                  href={viewingPaymentProofUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs uppercase font-orbitron tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  OPEN FULL IMAGE
+                </a>
+                <button
+                  onClick={() => setViewingPaymentProofUrl(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-[#00D9FF] text-black font-extrabold text-xs uppercase font-orbitron tracking-widest hover:bg-[#7CE7FF] transition-all cursor-pointer"
+                >
+                  CLOSE PREVIEW
+                </button>
+              </div>
             </div>
           </div>
         )}
