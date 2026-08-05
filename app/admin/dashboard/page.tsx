@@ -269,6 +269,7 @@ export default function AdminDashboardPage() {
           setAdminPassword(parsed.password);
         }
       } else {
+        setAdminEmail('admininfinixrit@gmail.com');
         setNewAdminEmail('admininfinixrit@gmail.com');
       }
     } catch (e) {
@@ -935,7 +936,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
         <div className="p-4 border-t border-[#00D9FF]/20 space-y-3">
           <div className="p-3 rounded-xl bg-[#020b18] border border-[#00D9FF]/20 text-[11px]">
             <span className="text-gray-400 block">Logged in as:</span>
-            <span className="font-bold text-[#7CE7FF] truncate block">admin@infinix.ritrjpm.ac.in</span>
+            <span className="font-bold text-[#7CE7FF] truncate block">{adminEmail}</span>
           </div>
 
           <button
