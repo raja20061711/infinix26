@@ -4,6 +4,7 @@ import path from 'path';
 
 // Local storage file for instant persistence
 const SETTINGS_FILE = path.join(process.cwd(), 'registration_status.json');
+const CONFIG_ID = 'config_registration_status';
 
 declare global {
   var infinix_reg_open: boolean | undefined;
@@ -32,7 +33,25 @@ export async function isRegistrationOpen(): Promise<boolean> {
     // Ignore file read error
   }
 
-  // 3. Query Supabase DB `site_settings`
+  // 3. Query Supabase DB `announcements` config row (Guaranteed DB persistence)
+  try {
+    const { data: annData } = await supabase
+      .from('announcements')
+      .select('message, is_published')
+      .eq('id', CONFIG_ID)
+      .maybeSingle();
+
+    if (annData && annData.message !== undefined) {
+      const isOpen = annData.message === 'true' && annData.is_published !== false;
+      globalThis.infinix_reg_open = isOpen;
+      saveLocalStatus(isOpen);
+      return isOpen;
+    }
+  } catch (err) {
+    // Ignore
+  }
+
+  // 4. Query Supabase DB `site_settings`
   try {
     const { data } = await supabase
       .from('site_settings')
@@ -47,10 +66,10 @@ export async function isRegistrationOpen(): Promise<boolean> {
       return isOpen;
     }
   } catch (err) {
-    console.warn('Could not query site_settings from Supabase:', err);
+    // Ignore
   }
 
-  return true; // Default to open
+  return true; // Default to open if no setting stored yet
 }
 
 /**
@@ -60,15 +79,30 @@ export async function setRegistrationOpen(isOpen: boolean): Promise<boolean> {
   globalThis.infinix_reg_open = isOpen;
   saveLocalStatus(isOpen);
 
-  // Sync with Supabase DB `site_settings`
+  const statusStr = isOpen ? 'true' : 'false';
+
+  // 1. Sync to Supabase `announcements` table (Guaranteed table in database)
+  try {
+    await supabase.from('announcements').upsert({
+      id: CONFIG_ID,
+      title: 'REGISTRATION_STATUS',
+      message: statusStr,
+      category: 'Config',
+      is_published: isOpen,
+    });
+  } catch (err) {
+    console.warn('Could not update announcements config row in Supabase:', err);
+  }
+
+  // 2. Sync with Supabase DB `site_settings`
   try {
     await supabase.from('site_settings').upsert({
       key: 'registration_open',
-      value: isOpen ? 'true' : 'false',
+      value: statusStr,
       updated_at: new Date().toISOString(),
     });
   } catch (err) {
-    console.warn('Could not update site_settings in Supabase:', err);
+    // Table might not exist yet
   }
 
   return isOpen;

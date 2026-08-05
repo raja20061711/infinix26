@@ -97,7 +97,12 @@ CREATE TABLE public.announcements (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. CHATBOT KNOWLEDGE TABLE (FAQ / Knowledge Base for Moana Chatbot)
+-- 7. SITE SETTINGS TABLE (Registration Open/Closed Toggle Persistence)
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  key VARCHAR(100) PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 CREATE TABLE public.chatbot_knowledge (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   question TEXT NOT NULL,
