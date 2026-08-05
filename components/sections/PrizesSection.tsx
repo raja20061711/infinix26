@@ -89,8 +89,9 @@ export default function PrizesSection() {
               </div>
 
               {/* Golden Base Pedestal */}
-              <div className="mt-6 w-full py-2 rounded-full bg-gradient-to-r from-[#FFD700]/10 via-[#FFD700]/20 to-[#FFD700]/10 border border-[#FFD700]/40 text-[10px] font-extrabold font-orbitron tracking-[0.2em] text-[#FFD700] uppercase">
-                👑 GRAND CHAMPION WINNER
+              <div className="mt-6 w-full py-2 rounded-full bg-gradient-to-r from-[#FFD700]/10 via-[#FFD700]/20 to-[#FFD700]/10 border border-[#FFD700]/40 text-[10px] font-extrabold font-orbitron tracking-[0.2em] text-[#FFD700] uppercase flex items-center justify-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-[#FFD700]" />
+                GRAND CHAMPION WINNER
               </div>
             </div>
           </TiltCard>
@@ -151,7 +152,7 @@ export default function PrizesSection() {
               data-hoverable="true"
             >
               <div className="w-13 h-13 rounded-full bg-[#1c0c38] border-2 border-purple-400/60 flex items-center justify-center font-orbitron font-black text-xl text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.4)] mb-4">
-                🚀
+                <Sparkles className="w-6 h-6 text-purple-300 animate-pulse" />
               </div>
               <span className="text-xs font-bold font-orbitron tracking-widest text-purple-300 uppercase">
                 RISING INNOVATORS & TOP TALENTS

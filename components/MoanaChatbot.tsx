@@ -50,22 +50,22 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['what is', 'about', 'infinix', 'event', 'summary', 'overview', 'details', '32 hour', '32 hours', 'non-stop', 'hackathon'],
     response:
-      "INFINIX'26 Event Summary:\n\nINFINIX'26 is a 32-Hours National Level Non-Stop Offline Hackathon hosted by the Department of Information Technology at Ramco Institute of Technology (Autonomous), Rajapalayam, in association with IE(I)-IT Student Chapter.\n\n• Dates: September 10 – 11, 2026\n• Total Prize Pool: ₹15,000 Cash Prizes & Internship Offers\n• Entry Fee: ₹200 for Internal Ramco Students & ₹350 for External Students (Direct Registration on website)!",
+      "INFINIX'26 Event Summary:\n\nINFINIX'26 is a 32-Hours National Level Non-Stop Offline Hackathon hosted by the Department of Information Technology at Ramco Institute of Technology (Autonomous), Rajapalayam, in association with IE(I)-IT Student Chapter.\n\n• Dates: September 10 – 11, 2026\n• Total Prize Pool: ₹15,000 Cash Prizes + Internship Offers + Official Hoodies\n• Entry Fee: ₹200 for Internal Ramco Students & ₹350 for External Students (Direct Registration on website)!",
   },
   {
     keywords: ['date', 'dates', 'when', 'time', 'schedule', 'timeline', 'september', 'start', 'end', 'reveal', 'problem', 'check-in', 'pitching', 'valedictory', 'results'],
     response:
-      "Official Event Timeline & Schedule:\n\n📅 Registration Milestones:\n• Aug 06, 2026: Official Registrations Open on Website\n• Sep 05, 2026: Registration Deadline\n\n🕒 Day 1 (10 Sep 2026):\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n🕒 Day 2 (11 Sep 2026):\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 04:00 PM: Results Announcement & Valedictory",
+      "Official Event Timeline & Schedule:\n\n[REGISTRATION MILESTONES]\n• Aug 06, 2026: Official Registrations Open on Website\n• Sep 05, 2026: Registration Deadline\n\n[DAY 1 - 10 SEP 2026]\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n[DAY 2 - 11 SEP 2026]\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 04:00 PM: Results Announcement & Valedictory",
   },
   {
     keywords: ['theme', 'themes', 'track', 'tracks', 'domain', 'domains', 'category', 'categories', 'challenge', 'ai', 'ml', 'cyber', 'health', 'medtech', 'cloud', 'devops', 'fintech', 'open innovation', 'energy', 'smart grid'],
     response:
-      "INFINIX'26 7 Official Hackathon Themes:\n\n1. 🤖 Smart Intelligence (AI/ML, Generative AI, Vision, NLP)\n2. 🛡️ Secure Computing in the Modern Technical World (Cybersecurity, Privacy, Threat Detection)\n3. 🏥 Healthcare, Biotechnology & MedTech (Digital Health, Medical Devices, Diagnostics)\n4. ☁️ Cloud Computing & DevOps (Cloud-Native, Microservices, CI/CD)\n5. 💳 FinTech (Smart Banking, Fraud Detection, Digital Payments)\n6. 💡 Open Innovation (Interdisciplinary Real-World Solutions)\n7. ⚡ Energy Innovation & Smart Grid (EEE & ECE) (Renewable Energy, Smart Grids)",
+      "INFINIX'26 7 Official Hackathon Themes:\n\n1. Smart Intelligence (AI/ML, Generative AI, Vision, NLP)\n2. Secure Computing in the Modern Technical World (Cybersecurity, Privacy, Threat Detection)\n3. Healthcare, Biotechnology & MedTech (Digital Health, Medical Devices, Diagnostics)\n4. Cloud Computing & DevOps (Cloud-Native, Microservices, CI/CD)\n5. FinTech (Smart Banking, Fraud Detection, Digital Payments)\n6. Open Innovation (Interdisciplinary Real-World Solutions)\n7. Energy Innovation & Smart Grid (EEE & ECE) (Renewable Energy, Smart Grids)",
   },
   {
     keywords: ['prize', 'prizes', 'reward', 'rewards', 'money', 'cash', 'win', 'amount', 'first', 'second', 'third', '1st', '2nd', '3rd', 'pool', '15k', '15000', '10k', '10000', '5k', '5000', 'internship', 'hoodie', 'hoodies', 'certificate', 'goodies', 'swag'],
     response:
-      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹15,000 Cash Pool + Internships + Hoodies):\n\n🥇 1st Place: ₹10,000 Cash Prize + Internship Opportunity + Official INFINIX Hoodies + Winner Certificate & Exciting Prizes\n🥈 2nd Place: ₹5,000 Cash Prize + Internship Opportunity + Official INFINIX Hoodies + Winner Certificate & Exciting Prizes\n🚀 Rising Tech Innovators: Internship Offers + Special Certificates & Exciting Perks\n\n✨ Perks for All Verified Participants:\n• Official Hardcopy / Digital Certificates of Participation\n• Swag Kits & Event Goodies\n• Direct Mentorship from Industry Experts",
+      "INFINIX'26 Rewards & Prize Pool Breakdown (Total ₹15,000 Cash Pool + Internships + Hoodies):\n\n[1ST PLACE CHAMPION]\n• ₹10,000 Cash Prize + Internship Offer + Official INFINIX Hoodies + Winner Certificate & Swags\n\n[2ND PLACE RUNNER-UP]\n• ₹5,000 Cash Prize + Internship Offer + Official INFINIX Hoodies + Winner Certificate & Swags\n\n[RISING TECH INNOVATORS]\n• Internship Offers + Special Innovation Certificates & Swags\n\n[PERKS FOR ALL PARTICIPANTS]\n• Official Hardcopy & Verified Digital Certificates of Participation\n• Swag Kits, Badges & Event Goodies\n• Direct 1-on-1 Industry Mentorship",
   },
   {
     keywords: ['register', 'registration', 'apply', 'join', 'fee', 'fees', 'cost', 'free', 'team size', 'members', 'eligibility', 'deadline'],
@@ -75,12 +75,12 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['hardware', 'sensor', 'sensors', 'iot', 'board', 'boards', 'arduino', 'raspberry', 'microcontroller', 'rules', 'kit'],
     response:
-      "Hardware Requirements & Rules:\n\n⚠️ Open Innovation & Energy Innovation Tracks:\n• Participants working on Hardware / IoT projects MUST bring their own hardware modules, microcontrollers (Arduino/ESP32/Raspberry Pi), sensors, and development boards.\n\n• General Rules:\n1. 3 to 5 members per team.\n2. Projects must be built during the 32-hour hackathon period.\n3. Pre-existing completed projects are strictly prohibited.",
+      "Hardware Requirements & Rules:\n\n[NOTE FOR HARDWARE TRACKS]\n• Participants working on Open Innovation / Energy Innovation Hardware / IoT projects MUST bring their own hardware modules, microcontrollers (Arduino/ESP32/Raspberry Pi), sensors, and development boards.\n\n[GENERAL RULES]\n1. 3 to 5 members per team.\n2. Projects must be built during the 32-hour hackathon period.\n3. Pre-existing completed projects are strictly prohibited.",
   },
   {
     keywords: ['where', 'venue', 'location', 'address', 'place', 'college', 'ramco', 'rit', 'rajapalayam', 'food', 'accommodation', 'stay', 'wifi', 'facilities', 'snack', 'rest'],
     response:
-      "Venue, Location & Facilities:\n\n📍 Venue Address:\nRamco Institute of Technology (Autonomous)\nDepartment of Information Technology\nRajapalayam, Virudhunagar District, Tamil Nadu.\n\n🛠️ Facilities Provided:\n• Continuous High-Speed Wi-Fi & Power Backup\n• Free Food, Snacks & Refreshments provided for all participants during the 32 hours\n• Designated Rest Areas & 24/7 Campus Security",
+      "Venue, Location & Facilities:\n\n[VENUE ADDRESS]\nRamco Institute of Technology (Autonomous)\nDepartment of Information Technology\nRajapalayam, Virudhunagar District, Tamil Nadu.\n\n[FACILITIES PROVIDED]\n• Continuous High-Speed Wi-Fi & Power Backup\n• Free Food, Snacks & Refreshments provided for all participants during 32 hours\n• Designated Rest Areas & 24/7 Campus Security",
   },
   {
     keywords: ['portal', 'student portal', 'login', 'qr', 'scan', 'attendance', 'desk', 'team code', 'dashboard', 'announcements'],
@@ -90,7 +90,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['sponsor', 'sponsors', 'cadd', 'technolynx', 'brassy', 'brassy academy', 'three monkeys', 'the three monkeys', 'food corner', 'merchandise', 'apparel', 'swag', 'partner', 'partners', 'placement', 'design partner'],
     response:
-      "INFINIX'26 Official Sponsors & Industry Partners:\n\n🏢 Official Design & Placement Sponsor:\n• CADD TECHNOLYNX (Innovate | Design | Placement)\n  🌐 Website: https://caddtechnolynx.com/index.html\n\n🎓 Official Education & Software Sponsor:\n• BRASSY ACADEMY (Software | Research | Education)\n  🌐 Website: https://brassyacademy.com/\n\n👕 Official Merchandise Partner:\n• THE THREE MONKEYS FOOD CORNER\n  📸 Instagram: https://www.instagram.com/threemonkeyscafe/?hl=en\n  📍 Location: https://share.google/XFJajlhSNoMjInKfj\n\n🏛️ Host Chapter & Department:\n• IE(I)-IT Student Chapter & Department of IT, RIT\n\n🌐 Media & Platform Partner:\n• Unstop (formerly Dare2Compete) — https://unstop.com",
+      "INFINIX'26 Official Sponsors & Industry Partners:\n\n[OFFICIAL DESIGN & PLACEMENT SPONSOR]\n• CADD TECHNOLYNX (Innovate | Design | Placement)\n  Website: https://caddtechnolynx.com/index.html\n\n[OFFICIAL EDUCATION & SOFTWARE SPONSOR]\n• BRASSY ACADEMY (Software | Research | Education)\n  Website: https://brassyacademy.com/\n\n[OFFICIAL MERCHANDISE PARTNER]\n• THE THREE MONKEYS FOOD CORNER\n  Instagram: https://www.instagram.com/threemonkeyscafe/?hl=en\n  Location: https://share.google/XFJajlhSNoMjInKfj\n\n[HOST CHAPTER & DEPARTMENT]\n• IE(I)-IT Student Chapter & Department of IT, RIT\n\n[MEDIA & PLATFORM PARTNER]\n• Unstop (formerly Dare2Compete) — https://unstop.com",
   },
   {
     keywords: ['social', 'instagram', 'linkedin', 'youtube', 'facebook', 'link', 'links', 'page', 'handle', 'media', 'follow'],
@@ -100,7 +100,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['yaar', 'yenna', 'epdi', 'yendha', 'eppa', 'yenga', 'yar', 'enna', 'engu', 'eppo', 'sollo', 'solu'],
     response:
-      "Moana AI - Quick Overview:\n\nINFINIX'26 is a 32-Hours National Level Offline Hackathon hosted by RIT IT Department on September 10-11, 2026.\n\n• Total Prize Pool: ₹15,000 (1st ₹10k + Internship + Hoodies, 2nd ₹5k + Internship + Hoodies, Internship Offers for Rising Innovators)\n• Registration: ₹200 (Internal) / ₹350 (External) directly on website (/register)!\n• 7 Themes: AI/ML, Cybersecurity, MedTech, Cloud/DevOps, FinTech, Open Innovation, Energy Innovation.\n• Student Coordinators: Saravanakumar V (+91 63748 47027) & Suresh R (+91 63748 95822)\n• Developers: Maharaja T, Adshayaa V, Sudharshan S M, Abinaya N\n\nAsk me any specific question about themes, prizes, developers, timeline, or venue!",
+      "Moana AI - Quick Overview:\n\nINFINIX'26 is a 32-Hours National Level Offline Hackathon hosted by RIT IT Department on September 10-11, 2026.\n\n• Total Prize Pool: ₹15,000 (1st ₹10k + Internship + Hoodies, 2nd ₹5k + Internship + Hoodies, Internship Offers for Rising Innovators)\n• Registration: ₹200 (Internal) / ₹350 (External) directly on website (/register)\n• 7 Themes: AI/ML, Cybersecurity, MedTech, Cloud/DevOps, FinTech, Open Innovation, Energy Innovation.\n• Student Coordinators: Saravanakumar V (+91 63748 47027) & Suresh R (+91 63748 95822)\n• Developers: Maharaja T, Adshayaa V, Sudharshan S M, Abinaya N\n\nAsk me any specific question about themes, prizes, developers, timeline, or venue!",
   },
 ];
 

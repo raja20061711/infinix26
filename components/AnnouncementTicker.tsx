@@ -8,7 +8,7 @@ import { getPortalState, Announcement } from '@/lib/portalState';
 const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-default-1',
-    title: "🚀 Official Registrations Open!",
+    title: "Official Registrations Open!",
     message: "Registration Fee: ₹200 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
     category: 'Urgent',
     timestamp: 'Just Now',
@@ -16,7 +16,7 @@ const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   },
   {
     id: 'ann-default-2',
-    title: '🏆 Total ₹15,000 Prize Pool',
+    title: 'Total ₹15,000 Prize Pool',
     message: 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!',
     category: 'Update',
     timestamp: 'Just Now',
@@ -24,7 +24,7 @@ const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   },
   {
     id: 'ann-default-3',
-    title: '📌 Hardware Notice for Open Innovation',
+    title: 'Hardware Notice for Open Innovation',
     message: 'Participants must bring their own hardware, IoT modules, sensors & development boards.',
     category: 'General',
     timestamp: 'Just Now',

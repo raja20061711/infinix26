@@ -133,97 +133,90 @@ export default function HeroSection() {
       id="hero"
       className="relative min-h-screen pt-28 pb-16 flex flex-col items-center justify-center text-center px-4 overflow-hidden z-10"
     >
-      {/* Top Institutional Header Row (Matching Official RIT Format with Dark Squircle Badges) */}
+      {/* Top Institutional Header Row (Matching Official RIT Format) */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-6 w-full max-w-5xl mx-auto px-4 py-2 flex flex-col md:flex-row items-center justify-between gap-6"
+        className="mb-6 w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 flex flex-col gap-3"
       >
-        {/* Left Official Logo - Ramco Institute of Technology Dark Squircle Badge */}
-        <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-3 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo new rit.png"
-            alt="Ramco Institute of Technology Official New Logo"
-            className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
-          />
-        </motion.div>
+        {/* Top Logos Bar - Always Horizontal Side by Side on Mobile & Desktop */}
+        <div className="w-full flex items-center justify-between gap-2 px-1">
+          {/* Left Official Logo - Ramco Institute of Technology */}
+          <motion.div
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            className="flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-2 sm:p-3 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] flex items-center justify-center overflow-hidden"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo new rit.png"
+              alt="Ramco Institute of Technology Official New Logo"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+            />
+          </motion.div>
+
+          {/* Right Official Logos - IE(I) Logo + Chapter Emblem */}
+          <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-1.5 sm:p-2.5 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] flex items-center justify-center overflow-hidden"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/iei-logo.png"
+                alt="IE(I) Official Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+              />
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-1.5 sm:p-2 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] flex items-center justify-center overflow-hidden"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/chapter-logo.png"
+                alt="IT Student Chapter Emblem Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+              />
+            </motion.div>
+          </div>
+        </div>
 
         {/* Center Institutional Typography Stack */}
         <div className="flex flex-col items-center text-center flex-1 space-y-1">
-          {/* Main Event Badge */}
-          <span className="font-orbitron font-extrabold text-sm sm:text-base tracking-[0.3em] text-[#00D9FF] drop-shadow-[0_0_12px_rgba(0,217,255,0.85)] uppercase">
-
-          </span>
-
-          {/* Institution Name */}
-          <h2 className="font-orbitron font-black text-sm sm:text-base md:text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+          <h2 className="font-orbitron font-black text-xs sm:text-base md:text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
             RAMCO INSTITUTE OF TECHNOLOGY
           </h2>
 
-          {/* Autonomous & Accreditation Status */}
-          <span className="text-[10px] sm:text-xs font-semibold text-gray-300 tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          <span className="text-[9px] sm:text-xs font-semibold text-gray-300 tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             (An Autonomous Institution)
           </span>
 
-          {/* Department Name with Cyan Accent */}
-          <p className="text-xs sm:text-sm font-bold text-[#7CE7FF] tracking-widest uppercase pt-0.5 drop-shadow-[0_0_10px_rgba(0,217,255,0.6)]">
+          <p className="text-[11px] sm:text-sm font-bold text-[#7CE7FF] tracking-widest uppercase pt-0.5 drop-shadow-[0_0_10px_rgba(0,217,255,0.6)]">
             DEPARTMENT OF INFORMATION TECHNOLOGY
           </p>
 
-          {/* Student Chapter Affiliation */}
-          <p className="text-xs sm:text-sm text-gray-300 font-semibold tracking-wider drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+          <p className="text-[10px] sm:text-sm text-gray-300 font-semibold tracking-wider drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
             in association with{' '}
             <span className="text-[#7CE7FF] font-bold">IE(I)-IT Student Chapter</span>
           </p>
 
-          {/* Direct Registration Live Badge */}
           <div className="flex items-center gap-2.5 mt-2">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/40 hover:border-[#00D9FF] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/40 hover:border-[#00D9FF] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
               data-hoverable="true"
             >
               <span className="w-2 h-2 rounded-full bg-[#00D9FF] animate-pulse" />
-              <span className="font-orbitron font-extrabold text-xs sm:text-sm text-[#7CE7FF] group-hover:text-white transition-colors tracking-wider drop-shadow-[0_0_8px_rgba(0,217,255,0.5)]">
+              <span className="font-orbitron font-extrabold text-[10px] sm:text-xs text-[#7CE7FF] group-hover:text-white transition-colors tracking-wider">
                 REGISTRATION LIVE • DIRECT ONLINE ENTRY
               </span>
             </Link>
           </div>
-        </div>
-
-        {/* Right Official Logos - IE(I) Logo + Chapter Emblem Badges */}
-        <div className="flex-shrink-0 flex items-center gap-3">
-          <motion.div
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-2.5 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/iei-logo.png"
-              alt="IE(I) Official Logo"
-              className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
-            />
-          </motion.div>
-
-          <motion.div
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-2 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/chapter-logo.png"
-              alt="IT Student Chapter Emblem Logo"
-              className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
-            />
-          </motion.div>
         </div>
       </motion.div>
 
