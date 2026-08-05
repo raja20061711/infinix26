@@ -108,16 +108,25 @@ export default function Navbar() {
               : 'bg-[#020817]/60 backdrop-blur-md border border-[#00D9FF]/20'
           } flex items-center justify-between`}
         >
-          {/* Logo */}
+          {/* Logo Cluster */}
           <Link href="/#hero" className="flex items-center gap-2.5 sm:gap-3 group" data-hoverable="true">
-            <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 shadow-[0_0_20px_rgba(0,217,255,0.5)] group-hover:scale-110 group-hover:border-[#00D9FF] transition-all overflow-hidden p-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/chapter-logo.png"
-                alt="Chapter Emblem Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.85)]"
-              />
-              <div className="absolute inset-0 rounded-full bg-[#00D9FF]/15 blur-sm group-hover:blur-md transition-all" />
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 shadow-[0_0_15px_rgba(0,217,255,0.4)] group-hover:scale-105 transition-all overflow-hidden p-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/infinix-event-logo-clean.png"
+                  alt="INFINIX'26 Event Logo"
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.85)]"
+                />
+              </div>
+              <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#04162E]/90 border border-[#00D9FF]/50 shadow-[0_0_15px_rgba(0,217,255,0.4)] group-hover:scale-105 transition-all overflow-hidden p-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/chapter-logo.png"
+                  alt="IT Student Chapter Logo"
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.85)]"
+                />
+              </div>
             </div>
             <span className="font-orbitron font-extrabold text-base sm:text-xl tracking-wider text-white group-hover:text-[#00D9FF] transition-colors">
               INFINIX&apos;26

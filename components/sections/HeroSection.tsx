@@ -197,19 +197,34 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Right Official Logo - IE(I)-IT Student Chapter Dark Squircle Badge */}
-        <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
-          className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-3 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/chapter-logo.png"
-            alt="IE(I)-IT Student Chapter Official Logo"
-            className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)] p-1"
-          />
-        </motion.div>
+        {/* Right Official Logos - IE(I) Logo + Chapter Emblem Badges */}
+        <div className="flex-shrink-0 flex items-center gap-3">
+          <motion.div
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-2.5 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/iei-logo.png"
+              alt="IE(I) Official Logo"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+            />
+          </motion.div>
+
+          <motion.div
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0c1322]/90 backdrop-blur-xl border border-[#00D9FF]/35 p-2 shadow-[0_0_20px_rgba(0,217,255,0.25)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.45)] hover:scale-105 transition-all duration-300 flex items-center justify-center relative overflow-hidden"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/chapter-logo.png"
+              alt="IT Student Chapter Emblem Logo"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
+            />
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Pristine 3D Metallic Cyber Phoenix Event Emblem (Isolated 100% Transparent PNG) */}
