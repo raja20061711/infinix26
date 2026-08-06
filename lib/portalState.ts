@@ -78,7 +78,7 @@ export interface PortalState {
   announcements: Announcement[];
 }
 
-const STORAGE_KEY = 'infinix26_portal_state_v3';
+const STORAGE_KEY = 'infinix26_portal_state_v4';
 
 const INITIAL_STATE: PortalState = {
   themeSelectionEnabled: false,

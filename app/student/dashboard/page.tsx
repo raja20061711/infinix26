@@ -127,15 +127,43 @@ export default function StudentDashboardPage() {
             // Sync to local portalState
             state.teams.unshift(teamObj);
             savePortalState(state);
-          } else if (state.teams.length > 0) {
-            const fallbackTeam = state.teams[0];
-            setCurrentTeam(fallbackTeam);
+          } else {
+            // Fresh Team Fallback for current session team ID
+            const freshTeam: any = {
+              teamId: sessionTeamId,
+              teamName: `Team ${sessionTeamId}`,
+              leaderName: 'Team Leader',
+              leaderEmail: '',
+              leaderPhone: '',
+              college: '',
+              department: '',
+              members: [],
+              attendanceStatus: 'Not Checked In',
+              selectedThemeId: undefined,
+              registrationStatus: 'Verified',
+            };
+            setCurrentTeam(freshTeam);
+            setSelectedThemeId('');
+            setThemeSubmitted(false);
           }
         })
         .catch(() => {
-          if (state.teams.length > 0) {
-            setCurrentTeam(state.teams[0]);
-          }
+          const freshTeam: any = {
+            teamId: sessionTeamId,
+            teamName: `Team ${sessionTeamId}`,
+            leaderName: 'Team Leader',
+            leaderEmail: '',
+            leaderPhone: '',
+            college: '',
+            department: '',
+            members: [],
+            attendanceStatus: 'Not Checked In',
+            selectedThemeId: undefined,
+            registrationStatus: 'Verified',
+          };
+          setCurrentTeam(freshTeam);
+          setSelectedThemeId('');
+          setThemeSubmitted(false);
         });
     }
   }, [router]);
