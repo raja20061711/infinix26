@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
       department: department.trim(),
       year_of_study: yearOfStudy || '3rd Year',
       roll_number: rollNumber?.trim() || '',
-      selected_theme_id: 'Not Selected',
+      selected_theme_id: null,
       members: members || [],
       accommodation_required: Boolean(accommodationRequired),
       upi_transaction_id: upiTransactionId.trim(),

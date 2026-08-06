@@ -51,11 +51,43 @@ async function saveToPermanentLocalStorage(
   return null;
 }
 
+async function uploadToFreeImageHost(rawBase64: string): Promise<string | null> {
+  try {
+    const postData = new URLSearchParams({
+      key: '6d207e02198a847aa98d0a2a901485a5',
+      action: 'upload',
+      source: rawBase64,
+      format: 'json',
+    }).toString();
+
+    const res = await fetch('https://freeimage.host/api/1/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: postData,
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      const pubUrl = json?.image?.url || json?.image?.display_url;
+      if (pubUrl && (pubUrl.startsWith('http://') || pubUrl.startsWith('https://'))) {
+        console.log(`✅ Permanent Public Image uploaded to FreeImage.host CDN: ${pubUrl}`);
+        return pubUrl;
+      }
+    }
+  } catch (e: any) {
+    console.warn('[FreeImage.host CDN Fallback Notice]:', e?.message || e);
+  }
+  return null;
+}
+
 /**
  * Upload Payment Slip Image safely & permanently.
  * Primary: Supabase Storage Bucket ('payment-proofs') -> Returns public CDN HTTP URL
  * Secondary: Local Server Disk ('/uploads/payment_slips/') -> Returns full HTTP URL
- * NO TEMPORARY EPHEMERAL URLS ARE EVER RETURNED.
+ * Tertiary: FreeImage.host CDN -> Returns permanent public HTTP URL (https://iili.io/...)
+ * NO BASE64 STRINGS ARE EVER RETURNED FOR GOOGLE SHEETS.
  */
 export async function uploadPaymentSlipToSupabase(
   base64Data: string,
@@ -132,7 +164,12 @@ export async function uploadPaymentSlipToSupabase(
     return localUrl;
   }
 
-  // 3. Fallback: Base64 Data URI
+  // 3. Guaranteed Permanent Public Cloud Upload (FreeImage.host -> https://iili.io/...)
+  const cloudUrl = await uploadToFreeImageHost(rawBase64);
+  if (cloudUrl) {
+    return cloudUrl;
+  }
+
   return base64Data;
 }
 

@@ -78,9 +78,17 @@ export default function StudentDashboardPage() {
 
     if (foundTeam) {
       setCurrentTeam(foundTeam);
-      if (foundTeam.selectedThemeId) {
-        setSelectedThemeId(foundTeam.selectedThemeId);
+      const isRealSelection = Boolean(
+        foundTeam.selectedThemeId &&
+        foundTeam.selectedThemeId !== 'Not Selected' &&
+        foundTeam.selectedThemeId !== 'NONE'
+      );
+      if (isRealSelection) {
+        setSelectedThemeId(foundTeam.selectedThemeId!);
         setThemeSubmitted(true);
+      } else {
+        setSelectedThemeId('');
+        setThemeSubmitted(false);
       }
       if (foundTeam.qrCodeUrl) {
         setQrCodeUrl(foundTeam.qrCodeUrl);
@@ -99,9 +107,17 @@ export default function StudentDashboardPage() {
           if (data && data.success && data.team) {
             const teamObj = data.team;
             setCurrentTeam(teamObj);
-            if (teamObj.selectedThemeId) {
+            const isRealSelection = Boolean(
+              teamObj.selectedThemeId &&
+              teamObj.selectedThemeId !== 'Not Selected' &&
+              teamObj.selectedThemeId !== 'NONE'
+            );
+            if (isRealSelection) {
               setSelectedThemeId(teamObj.selectedThemeId);
               setThemeSubmitted(true);
+            } else {
+              setSelectedThemeId('');
+              setThemeSubmitted(false);
             }
             if (teamObj.qrCodeUrl) {
               setQrCodeUrl(teamObj.qrCodeUrl);
@@ -567,13 +583,21 @@ export default function StudentDashboardPage() {
                 <div className="space-y-5 max-h-[600px] overflow-y-auto pr-1">
                   {publishedPSList.map((ps) => {
                     const isSelectedByMyTeam =
-                      currentTeam?.selectedThemeId === ps.id || currentTeam?.selectedThemeId === ps.psCode;
+                      Boolean(currentTeam?.selectedThemeId) &&
+                      currentTeam?.selectedThemeId !== 'Not Selected' &&
+                      currentTeam?.selectedThemeId !== 'NONE' &&
+                      (currentTeam?.selectedThemeId === ps.id || currentTeam?.selectedThemeId === ps.psCode);
 
                     const allocation = allocations[ps.id] || allocations[ps.psCode];
                     const isChosenByOtherTeam = Boolean(
                       allocation && allocation.teamId !== currentTeam?.teamId
                     );
                     const chosenByTeamName = allocation?.teamName;
+                    const hasAlreadyChosenRealPS = Boolean(
+                      currentTeam?.selectedThemeId &&
+                      currentTeam.selectedThemeId !== 'Not Selected' &&
+                      currentTeam.selectedThemeId !== 'NONE'
+                    );
 
                     return (
                       <div
@@ -668,11 +692,12 @@ export default function StudentDashboardPage() {
                             </button>
                           ) : (
                             <button
+                              type="button"
                               onClick={() => setSelectPsModal({ isOpen: true, ps })}
-                              disabled={Boolean(currentTeam?.selectedThemeId)}
+                              disabled={hasAlreadyChosenRealPS}
                               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-orbitron font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,217,255,0.4)] hover:shadow-[0_0_30px_rgba(0,217,255,0.7)] hover:scale-105 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              {currentTeam?.selectedThemeId
+                              {hasAlreadyChosenRealPS
                                 ? 'YOUR TEAM HAS ALREADY CHOSEN A PS'
                                 : 'CHOOSE THIS PROBLEM STATEMENT'}
                             </button>
