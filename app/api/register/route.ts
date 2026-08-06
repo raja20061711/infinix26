@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const teamId = `INF26-${randomDigits}`;
     const password = `inf26-${Math.random().toString(36).substring(2, 7)}`;
 
-    // Upload base64 payment slip image to Supabase Storage bucket to get short public HTTP URL
+    // Upload base64 payment slip image to Supabase Storage or permanent server disk
     let finalPaymentProofUrl: string | null = null;
     if (paymentProofUrl && typeof paymentProofUrl === 'string') {
       if (paymentProofUrl.startsWith('data:')) {
@@ -87,14 +87,26 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-      } else if (paymentProofUrl.startsWith('http://') || paymentProofUrl.startsWith('https://')) {
+      } else if (
+        paymentProofUrl.startsWith('http://') ||
+        paymentProofUrl.startsWith('https://') ||
+        paymentProofUrl.startsWith('/uploads/')
+      ) {
         finalPaymentProofUrl = paymentProofUrl;
       }
     }
 
-    if (!finalPaymentProofUrl || (!finalPaymentProofUrl.startsWith('http://') && !finalPaymentProofUrl.startsWith('https://'))) {
+    const isValidProof =
+      Boolean(finalPaymentProofUrl) &&
+      typeof finalPaymentProofUrl === 'string' &&
+      (finalPaymentProofUrl.startsWith('http://') ||
+        finalPaymentProofUrl.startsWith('https://') ||
+        finalPaymentProofUrl.startsWith('/uploads/') ||
+        finalPaymentProofUrl.startsWith('data:image/'));
+
+    if (!isValidProof) {
       return NextResponse.json(
-        { error: 'A valid payment proof image is required. Please upload your payment slip image.' },
+        { error: 'A valid payment proof image is required. Please select & upload your payment slip image.' },
         { status: 400 }
       );
     }
