@@ -1382,6 +1382,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                     <th className="p-4">Team Name</th>
                     <th className="p-4">Leader Name & Contact</th>
                     <th className="p-4">College & Dept</th>
+                    <th className="p-4">Chosen Problem Statement</th>
                     <th className="p-4">Payment & UTR</th>
                     <th className="p-4">Status</th>
                     <th className="p-4 text-right">Actions</th>
@@ -1400,6 +1401,25 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       <td className="p-4 text-gray-300 max-w-xs">
                         <span className="block font-medium truncate">{team.college}</span>
                         <span className="text-[10px] text-[#7CE7FF]">{team.department || 'CSE'}</span>
+                      </td>
+                      <td className="p-4">
+                        {(() => {
+                          const selectedPs = portalState.problemStatements.find(
+                            (p) => p.id === team.selectedThemeId || p.psCode === team.selectedThemeId
+                          );
+                          return selectedPs ? (
+                            <div className="space-y-0.5">
+                              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/50 text-[10px] font-bold font-orbitron inline-block">
+                                {selectedPs.psCode}
+                              </span>
+                              <span className="text-[11px] text-gray-200 font-semibold block truncate max-w-[140px]">
+                                {selectedPs.title}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-gray-500 font-medium">Not Selected</span>
+                          );
+                        })()}
                       </td>
                       <td className="p-4">
                         <span className="block font-bold text-emerald-400 font-orbitron">
@@ -1796,24 +1816,42 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
             {/* List Problem Statements */}
             <div className="space-y-4">
-              {portalState.problemStatements.map((ps) => (
-                <div key={ps.id} className="p-5 rounded-2xl bg-[#04162E]/80 border border-[#00D9FF]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded bg-[#00D9FF]/20 text-[#00D9FF] text-[10px] font-bold font-orbitron">
-                        {ps.psCode}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          ps.isPublished ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-amber-950 text-amber-300 border border-amber-500/30'
-                        }`}
-                      >
-                        {ps.isPublished ? 'PUBLISHED LIVE' : 'UNPUBLISHED (HIDDEN)'}
-                      </span>
+              {portalState.problemStatements.map((ps) => {
+                const assignedTeam = portalState.teams.find(
+                  (t) => t.selectedThemeId === ps.id || t.selectedThemeId === ps.psCode
+                );
+
+                return (
+                  <div key={ps.id} className="p-5 rounded-2xl bg-[#04162E]/80 border border-[#00D9FF]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-[#00D9FF]/20 text-[#00D9FF] text-[10px] font-bold font-orbitron">
+                          {ps.psCode}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            ps.isPublished ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-amber-950 text-amber-300 border border-amber-500/30'
+                          }`}
+                        >
+                          {ps.isPublished ? 'PUBLISHED LIVE' : 'UNPUBLISHED (HIDDEN)'}
+                        </span>
+
+                        {/* Live Allocation Reservation Tag */}
+                        {assignedTeam ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-950/90 text-red-300 border border-red-500/60 text-[10px] font-bold font-orbitron flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-red-400" />
+                            RESERVED BY TEAM: {assignedTeam.teamName} ({assignedTeam.teamId})
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold font-orbitron flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-emerald-400" />
+                            🟢 AVAILABLE (UNASSIGNED)
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-bold text-sm text-white">{ps.title}</h4>
+                      <p className="text-xs text-gray-300 max-w-xl">{ps.description}</p>
                     </div>
-                    <h4 className="font-bold text-sm text-white">{ps.title}</h4>
-                    <p className="text-xs text-gray-300 max-w-xl">{ps.description}</p>
-                  </div>
 
                   <div className="flex items-center gap-3">
                     <button
@@ -1856,7 +1894,8 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </div>
         )}

@@ -31,6 +31,22 @@ export default function StudentDashboardPage() {
   const [selectedThemeId, setSelectedThemeId] = useState<string>('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [themeSubmitted, setThemeSubmitted] = useState<boolean>(false);
+  const [allocations, setAllocations] = useState<Record<string, { teamId: string; teamName: string }>>({});
+  const [selectPsModal, setSelectPsModal] = useState<{ isOpen: boolean; ps: any | null }>({ isOpen: false, ps: null });
+  const [isSubmittingPs, setIsSubmittingPs] = useState<boolean>(false);
+  const [psErrorMsg, setPsErrorMsg] = useState<string>('');
+  const [psSuccessMsg, setPsSuccessMsg] = useState<string>('');
+
+  const fetchAllocations = () => {
+    fetch('/api/problem-statements/allocations')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && data.allocations) {
+          setAllocations(data.allocations);
+        }
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
     const sessionTeamId = localStorage.getItem('student_session_team_id');
@@ -95,6 +111,57 @@ export default function StudentDashboardPage() {
         });
     }
   }, [router]);
+
+  useEffect(() => {
+    fetchAllocations();
+  }, []);
+
+  const handleConfirmSelectPS = async () => {
+    if (!currentTeam || !selectPsModal.ps) return;
+    setIsSubmittingPs(true);
+    setPsErrorMsg('');
+    setPsSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/student/select-ps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teamId: currentTeam.teamId,
+          psId: selectPsModal.ps.id,
+          psCode: selectPsModal.ps.psCode,
+          psTitle: selectPsModal.ps.title,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPsSuccessMsg(data.message);
+        setSelectedThemeId(selectPsModal.ps.id);
+        setThemeSubmitted(true);
+
+        const updatedTeam = { ...currentTeam, selectedThemeId: selectPsModal.ps.id };
+        setCurrentTeam(updatedTeam);
+
+        if (portalState) {
+          const state = { ...portalState };
+          const idx = state.teams.findIndex((t) => t.teamId === currentTeam.teamId);
+          if (idx >= 0) state.teams[idx] = updatedTeam;
+          savePortalState(state);
+        }
+
+        setSelectPsModal({ isOpen: false, ps: null });
+        fetchAllocations();
+      } else {
+        setPsErrorMsg(data?.error || 'Failed to select Problem Statement');
+        fetchAllocations();
+      }
+    } catch (err: any) {
+      setPsErrorMsg(err.message || 'Network error while selecting Problem Statement');
+    } finally {
+      setIsSubmittingPs(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('student_session_team_id');
@@ -437,29 +504,37 @@ export default function StudentDashboardPage() {
             transition={{ delay: 0.3 }}
             className="p-6 sm:p-8 rounded-3xl bg-[#04162E]/80 backdrop-blur-2xl border border-[#00D9FF]/30 shadow-[0_15px_45px_rgba(1,4,13,0.85)] flex flex-col justify-between"
           >
-            <div>
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#00D9FF]/20">
+            {/* PROBLEM STATEMENTS SELECTION CARD */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#00D9FF]/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-[#021630] border border-[#00D9FF]/40 text-[#00D9FF]">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide uppercase">
-                      PROBLEM STATEMENT
+                    <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide uppercase flex items-center gap-2">
+                      <span>PROBLEM STATEMENTS</span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#00D9FF]/20 text-[#00D9FF] text-[10px] font-bold">
+                        FCFS UNIQUE ALLOCATION
+                      </span>
                     </h2>
-                    <p className="text-xs text-gray-400">Official Challenge Document</p>
+                    <p className="text-xs text-gray-400">
+                      Select 1 Problem Statement for your team. Once selected, no other team can pick it!
+                    </p>
                   </div>
                 </div>
 
-                {publishedPSList.length === 0 && (
-                  <span className="px-3 py-1 rounded-full bg-purple-950/50 border border-purple-500/50 text-[10px] font-bold text-purple-300 flex items-center gap-1.5">
-                    <Lock className="w-3 h-3" />
-                    HIDDEN BY ADMIN
-                  </span>
-                )}
+                <button
+                  onClick={fetchAllocations}
+                  className="p-2 rounded-xl bg-[#021630] border border-[#00D9FF]/30 text-[#7CE7FF] hover:text-white text-xs flex items-center gap-1.5 font-orbitron cursor-pointer"
+                  title="Refresh Live Allocations"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>REFRESH</span>
+                </button>
               </div>
 
-              {/* Locked / Hidden State if Problem Statements are not published */}
+              {/* Published Problem Statements List */}
               {publishedPSList.length === 0 ? (
                 <div className="p-6 rounded-2xl bg-[#020d1e]/80 border border-purple-500/30 text-center space-y-3 my-4">
                   <div className="w-12 h-12 rounded-full bg-purple-950/40 border border-purple-500/50 flex items-center justify-center mx-auto text-purple-400">
@@ -469,62 +544,127 @@ export default function StudentDashboardPage() {
                     Problem Statements Currently Hidden
                   </h3>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    Problem statements will be published by the Admin at the official start of Hacking Hours.
+                    Problem statements will be published by the Admin during the opening ceremony.
                   </p>
                 </div>
               ) : (
-                /* Published Problem Statements */
-                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
-                  {publishedPSList.map((ps) => (
-                    <div
-                      key={ps.id}
-                      className="p-4 rounded-2xl bg-[#02142b] border border-[#00D9FF]/30 space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-1 rounded-lg bg-[#00D9FF]/20 text-[#00D9FF] text-[10px] font-extrabold font-orbitron">
-                            {ps.psCode}
-                          </span>
-                          {portalState.themes.find((t) => t.id === ps.themeId) && (
-                            <span className="px-2 py-0.5 rounded-full bg-[#021630] border border-[#00D9FF]/30 text-[#7CE7FF] text-[9px] font-semibold">
-                              {portalState.themes.find((t) => t.id === ps.themeId)?.title}
+                <div className="space-y-5 max-h-[600px] overflow-y-auto pr-1">
+                  {publishedPSList.map((ps) => {
+                    const isSelectedByMyTeam =
+                      currentTeam?.selectedThemeId === ps.id || currentTeam?.selectedThemeId === ps.psCode;
+
+                    const allocation = allocations[ps.id] || allocations[ps.psCode];
+                    const isChosenByOtherTeam = Boolean(
+                      allocation && allocation.teamId !== currentTeam?.teamId
+                    );
+                    const chosenByTeamName = allocation?.teamName;
+
+                    return (
+                      <div
+                        key={ps.id}
+                        className={`p-5 rounded-2xl border transition-all space-y-3 ${
+                          isSelectedByMyTeam
+                            ? 'bg-[#021d38] border-emerald-500/70 shadow-[0_0_30px_rgba(16,185,129,0.25)]'
+                            : isChosenByOtherTeam
+                            ? 'bg-[#0b121e]/60 border-red-900/40 opacity-75'
+                            : 'bg-[#02142b] border-[#00D9FF]/30 hover:border-[#00D9FF]/60'
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-lg bg-[#00D9FF]/20 text-[#00D9FF] text-xs font-black font-orbitron">
+                              {ps.psCode}
+                            </span>
+                            {portalState?.themes.find((t) => t.id === ps.themeId) && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#021630] border border-[#00D9FF]/30 text-[#7CE7FF] text-[10px] font-semibold">
+                                {portalState.themes.find((t) => t.id === ps.themeId)?.title}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Allocation Status Badge */}
+                          {isSelectedByMyTeam ? (
+                            <span className="px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-500 text-emerald-400 text-xs font-bold font-orbitron flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              YOUR TEAM CHOSE THIS PS (LOCKED)
+                            </span>
+                          ) : isChosenByOtherTeam ? (
+                            <span className="px-3 py-1 rounded-full bg-red-950/90 border border-red-500/60 text-red-300 text-[11px] font-bold font-orbitron flex items-center gap-1.5">
+                              <Lock className="w-3.5 h-3.5 text-red-400" />
+                              ALREADY CHOSEN BY TEAM &quot;{chosenByTeamName || 'Another Team'}&quot;
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold font-orbitron flex items-center gap-1.5">
+                              <Sparkles className="w-3 h-3 text-emerald-400" />
+                              🟢 AVAILABLE FOR SELECTION
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          PUBLISHED
-                        </span>
-                      </div>
 
-                      <h3 className="font-bold text-base text-white">{ps.title}</h3>
-                      <p className="text-xs text-gray-300 leading-relaxed">{ps.description}</p>
+                        <h3 className="font-bold text-base text-white">{ps.title}</h3>
+                        <p className="text-xs text-gray-300 leading-relaxed">{ps.description}</p>
 
-                      {/* Rules & Resources */}
-                      {ps.rules && ps.rules.length > 0 && (
-                        <div className="p-3 rounded-xl bg-[#020b18] border border-white/5 space-y-1 text-xs">
-                          <span className="text-[10px] font-bold text-[#00D9FF] uppercase tracking-wider block">Rules & Constraints:</span>
-                          <ul className="list-disc list-inside text-gray-300 text-[11px] space-y-1">
-                            {ps.rules.map((rule, rIdx) => (
-                              <li key={rIdx}>{rule}</li>
-                            ))}
-                          </ul>
+                        {/* Rules & Constraints */}
+                        {ps.rules && ps.rules.length > 0 && (
+                          <div className="p-3 rounded-xl bg-[#020b18] border border-white/5 space-y-1 text-xs">
+                            <span className="text-[10px] font-bold text-[#00D9FF] uppercase tracking-wider block">
+                              Rules & Constraints:
+                            </span>
+                            <ul className="list-disc list-inside text-gray-300 text-[11px] space-y-1">
+                              {ps.rules.map((rule, rIdx) => (
+                                <li key={rIdx}>{rule}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Action Buttons Stack */}
+                        <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                          {ps.pdfUrl ? (
+                            <a
+                              href={ps.pdfUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs text-[#00D9FF] hover:underline font-semibold"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              Download Problem Statement PDF
+                            </a>
+                          ) : (
+                            <div />
+                          )}
+
+                          {isSelectedByMyTeam ? (
+                            <button
+                              disabled
+                              className="px-4 py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-bold font-orbitron flex items-center gap-1.5 cursor-not-allowed opacity-90"
+                            >
+                              <Check className="w-4 h-4 text-emerald-400" />
+                              SELECTION CONFIRMED & LOCKED
+                            </button>
+                          ) : isChosenByOtherTeam ? (
+                            <button
+                              disabled
+                              className="px-4 py-2 rounded-xl bg-red-950/40 border border-red-900/60 text-red-400 text-xs font-bold font-orbitron flex items-center gap-1.5 cursor-not-allowed opacity-75"
+                            >
+                              <Lock className="w-3.5 h-3.5 text-red-400" />
+                              ALREADY CHOSEN BY ANOTHER TEAM
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setSelectPsModal({ isOpen: true, ps })}
+                              disabled={Boolean(currentTeam?.selectedThemeId)}
+                              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-orbitron font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,217,255,0.4)] hover:shadow-[0_0_30px_rgba(0,217,255,0.7)] hover:scale-105 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {currentTeam?.selectedThemeId
+                                ? 'YOUR TEAM HAS ALREADY CHOSEN A PS'
+                                : 'CHOOSE THIS PROBLEM STATEMENT'}
+                            </button>
+                          )}
                         </div>
-                      )}
-
-                      {ps.pdfUrl && (
-                        <a
-                          href={ps.pdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_15px_rgba(0,217,255,0.4)] hover:scale-105 transition-all cursor-pointer mt-2"
-                        >
-                          <Download className="w-4 h-4" />
-                          DOWNLOAD PROBLEM STATEMENT PDF
-                        </a>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -552,12 +692,12 @@ export default function StudentDashboardPage() {
                 </div>
 
                 <span className="px-3 py-1 rounded-full bg-[#00D9FF]/10 text-[10px] font-bold text-[#00D9FF]">
-                  {portalState.announcements.length} ALERTS
+                  {portalState?.announcements.length || 0} ALERTS
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-1">
-                {portalState.announcements.map((ann) => (
+                {portalState?.announcements.map((ann) => (
                   <div
                     key={ann.id}
                     className="p-4 rounded-2xl bg-[#021024]/90 border border-[#00D9FF]/20 space-y-1.5"
@@ -584,6 +724,57 @@ export default function StudentDashboardPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* SELECTION CONFIRMATION MODAL */}
+      {selectPsModal.isOpen && selectPsModal.ps && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#04162E] border border-[#00D9FF]/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 text-center shadow-[0_0_50px_rgba(0,217,255,0.3)]">
+            <div className="w-16 h-16 rounded-2xl bg-[#00D9FF]/20 border border-[#00D9FF] flex items-center justify-center mx-auto text-[#00D9FF] shadow-[0_0_20px_rgba(0,217,255,0.4)]">
+              <Sparkles className="w-8 h-8" />
+            </div>
+
+            <div>
+              <span className="px-3 py-1 rounded-full bg-[#00D9FF]/10 text-[#00D9FF] text-xs font-bold font-orbitron uppercase">
+                CONFIRM PROBLEM STATEMENT SELECTION
+              </span>
+              <h3 className="font-orbitron font-black text-xl text-white uppercase mt-2">
+                {selectPsModal.ps.psCode}: {selectPsModal.ps.title}
+              </h3>
+              <p className="text-xs text-gray-300 mt-2 leading-relaxed">
+                Are you sure you want to select this Problem Statement for <strong className="text-[#00D9FF]">{currentTeam?.teamName}</strong>?
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs text-left space-y-1">
+              <span className="font-bold block">⚠️ Important Selection Rule:</span>
+              <p className="text-gray-300">
+                1. Once confirmed, this Problem Statement will be <strong>permanently locked for your team</strong>.<br />
+                2. No other team will be able to select this Problem Statement.<br />
+                3. You cannot change your selection afterwards without organizer approval.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectPsModal({ isOpen: false, ps: null })}
+                disabled={isSubmittingPs}
+                className="flex-1 py-3.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-extrabold text-xs font-orbitron uppercase tracking-wider transition-all cursor-pointer"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSelectPS}
+                disabled={isSubmittingPs}
+                className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-orbitron font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_25px_rgba(0,217,255,0.5)] cursor-pointer disabled:opacity-50"
+              >
+                {isSubmittingPs ? 'CONFIRMING & LOCKING...' : 'CONFIRM & LOCK CHOICE'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
