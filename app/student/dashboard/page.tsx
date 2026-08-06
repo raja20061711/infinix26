@@ -82,7 +82,8 @@ export default function StudentDashboardPage() {
           const isRealSelection = Boolean(
             liveTeam.selectedThemeId &&
             liveTeam.selectedThemeId !== 'Not Selected' &&
-            liveTeam.selectedThemeId !== 'NONE'
+            liveTeam.selectedThemeId !== 'NONE' &&
+            !liveTeam.selectedThemeId.startsWith('thm-')
           );
 
           if (isRealSelection) {
@@ -137,7 +138,8 @@ export default function StudentDashboardPage() {
       const isRealSelection = Boolean(
         foundTeam.selectedThemeId &&
         foundTeam.selectedThemeId !== 'Not Selected' &&
-        foundTeam.selectedThemeId !== 'NONE'
+        foundTeam.selectedThemeId !== 'NONE' &&
+        !foundTeam.selectedThemeId.startsWith('thm-')
       );
       if (isRealSelection) {
         setSelectedThemeId(foundTeam.selectedThemeId!);
@@ -517,11 +519,9 @@ export default function StudentDashboardPage() {
                         <div
                           key={thm.id}
                           onClick={() => {
-                            if (!themeSubmitted) handleConfirmSelectTheme(thm.id);
+                            setSelectedThemeId(thm.id);
                           }}
-                          className={`p-4 rounded-2xl border transition-all ${
-                            themeSubmitted ? 'cursor-default' : 'cursor-pointer'
-                          } ${
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-[#021c3d] border-[#00D9FF] shadow-[0_0_20px_rgba(0,217,255,0.35)]'
                               : 'bg-[#021024]/80 border-white/10 hover:border-[#00D9FF]/50'
