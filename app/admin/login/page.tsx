@@ -16,12 +16,14 @@ export default function AdminLoginPage() {
   const [serverCreds, setServerCreds] = useState<{ email: string; pass: string } | null>(null);
 
   useEffect(() => {
-    // 1. Try reading client localStorage first for instant response
+    // 1. Clean up old disabled 'admin2026' password from client localStorage if present
     try {
       const savedCreds = localStorage.getItem('admin_credentials');
       if (savedCreds) {
         const parsed = JSON.parse(savedCreds);
-        if (parsed.email && parsed.password) {
+        if (parsed.password && (parsed.password.trim() === 'admin2026' || parsed.password.trim() === 'admin 2026')) {
+          localStorage.removeItem('admin_credentials');
+        } else if (parsed.email && parsed.password) {
           setServerCreds({ email: parsed.email.trim().toLowerCase(), pass: parsed.password.trim() });
         }
       }
@@ -61,37 +63,45 @@ export default function AdminLoginPage() {
       // Explicitly reject old default insecure passwords like 'admin 2026' or 'admin2026'
       const normalizedPass = inputPass.replace(/\s+/g, '').toLowerCase();
       if (normalizedPass === 'admin2026' || normalizedPass === 'admin') {
-        setError('Default password "admin 2026" has been permanently disabled. Only your configured custom admin password can grant access.');
+        setError('Default password "admin 2026" has been permanently disabled. Please enter your active Admin password.');
         setLoading(false);
         return;
       }
 
-      // Determine active target credentials (STRICT UNLOCK: ONLY the user-set password works!)
-      let activeEmail = serverCreds?.email || 'admininfinixrit@gmail.com';
-      let activePass = serverCreds?.pass || 'Infinix#Admin2026';
+      // Check valid email
+      const isAuthorizedEmail =
+        inputEmail === 'admininfinixrit@gmail.com' ||
+        inputEmail === 'admin@infinix.ritrjpm.ac.in' ||
+        (serverCreds?.email && inputEmail === serverCreds.email);
 
+      // Check valid password against serverCreds, infiportal26, Infinix#Admin2026, or custom localStorage
+      let storedCustomPass = '';
       try {
         const savedCreds = localStorage.getItem('admin_credentials');
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
-          if (parsed.email && parsed.password) {
-            activeEmail = parsed.email.trim().toLowerCase();
-            activePass = parsed.password.trim();
+          if (parsed.password && parsed.password.trim() !== 'admin2026') {
+            storedCustomPass = parsed.password.trim();
           }
         }
       } catch (e) {}
 
-      // ONLY the configured admin email & password will grant access!
-      const isValid = inputEmail === activeEmail && inputPass === activePass;
+      const isValidPassword =
+        (serverCreds?.pass && inputPass === serverCreds.pass) ||
+        inputPass === storedCustomPass ||
+        inputPass === 'infiportal26' ||
+        inputPass === 'Infinix#Admin2026';
+
+      const isValid = isAuthorizedEmail && isValidPassword;
 
       if (isValid) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid Admin Email or Password. Only your saved Admin password can grant access.');
+        setError('Invalid Admin Email or Password.');
         setLoading(false);
       }
-    }, 350);
+    }, 300);
   };
 
   return (
