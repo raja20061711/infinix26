@@ -620,7 +620,8 @@ export default function StudentDashboardPage() {
                     const hasAlreadyChosenRealPS = Boolean(
                       currentTeam?.selectedThemeId &&
                       currentTeam.selectedThemeId !== 'Not Selected' &&
-                      currentTeam.selectedThemeId !== 'NONE'
+                      currentTeam.selectedThemeId !== 'NONE' &&
+                      !currentTeam.selectedThemeId.startsWith('thm-')
                     );
 
                     return (
