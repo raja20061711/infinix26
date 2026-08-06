@@ -23,10 +23,14 @@ export function formatAppsScriptPayload(
   const nowStr = new Date().toISOString();
 
   let cleanPaymentProofUrl = teamData?.paymentProofUrl || teamData?.payment_proof_url || '';
-  if (typeof cleanPaymentProofUrl === 'string' && cleanPaymentProofUrl.startsWith('data:')) {
-    cleanPaymentProofUrl = '';
+
+  // Expand relative local uploads path to full absolute HTTP/HTTPS URL
+  if (typeof cleanPaymentProofUrl === 'string' && cleanPaymentProofUrl.startsWith('/uploads/')) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ritinfinix.vercel.app';
+    cleanPaymentProofUrl = `${baseUrl.replace(/\/$/, '')}${cleanPaymentProofUrl}`;
   }
 
+  // If still data: URI and not a full http URL, retain or format
   const normalizedTeam = {
     ...teamData,
     teamId: regId,

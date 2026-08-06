@@ -102,6 +102,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (finalPaymentProofUrl && finalPaymentProofUrl.startsWith('/uploads/')) {
+      finalPaymentProofUrl = `${reqOrigin.replace(/\/$/, '')}${finalPaymentProofUrl}`;
+    }
+
     const isValidProof =
       Boolean(finalPaymentProofUrl) &&
       typeof finalPaymentProofUrl === 'string' &&
@@ -119,7 +123,9 @@ export async function POST(req: NextRequest) {
 
     const newTeam = {
       team_id: teamId,
+      teamId: teamId,
       team_name: teamName.trim(),
+      teamName: teamName.trim(),
       team_size: totalMembers,
       leader_name: leaderName.trim(),
       leader_email: leaderEmail.trim().toLowerCase(),
@@ -133,7 +139,9 @@ export async function POST(req: NextRequest) {
       members: members || [],
       accommodation_required: Boolean(accommodationRequired),
       upi_transaction_id: upiTransactionId.trim(),
+      upiTransactionId: upiTransactionId.trim(),
       payment_proof_url: finalPaymentProofUrl,
+      paymentProofUrl: finalPaymentProofUrl,
       payment_amount: calculatedPaymentAmount,
       payment_status: 'Pending Verification',
       attendance_status: 'Not Checked In',
