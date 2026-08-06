@@ -19,7 +19,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 async function saveToPermanentLocalStorage(
   rawBase64: string,
   extension: string,
-  teamId: string
+  teamId: string,
+  reqOrigin?: string
 ): Promise<string | null> {
   if (typeof window !== 'undefined') return null; // Browser environment safeguard
   try {
@@ -36,9 +37,14 @@ async function saveToPermanentLocalStorage(
     const buffer = Buffer.from(rawBase64, 'base64');
     fs.writeFileSync(filePath, buffer);
 
-    const relativeUrl = `/uploads/payment_slips/${fileName}`;
-    console.log(`✅ Payment Slip permanently saved to local server disk: ${relativeUrl}`);
-    return relativeUrl;
+    const baseUrl =
+      reqOrigin ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'https://ritinfinix.vercel.app';
+
+    const fullUrl = `${baseUrl.replace(/\/$/, '')}/uploads/payment_slips/${fileName}`;
+    console.log(`✅ Payment Slip permanently saved to local server disk with full URL: ${fullUrl}`);
+    return fullUrl;
   } catch (err: any) {
     console.warn('[Local Permanent Storage Fallback Notice]:', err?.message || err);
   }
@@ -47,26 +53,27 @@ async function saveToPermanentLocalStorage(
 
 /**
  * Upload Payment Slip Image safely & permanently.
- * Primary: Supabase Storage Bucket ('payment-proofs')
- * Secondary: Local Server Disk ('/uploads/payment_slips/')
- * Tertiary: Permanent Base64 Data URI (stored directly in Supabase DB text column)
+ * Primary: Supabase Storage Bucket ('payment-proofs') -> Returns public CDN HTTP URL
+ * Secondary: Local Server Disk ('/uploads/payment_slips/') -> Returns full HTTP URL
  * NO TEMPORARY EPHEMERAL URLS ARE EVER RETURNED.
  */
 export async function uploadPaymentSlipToSupabase(
   base64Data: string,
-  teamId: string
+  teamId: string,
+  reqOrigin?: string
 ): Promise<string> {
   if (!base64Data || typeof base64Data !== 'string') {
     throw new Error('No payment slip image data provided.');
   }
 
-  // If already a valid public HTTP/HTTPS or local static URL, return directly
-  if (
-    base64Data.startsWith('http://') ||
-    base64Data.startsWith('https://') ||
-    base64Data.startsWith('/uploads/')
-  ) {
+  // If already a valid public HTTP/HTTPS URL, return directly
+  if (base64Data.startsWith('http://') || base64Data.startsWith('https://')) {
     return base64Data;
+  }
+
+  if (base64Data.startsWith('/uploads/')) {
+    const baseUrl = reqOrigin || process.env.NEXT_PUBLIC_APP_URL || 'https://ritinfinix.vercel.app';
+    return `${baseUrl.replace(/\/$/, '')}${base64Data}`;
   }
 
   if (!base64Data.startsWith('data:')) {
@@ -92,7 +99,7 @@ export async function uploadPaymentSlipToSupabase(
 
   const bucketName = 'payment-proofs';
 
-  // 1. Try Supabase Storage Bucket
+  // 1. Try Supabase Storage Bucket (Guarantees public CDN URL)
   try {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
@@ -119,14 +126,13 @@ export async function uploadPaymentSlipToSupabase(
     console.warn('[Supabase Storage Notice]:', e?.message || e);
   }
 
-  // 2. Local Permanent Storage on Server Disk (/uploads/payment_slips/)
-  const localUrl = await saveToPermanentLocalStorage(rawBase64, extension, teamId);
+  // 2. Local Permanent Storage on Server Disk (/uploads/payment_slips/) with full URL
+  const localUrl = await saveToPermanentLocalStorage(rawBase64, extension, teamId, reqOrigin);
   if (localUrl) {
     return localUrl;
   }
 
-  // 3. Guaranteed Fallback: Permanent Base64 Data URI (Stored inside DB column)
-  console.log('✅ Retaining permanent Base64 Data URI for payment slip.');
+  // 3. Fallback: Base64 Data URI
   return base64Data;
 }
 

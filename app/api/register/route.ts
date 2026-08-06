@@ -74,12 +74,17 @@ export async function POST(req: NextRequest) {
     const teamId = `INF26-${randomDigits}`;
     const password = `inf26-${Math.random().toString(36).substring(2, 7)}`;
 
+    // Extract request origin or host for full absolute HTTP URLs
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const host = req.headers.get('host') || 'ritinfinix.vercel.app';
+    const reqOrigin = req.headers.get('origin') || `${proto}://${host}`;
+
     // Upload base64 payment slip image to Supabase Storage or permanent server disk
     let finalPaymentProofUrl: string | null = null;
     if (paymentProofUrl && typeof paymentProofUrl === 'string') {
       if (paymentProofUrl.startsWith('data:')) {
         try {
-          finalPaymentProofUrl = await uploadPaymentSlipToSupabase(paymentProofUrl, teamId);
+          finalPaymentProofUrl = await uploadPaymentSlipToSupabase(paymentProofUrl, teamId, reqOrigin);
         } catch (uploadErr: any) {
           console.error('[Register API] Image Upload Error:', uploadErr);
           return NextResponse.json(
@@ -89,10 +94,11 @@ export async function POST(req: NextRequest) {
         }
       } else if (
         paymentProofUrl.startsWith('http://') ||
-        paymentProofUrl.startsWith('https://') ||
-        paymentProofUrl.startsWith('/uploads/')
+        paymentProofUrl.startsWith('https://')
       ) {
         finalPaymentProofUrl = paymentProofUrl;
+      } else if (paymentProofUrl.startsWith('/uploads/')) {
+        finalPaymentProofUrl = `${reqOrigin.replace(/\/$/, '')}${paymentProofUrl}`;
       }
     }
 
