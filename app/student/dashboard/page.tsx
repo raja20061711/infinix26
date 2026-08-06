@@ -39,7 +39,10 @@ export default function StudentDashboardPage() {
   const [psList, setPsList] = useState<any[]>([]);
 
   const fetchAllocations = () => {
-    fetch('/api/problem-statements/allocations')
+    fetch(`/api/problem-statements/allocations?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data && data.success && data.allocations) {
@@ -50,7 +53,10 @@ export default function StudentDashboardPage() {
   };
 
   const fetchPsAndThemes = () => {
-    fetch('/api/problem-statements/list')
+    fetch(`/api/problem-statements/list?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data && data.success && data.problemStatements) {
@@ -171,6 +177,11 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     fetchAllocations();
     fetchPsAndThemes();
+    const interval = setInterval(() => {
+      fetchAllocations();
+      fetchPsAndThemes();
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleConfirmSelectPS = async () => {

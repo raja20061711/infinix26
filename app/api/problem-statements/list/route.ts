@@ -48,15 +48,29 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      themes,
-      problemStatements,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        themes,
+        problemStatements,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          Pragma: 'no-cache',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message, themes: DEFAULT_THEMES, problemStatements: DEFAULT_PROBLEM_STATEMENTS },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          Pragma: 'no-cache',
+        },
+      }
     );
   }
 }

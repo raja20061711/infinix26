@@ -68,7 +68,12 @@ export async function POST(req: Request) {
         ? JSON.parse(matchedRow.members || '[]')
         : [],
       accommodationRequired: matchedRow.accommodation_required ?? false,
-      selectedThemeId: matchedRow.selected_theme_id || undefined,
+      selectedThemeId:
+        matchedRow.selected_theme_id &&
+        matchedRow.selected_theme_id !== 'Not Selected' &&
+        matchedRow.selected_theme_id !== 'NONE'
+          ? matchedRow.selected_theme_id
+          : undefined,
       upiTransactionId: matchedRow.upi_transaction_id || undefined,
       paymentProofUrl: matchedRow.payment_proof_url || undefined,
       paymentAmount: matchedRow.payment_amount || undefined,
@@ -82,14 +87,28 @@ export async function POST(req: Request) {
       qrCodeUrl: matchedRow.qr_code_url || undefined,
     };
 
-    return NextResponse.json({
-      success: true,
-      team: formattedTeam,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        team: formattedTeam,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          Pragma: 'no-cache',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || 'Server error verifying credentials' },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          Pragma: 'no-cache',
+        },
+      }
     );
   }
 }
