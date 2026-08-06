@@ -78,7 +78,7 @@ export interface PortalState {
   announcements: Announcement[];
 }
 
-const STORAGE_KEY = 'infinix26_portal_state_v6';
+const STORAGE_KEY = 'infinix26_portal_state_v7';
 
 const INITIAL_STATE: PortalState = {
   themeSelectionEnabled: true,
@@ -185,103 +185,7 @@ const INITIAL_STATE: PortalState = {
       domain: 'EEE & ECE',
     },
   ],
-  problemStatements: [
-    {
-      id: 'ps-1',
-      psCode: 'PS-AI-01',
-      title: 'Real-Time Deep-Sea Sonar Anomaly Detector',
-      description: 'Develop a high-precision computer vision or signal processing pipeline that analyzes multi-spectral hydroacoustic signals to detect anomalies in underwater fiber pipelines.',
-      themeId: 'thm-1',
-      pdfUrl: '/sample-ps-ai-01.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: [
-        'Model must run under 100ms latency per hydroacoustic frame.',
-        'Zero external cloud reliance during evaluation.',
-        'Use open-source synthetic dataset or provided acoustic telemetry samples.',
-      ],
-      resources: [
-        'Hydroacoustic Signal Spec Sheet (PDF)',
-        'Sample Sonar Telemetry Dataset (CSV)',
-        'Baseline Python Model Starter Code',
-      ],
-    },
-    {
-      id: 'ps-2',
-      psCode: 'PS-SEC-02',
-      title: 'Automated Threat Detection & Zero-Trust Mesh Network',
-      description: 'Build a decentralized threat monitoring and response system for containerized microservices to prevent unauthorized lateral data movement.',
-      themeId: 'thm-2',
-      pdfUrl: '/sample-ps-sec-02.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: [
-        'Must detect intrusion events within 500ms.',
-        'Log audit trail must be tamper-evident.',
-      ],
-      resources: ['Threat Detection Dataset', 'Zero-Trust Architecture Guide'],
-    },
-    {
-      id: 'ps-3',
-      psCode: 'PS-MED-03',
-      title: 'AI-Powered Remote Patient Diagnostics & Telemedicine Hub',
-      description: 'Create an intelligent diagnostic assistant for rural clinics that processes ECG telemetry and patient vital signs using lightweight Edge AI models.',
-      themeId: 'thm-3',
-      pdfUrl: '/sample-ps-med-03.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: ['Offline-first functionality is mandatory.'],
-      resources: ['ECG Signal Processing SDK', 'Sample Vital Metrics CSV'],
-    },
-    {
-      id: 'ps-4',
-      psCode: 'PS-CLOUD-04',
-      title: 'Self-Healing Microservices & Auto-Scaling Kubernetes Mesh',
-      description: 'Design a predictive cloud orchestration engine that automatically forecasts traffic spikes and provisions serverless workloads with zero downtime.',
-      themeId: 'thm-4',
-      pdfUrl: '/sample-ps-cloud-04.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: ['Must simulate multi-region failover.'],
-      resources: ['Kubernetes Controller Boilerplate'],
-    },
-    {
-      id: 'ps-5',
-      psCode: 'PS-FIN-05',
-      title: 'Real-Time Fraud Prevention & UPI Payment Anomaly Engine',
-      description: 'Engineers a high-throughput transaction scoring system that identifies fraudulent UPI transfers in real-time using graph neural networks.',
-      themeId: 'thm-5',
-      pdfUrl: '/sample-ps-fin-05.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: ['Transaction processing pipeline must handle > 1000 TPS.'],
-      resources: ['Synthetic UPI Transaction Logs'],
-    },
-    {
-      id: 'ps-6',
-      psCode: 'PS-IOT-06',
-      title: 'Autonomous Drone Swarm Telemetry & Smart Structural Audit',
-      description: 'Develop an IoT telemetry and computer vision platform for inspecting bridge cracks and structural defects using autonomous drone imagery.',
-      themeId: 'thm-6',
-      pdfUrl: '/sample-ps-iot-06.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: ['3D mesh rendering or heatmap visualization required.'],
-      resources: ['Drone Structural Image Dataset'],
-    },
-    {
-      id: 'ps-7',
-      psCode: 'PS-EEE-07',
-      title: 'Smart Grid Peak Load Balancing & EV Battery Telemetry Engine',
-      description: 'Build a smart energy management engine that optimizes EV charging stations during peak grid stress using predictive reinforcement learning.',
-      themeId: 'thm-7',
-      pdfUrl: '/sample-ps-eee-07.pdf',
-      status: 'Published',
-      isPublished: true,
-      rules: ['Grid frequency stabilization simulation required.'],
-      resources: ['Smart Grid Telemetry Dataset'],
-    },
-  ],
+  problemStatements: [],
   announcements: [
     {
       id: 'ann-1',

@@ -865,8 +865,17 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     const themeTitle = portalState.themes.find((th) => th.id === updatedTeamObj.selectedThemeId)?.title;
     const psCode = portalState.problemStatements.find((p) => p.themeId === updatedTeamObj.selectedThemeId)?.psCode;
 
-    // 1. Log attendance check-in event to Supabase attendance table
+    // 1. Log attendance check-in event to Supabase attendance table & registrations table
     await logAttendanceToSupabase(scannedTeam.teamId, 'Admin Control Desk');
+    try {
+      await upsertAllRegistrationsToSupabase([{
+        ...updatedTeamObj,
+        attendance_status: 'Checked In',
+        check_in_time: checkInTimeStr
+      }]);
+    } catch (upsertErr) {
+      console.warn('Supabase DB attendance update notice:', upsertErr);
+    }
 
     // 2. Sync to Google Sheets API
     await syncAttendanceToGoogleSheets(updatedTeamObj, themeTitle, psCode, 'Admin Control Desk');
