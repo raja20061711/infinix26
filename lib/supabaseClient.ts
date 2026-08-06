@@ -131,7 +131,14 @@ export async function uploadPaymentSlipToSupabase(
 
   const bucketName = 'payment-proofs';
 
-  // 1. Try Supabase Storage Bucket (Guarantees public CDN URL)
+  // 1. Try FreeImage.host Permanent Public Cloud CDN (Works 100% on Vercel Serverless, Local & Mobile)
+  const cloudUrl = await uploadToFreeImageHost(base64Data);
+  if (cloudUrl) {
+    console.log(`✅ Payment Slip uploaded to FreeImage CDN: ${cloudUrl}`);
+    return cloudUrl;
+  }
+
+  // 2. Try Supabase Storage Bucket
   try {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
@@ -158,16 +165,10 @@ export async function uploadPaymentSlipToSupabase(
     console.warn('[Supabase Storage Notice]:', e?.message || e);
   }
 
-  // 2. Local Permanent Storage on Server Disk (/uploads/payment_slips/) with full URL
+  // 3. Local Permanent Storage on Server Disk (/uploads/payment_slips/) with full URL
   const localUrl = await saveToPermanentLocalStorage(rawBase64, extension, teamId, reqOrigin);
   if (localUrl) {
     return localUrl;
-  }
-
-  // 3. Guaranteed Permanent Public Cloud Upload (FreeImage.host -> https://iili.io/...)
-  const cloudUrl = await uploadToFreeImageHost(rawBase64);
-  if (cloudUrl) {
-    return cloudUrl;
   }
 
   return base64Data;
