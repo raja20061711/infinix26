@@ -57,22 +57,22 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     setTimeout(() => {
-      const inputEmail = email.trim().toLowerCase();
-      const inputPass = password.trim();
+      const inputEmailClean = email.trim().toLowerCase();
+      const inputPassClean = password.trim();
 
       // Explicitly reject old default insecure passwords like 'admin 2026' or 'admin2026'
-      const normalizedPass = inputPass.replace(/\s+/g, '').toLowerCase();
+      const normalizedPass = inputPassClean.replace(/\s+/g, '').toLowerCase();
       if (normalizedPass === 'admin2026' || normalizedPass === 'admin') {
         setError('Default password "admin 2026" has been permanently disabled. Please enter your active Admin password.');
         setLoading(false);
         return;
       }
 
-      // Check valid email
+      // Check valid email (case-insensitive for mobile keyboards)
       const isAuthorizedEmail =
-        inputEmail === 'admininfinixrit@gmail.com' ||
-        inputEmail === 'admin@infinix.ritrjpm.ac.in' ||
-        (serverCreds?.email && inputEmail === serverCreds.email);
+        inputEmailClean === 'admininfinixrit@gmail.com' ||
+        inputEmailClean === 'admin@infinix.ritrjpm.ac.in' ||
+        (serverCreds?.email && inputEmailClean === serverCreds.email.toLowerCase());
 
       // Check valid password against serverCreds, infiportal26, Infinix#Admin2026, or custom localStorage
       let storedCustomPass = '';
@@ -86,11 +86,12 @@ export default function AdminLoginPage() {
         }
       } catch (e) {}
 
+      const inputPassLower = inputPassClean.toLowerCase();
       const isValidPassword =
-        (serverCreds?.pass && inputPass === serverCreds.pass) ||
-        inputPass === storedCustomPass ||
-        inputPass === 'infiportal26' ||
-        inputPass === 'Infinix#Admin2026';
+        (serverCreds?.pass && (inputPassClean === serverCreds.pass || inputPassLower === serverCreds.pass.toLowerCase())) ||
+        (storedCustomPass && (inputPassClean === storedCustomPass || inputPassLower === storedCustomPass.toLowerCase())) ||
+        inputPassLower === 'infiportal26' ||
+        inputPassLower === 'infinix#admin2026';
 
       const isValid = isAuthorizedEmail && isValidPassword;
 

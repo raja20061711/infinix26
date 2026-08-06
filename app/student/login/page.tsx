@@ -6,15 +6,16 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Users, KeyRound, Sparkles, AlertCircle } from 'lucide-react';
 import OceanPortalBackground from '@/components/portal/OceanPortalBackground';
-import { getPortalState } from '@/lib/portalState';
+import { getPortalState, savePortalState } from '@/lib/portalState';
 
 export default function StudentLoginPage() {
   const router = useRouter();
   const [teamId, setTeamId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -23,15 +24,60 @@ export default function StudentLoginPage() {
       return;
     }
 
+    setLoading(true);
+
+    try {
+      // 1. Primary: Verify against live Supabase Database API route
+      const res = await fetch('/api/student/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success && data.team) {
+        const teamObj = data.team;
+        const state = getPortalState();
+
+        // Update local portalState with live team object
+        const existingIdx = state.teams.findIndex(
+          (t) => t.teamId.toUpperCase() === teamObj.teamId.toUpperCase()
+        );
+
+        if (existingIdx >= 0) {
+          state.teams[existingIdx] = teamObj;
+        } else {
+          state.teams.unshift(teamObj);
+        }
+
+        savePortalState(state);
+        localStorage.setItem('student_session_team_id', teamObj.teamId);
+        router.push('/student/dashboard');
+        return;
+      } else if (data && data.error) {
+        setError(data.error);
+        setLoading(false);
+        return;
+      }
+    } catch (apiErr) {
+      console.warn('API login check failed, attempting local fallback:', apiErr);
+    }
+
+    // 2. Fallback: Local portalState check
     const state = getPortalState();
-    const foundTeam = state.teams.find((t) => t.teamId.toUpperCase() === teamId.trim().toUpperCase());
+    const cleanInputId = teamId.trim().toUpperCase().replace(/\s+/g, '');
+    const foundTeam = state.teams.find((t) => {
+      const id = t.teamId.toUpperCase().replace(/\s+/g, '');
+      return id === cleanInputId || id.replace('-', '') === cleanInputId.replace('-', '');
+    });
 
     if (!foundTeam) {
-      setError('Invalid Team ID. Please check your credentials or register on our website.');
+      setError('Invalid Team ID or Password. Please check your credentials or registration confirmation email.');
+      setLoading(false);
       return;
     }
 
-    // Save student session
     localStorage.setItem('student_session_team_id', foundTeam.teamId);
     router.push('/student/dashboard');
   };
@@ -123,10 +169,11 @@ export default function StudentLoginPage() {
           <div className="pt-2 space-y-3">
             <button
               type="submit"
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-[#00D9FF] via-[#38bdf8] to-[#0284c7] text-black font-orbitron font-extrabold text-xs tracking-widest uppercase shadow-[0_0_25px_rgba(0,217,255,0.4)] hover:shadow-[0_0_35px_rgba(0,217,255,0.7)] hover:scale-[1.02] transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-[#00D9FF] via-[#38bdf8] to-[#0284c7] text-black font-orbitron font-extrabold text-xs tracking-widest uppercase shadow-[0_0_25px_rgba(0,217,255,0.4)] hover:shadow-[0_0_35px_rgba(0,217,255,0.7)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
             >
               <Lock className="w-4 h-4 text-black" />
-              <span>LOGIN TO DASHBOARD</span>
+              <span>{loading ? 'VERIFYING CREDENTIALS...' : 'LOGIN TO DASHBOARD'}</span>
             </button>
 
             <Link

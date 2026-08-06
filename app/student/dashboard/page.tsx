@@ -42,7 +42,12 @@ export default function StudentDashboardPage() {
     const state = getPortalState();
     setPortalState(state);
 
-    const foundTeam = state.teams.find((t) => t.teamId.toUpperCase() === sessionTeamId.toUpperCase());
+    const cleanSessionId = sessionTeamId.toUpperCase().replace(/\s+/g, '');
+    const foundTeam = state.teams.find((t) => {
+      const id = (t.teamId || '').toUpperCase().replace(/\s+/g, '');
+      return id === cleanSessionId || id.replace('-', '') === cleanSessionId.replace('-', '');
+    });
+
     if (foundTeam) {
       setCurrentTeam(foundTeam);
       if (foundTeam.selectedThemeId) {
@@ -55,13 +60,39 @@ export default function StudentDashboardPage() {
         generateTeamQRCode(foundTeam.teamId).then(setQrCodeUrl);
       }
     } else {
-      const fallbackTeam = state.teams[0];
-      setCurrentTeam(fallbackTeam);
-      if (fallbackTeam.selectedThemeId) {
-        setSelectedThemeId(fallbackTeam.selectedThemeId);
-        setThemeSubmitted(true);
-      }
-      generateTeamQRCode(fallbackTeam.teamId).then(setQrCodeUrl);
+      // Fetch live team record from server API
+      fetch('/api/student/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: sessionTeamId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.success && data.team) {
+            const teamObj = data.team;
+            setCurrentTeam(teamObj);
+            if (teamObj.selectedThemeId) {
+              setSelectedThemeId(teamObj.selectedThemeId);
+              setThemeSubmitted(true);
+            }
+            if (teamObj.qrCodeUrl) {
+              setQrCodeUrl(teamObj.qrCodeUrl);
+            } else {
+              generateTeamQRCode(teamObj.teamId).then(setQrCodeUrl);
+            }
+            // Sync to local portalState
+            state.teams.unshift(teamObj);
+            savePortalState(state);
+          } else if (state.teams.length > 0) {
+            const fallbackTeam = state.teams[0];
+            setCurrentTeam(fallbackTeam);
+          }
+        })
+        .catch(() => {
+          if (state.teams.length > 0) {
+            setCurrentTeam(state.teams[0]);
+          }
+        });
     }
   }, [router]);
 
