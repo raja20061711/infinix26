@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowLeft, ShieldCheck, AlertCircle, KeyRound } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, ShieldCheck, AlertCircle } from 'lucide-react';
 import OceanPortalBackground from '@/components/portal/OceanPortalBackground';
 
 export default function AdminLoginPage() {
@@ -13,6 +13,35 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [serverCreds, setServerCreds] = useState<{ email: string; pass: string } | null>(null);
+
+  useEffect(() => {
+    // 1. Try reading client localStorage first for instant response
+    try {
+      const savedCreds = localStorage.getItem('admin_credentials');
+      if (savedCreds) {
+        const parsed = JSON.parse(savedCreds);
+        if (parsed.email && parsed.password) {
+          setServerCreds({ email: parsed.email.trim().toLowerCase(), pass: parsed.password.trim() });
+        }
+      }
+    } catch (e) {}
+
+    // 2. Query server for active admin credentials
+    fetch('/api/admin/credentials')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && data.email && data.password) {
+          const fetchedEmail = data.email.trim().toLowerCase();
+          const fetchedPass = data.password.trim();
+          setServerCreds({ email: fetchedEmail, pass: fetchedPass });
+          try {
+            localStorage.setItem('admin_credentials', JSON.stringify({ email: fetchedEmail, password: fetchedPass }));
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,61 +58,40 @@ export default function AdminLoginPage() {
       const inputEmail = email.trim().toLowerCase();
       const inputPass = password.trim();
 
-      // Check if custom admin credentials exist in localStorage
-      let hasCustomCreds = false;
-      let customEmail = 'admininfinixrit@gmail.com';
-      let customPass = 'admin2026';
+      // Explicitly reject old default insecure passwords like 'admin 2026' or 'admin2026'
+      const normalizedPass = inputPass.replace(/\s+/g, '').toLowerCase();
+      if (normalizedPass === 'admin2026' || normalizedPass === 'admin') {
+        setError('Default password "admin 2026" has been permanently disabled. Only your configured custom admin password can grant access.');
+        setLoading(false);
+        return;
+      }
+
+      // Determine active target credentials (STRICT UNLOCK: ONLY the user-set password works!)
+      let activeEmail = serverCreds?.email || 'admininfinixrit@gmail.com';
+      let activePass = serverCreds?.pass || 'Infinix#Admin2026';
 
       try {
         const savedCreds = localStorage.getItem('admin_credentials');
         if (savedCreds) {
           const parsed = JSON.parse(savedCreds);
           if (parsed.email && parsed.password) {
-            customEmail = (parsed.email || '').trim().toLowerCase();
-            customPass = (parsed.password || '').trim();
-            hasCustomCreds = true;
+            activeEmail = parsed.email.trim().toLowerCase();
+            activePass = parsed.password.trim();
           }
         }
       } catch (e) {}
 
-      let isValid = false;
-      if (hasCustomCreds) {
-        // If user set custom credentials, ONLY custom email & password will work!
-        isValid = inputEmail === customEmail && inputPass === customPass;
-      } else {
-        // Default credentials if no custom password set yet
-        const isDefaultEmail =
-          inputEmail === 'admininfinixrit@gmail.com' || inputEmail === 'admin@infinix.ritrjpm.ac.in';
-        isValid = isDefaultEmail && inputPass === 'admin2026';
-      }
+      // ONLY the configured admin email & password will grant access!
+      const isValid = inputEmail === activeEmail && inputPass === activePass;
 
       if (isValid) {
         localStorage.setItem('admin_session_auth', 'true');
         router.push('/admin/dashboard');
       } else {
-        setError('Invalid Admin Email or Password.');
+        setError('Invalid Admin Email or Password. Only your saved Admin password can grant access.');
         setLoading(false);
       }
-    }, 400);
-  };
-
-  const handleAutofill = () => {
-    try {
-      const savedCreds = localStorage.getItem('admin_credentials');
-      if (savedCreds) {
-        const parsed = JSON.parse(savedCreds);
-        if (parsed.email && parsed.password) {
-          setEmail(parsed.email.trim());
-          setPassword(parsed.password.trim());
-          setError('');
-          return;
-        }
-      }
-    } catch (e) {}
-
-    setEmail('admininfinixrit@gmail.com');
-    setPassword('admin2026');
-    setError('');
+    }, 350);
   };
 
   return (
@@ -118,16 +126,6 @@ export default function AdminLoginPage() {
             Authorized Ramco Institute of Technology Organizers Only
           </p>
         </div>
-
-        {/* 1-Click Autofill Button */}
-        <button
-          type="button"
-          onClick={handleAutofill}
-          className="w-full py-2.5 px-4 rounded-xl bg-[#00D9FF]/10 border border-[#00D9FF]/30 text-[#7CE7FF] text-xs font-bold font-orbitron hover:bg-[#00D9FF]/20 transition-all flex items-center justify-center gap-2 mb-6 cursor-pointer"
-        >
-          <KeyRound className="w-4 h-4 text-[#00D9FF]" />
-          <span>AUTO-FILL OFFICIAL ADMIN CREDENTIALS</span>
-        </button>
 
         {/* Error Alert */}
         {error && (

@@ -274,7 +274,7 @@ export default function AdminDashboardPage() {
 
   // ADMIN CREDENTIALS MANAGEMENT STATE
   const [adminEmail, setAdminEmail] = useState('admininfinixrit@gmail.com');
-  const [adminPassword, setAdminPassword] = useState('admin2026');
+  const [adminPassword, setAdminPassword] = useState('Infinix#Admin2026');
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
@@ -283,6 +283,7 @@ export default function AdminDashboardPage() {
 
   // PAYMENT PROOF PREVIEW & APPROVAL STATE
   const [viewingPaymentProofUrl, setViewingPaymentProofUrl] = useState<string | null>(null);
+  const [previewImgError, setPreviewImgError] = useState(false);
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -332,7 +333,7 @@ export default function AdminDashboardPage() {
     savePortalState(newState);
   };
 
-  const handleSaveAdminCredentials = (e: React.FormEvent) => {
+  const handleSaveAdminCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setCredSuccessMsg('');
     setCredErrorMsg('');
@@ -358,12 +359,24 @@ export default function AdminDashboardPage() {
     const updatedEmail = newAdminEmail.trim();
 
     const creds = { email: updatedEmail, password: updatedPass };
-    localStorage.setItem('admin_credentials', JSON.stringify(creds));
+    try {
+      localStorage.setItem('admin_credentials', JSON.stringify(creds));
+    } catch (e) {}
+
     setAdminEmail(updatedEmail);
     setAdminPassword(updatedPass);
     setNewAdminPassword('');
     setConfirmAdminPassword('');
-    setCredSuccessMsg('Admin credentials updated successfully! Use these credentials for your next login.');
+
+    try {
+      await fetch('/api/admin/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(creds),
+      });
+    } catch (e) {}
+
+    setCredSuccessMsg('🔑 Custom Admin credentials updated & locked! ONLY your new password can unlock the portal now.');
   };
 
   // --- APPROVE PAYMENT & TRIGGER EMAIL ---
@@ -1399,7 +1412,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                           const proofUrl = team.paymentProofUrl || (team as any).payment_proof_url;
                           return proofUrl ? (
                             <button
-                              onClick={() => setViewingPaymentProofUrl(proofUrl)}
+                              onClick={() => {
+                                setPreviewImgError(false);
+                                setViewingPaymentProofUrl(proofUrl);
+                              }}
                               className="mt-1 text-[10px] text-[#00D9FF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                             >
                               📸 View Payment Slip
@@ -2925,8 +2941,8 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
           <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-[#04162E] border border-[#00D9FF]/40 rounded-3xl p-6 max-w-lg w-full space-y-4 text-center shadow-[0_0_50px_rgba(0,217,255,0.3)]">
               <div className="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 className="font-orbitron text-sm font-bold text-white uppercase tracking-wider">
-                  PAYMENT SLIP / RECEIPT PROOF
+                <h3 className="font-orbitron text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <span>📸 PAYMENT SLIP / RECEIPT PROOF</span>
                 </h3>
                 <button
                   onClick={() => setViewingPaymentProofUrl(null)}
@@ -2936,13 +2952,37 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 </button>
               </div>
 
-              <div className="max-h-[60vh] overflow-auto rounded-2xl border border-gray-800 bg-black p-2 flex items-center justify-center min-h-[220px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={viewingPaymentProofUrl}
-                  alt="Payment Slip Screenshot"
-                  className="w-full max-h-[50vh] object-contain rounded-xl"
-                />
+              <div className="max-h-[60vh] overflow-auto rounded-2xl border border-gray-800 bg-black p-2 flex items-center justify-center min-h-[220px] relative">
+                {previewImgError ? (
+                  <div className="p-6 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-red-950/80 border border-red-500/50 flex items-center justify-center mx-auto text-red-400">
+                      <ShieldAlert className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs text-red-300 font-semibold">
+                      Image could not be rendered directly.
+                    </p>
+                    <p className="text-[11px] text-gray-400 break-all max-w-xs mx-auto">
+                      Link: {viewingPaymentProofUrl}
+                    </p>
+                    <a
+                      href={viewingPaymentProofUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00D9FF]/20 border border-[#00D9FF]/40 text-[#7CE7FF] text-xs font-bold font-orbitron hover:bg-[#00D9FF]/30 transition-all"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      TRY OPENING IN NEW TAB
+                    </a>
+                  </div>
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={viewingPaymentProofUrl}
+                    alt="Payment Slip Screenshot"
+                    onError={() => setPreviewImgError(true)}
+                    className="w-full max-h-[50vh] object-contain rounded-xl"
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-3">

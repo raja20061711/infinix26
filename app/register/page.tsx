@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
   const handleCopyUpi = () => {
     try {
-      navigator.clipboard.writeText('ritotherfees700@fbl');
+      navigator.clipboard.writeText('sureshr8107-1@okaxis');
       setCopiedUpi(true);
       setTimeout(() => setCopiedUpi(false), 2500);
     } catch (e) {}
@@ -817,11 +817,11 @@ export default function RegisterPage() {
 
                     <div className="mt-4 space-y-1.5 w-full">
                       <div className="text-[11px] font-orbitron font-extrabold text-white tracking-wider uppercase">
-                        ACCOUNT NAME: <span className="text-[#00D9FF]">RIT OTHER FEES</span>
+                        ACCOUNT NAME: <span className="text-[#00D9FF]">Suresh R</span>
                       </div>
 
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0c1424] border border-[#00D9FF]/40 text-xs font-mono font-bold text-[#7CE7FF] mt-1">
-                        <span>ritotherfees700@fbl</span>
+                        <span>sureshr8107-1@okaxis</span>
                         <button
                           type="button"
                           onClick={handleCopyUpi}

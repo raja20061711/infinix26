@@ -12,53 +12,45 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
- * Ultra-Fast Cloud Storage Fallback for payment slip images (TmpFiles CDN)
- * Generates permanent, public CDN HTTP image URLs in under 400ms if Supabase Storage bucket is missing.
+ * Permanent Local Storage + Base64 Fallback Handler for payment slip images.
+ * Saves file permanently on local server disk under /public/uploads/payment_slips/
+ * or returns base64 data URI directly so images NEVER expire or break in admin preview.
  */
-async function uploadToCloudFallback(rawBase64: string, contentType: string): Promise<string | null> {
+async function saveToPermanentLocalStorage(
+  rawBase64: string,
+  extension: string,
+  teamId: string
+): Promise<string | null> {
+  if (typeof window !== 'undefined') return null; // Browser environment safeguard
   try {
-    const extension = contentType.split('/')[1]?.split('+')[0] || 'png';
-    const buffer = Buffer.from(rawBase64, 'base64');
-    const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+    const fs = await import('fs');
+    const path = await import('path');
+    const fileName = `${teamId.replace(/[^a-zA-Z0-9_-]/g, '')}_${Date.now()}.${extension}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'payment_slips');
 
-    let body = '';
-    body += `--${boundary}\r\n`;
-    body += `Content-Disposition: form-data; name="file"; filename="payment_slip.${extension}"\r\n`;
-    body += `Content-Type: ${contentType}\r\n\r\n`;
-
-    const headerBuffer = Buffer.from(body, 'utf-8');
-    const footerBuffer = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-    const payload = Buffer.concat([headerBuffer, buffer, footerBuffer]);
-
-    const res = await fetch('https://tmpfiles.org/api/v1/upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-      },
-      body: payload,
-    });
-
-    const json = await res.json();
-    if (json && json.status === 'success' && json.data && json.data.url) {
-      let rawUrl = json.data.url;
-      if (rawUrl.includes('tmpfiles.org/')) {
-        rawUrl = rawUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-      }
-      console.log(`✅ Payment Slip successfully uploaded to Cloud Storage CDN (TmpFiles): ${rawUrl}`);
-      return rawUrl;
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-  } catch (err: any) {
-    console.warn('[Cloud Storage Fallback Notice]:', err?.message || err);
-  }
 
+    const filePath = path.join(uploadDir, fileName);
+    const buffer = Buffer.from(rawBase64, 'base64');
+    fs.writeFileSync(filePath, buffer);
+
+    const relativeUrl = `/uploads/payment_slips/${fileName}`;
+    console.log(`✅ Payment Slip permanently saved to local server disk: ${relativeUrl}`);
+    return relativeUrl;
+  } catch (err: any) {
+    console.warn('[Local Permanent Storage Fallback Notice]:', err?.message || err);
+  }
   return null;
 }
 
 /**
- * Upload Base64 Payment Slip Image to Supabase Storage Bucket ('payment-proofs')
- * Converts base64 image into a permanent public HTTP URL using getPublicUrl().
- * Includes automatic instant Cloud Storage CDN fallback if Supabase bucket is missing.
- * NEVER returns base64 data.
+ * Upload Payment Slip Image safely & permanently.
+ * Primary: Supabase Storage Bucket ('payment-proofs')
+ * Secondary: Local Server Disk ('/uploads/payment_slips/')
+ * Tertiary: Permanent Base64 Data URI (stored directly in Supabase DB text column)
+ * NO TEMPORARY EPHEMERAL URLS ARE EVER RETURNED.
  */
 export async function uploadPaymentSlipToSupabase(
   base64Data: string,
@@ -68,8 +60,12 @@ export async function uploadPaymentSlipToSupabase(
     throw new Error('No payment slip image data provided.');
   }
 
-  // If already a valid public HTTP/HTTPS URL, return directly
-  if (base64Data.startsWith('http://') || base64Data.startsWith('https://')) {
+  // If already a valid public HTTP/HTTPS or local static URL, return directly
+  if (
+    base64Data.startsWith('http://') ||
+    base64Data.startsWith('https://') ||
+    base64Data.startsWith('/uploads/')
+  ) {
     return base64Data;
   }
 
@@ -96,13 +92,13 @@ export async function uploadPaymentSlipToSupabase(
 
   const bucketName = 'payment-proofs';
 
-  // 1. Primary Engine: Supabase Storage Bucket
+  // 1. Try Supabase Storage Bucket
   try {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
       .upload(filePath, buffer, {
         contentType,
-        cacheControl: '3600',
+        cacheControl: '31536000', // 1 year cache
         upsert: true,
       });
 
@@ -111,8 +107,11 @@ export async function uploadPaymentSlipToSupabase(
         .from(bucketName)
         .getPublicUrl(uploadData.path);
 
-      if (pubData?.publicUrl && (pubData.publicUrl.startsWith('http://') || pubData.publicUrl.startsWith('https://'))) {
-        console.log(`✅ Payment Slip successfully uploaded to Supabase Storage: ${pubData.publicUrl}`);
+      if (
+        pubData?.publicUrl &&
+        (pubData.publicUrl.startsWith('http://') || pubData.publicUrl.startsWith('https://'))
+      ) {
+        console.log(`✅ Payment Slip uploaded to Supabase Storage: ${pubData.publicUrl}`);
         return pubData.publicUrl;
       }
     }
@@ -120,14 +119,15 @@ export async function uploadPaymentSlipToSupabase(
     console.warn('[Supabase Storage Notice]:', e?.message || e);
   }
 
-  // 2. High-Speed Instant Cloud CDN Fallback (< 400ms)
-  console.log('[Cloud Storage] Uploading image via high-speed CDN fallback...');
-  const fallbackUrl = await uploadToCloudFallback(rawBase64, contentType);
-  if (fallbackUrl) {
-    return fallbackUrl;
+  // 2. Local Permanent Storage on Server Disk (/uploads/payment_slips/)
+  const localUrl = await saveToPermanentLocalStorage(rawBase64, extension, teamId);
+  if (localUrl) {
+    return localUrl;
   }
 
-  throw new Error('Cloud image upload failed. Please try re-uploading your payment proof image.');
+  // 3. Guaranteed Fallback: Permanent Base64 Data URI (Stored inside DB column)
+  console.log('✅ Retaining permanent Base64 Data URI for payment slip.');
+  return base64Data;
 }
 
 // Helper: Fetch all Registrations from Supabase PostgreSQL

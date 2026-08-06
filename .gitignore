@@ -23,3 +23,9 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+
+# local runtime config & uploads
+admin_credentials.json
+registration_status.json
+public/uploads/*
+!public/uploads/.gitkeep
