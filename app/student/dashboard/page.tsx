@@ -66,6 +66,56 @@ export default function StudentDashboardPage() {
       .catch(() => {});
   };
 
+  const syncLiveTeamData = (teamId: string) => {
+    fetch('/api/student/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+      body: JSON.stringify({ teamId }),
+      cache: 'no-store',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && data.team) {
+          const liveTeam = data.team;
+          setCurrentTeam(liveTeam);
+
+          const isRealSelection = Boolean(
+            liveTeam.selectedThemeId &&
+            liveTeam.selectedThemeId !== 'Not Selected' &&
+            liveTeam.selectedThemeId !== 'NONE'
+          );
+
+          if (isRealSelection) {
+            setSelectedThemeId(liveTeam.selectedThemeId);
+            setThemeSubmitted(true);
+          } else {
+            setSelectedThemeId('');
+            setThemeSubmitted(false);
+          }
+
+          if (liveTeam.qrCodeUrl) {
+            setQrCodeUrl(liveTeam.qrCodeUrl);
+          } else {
+            generateTeamQRCode(liveTeam.teamId).then(setQrCodeUrl);
+          }
+
+          // Sync with local portalState
+          const state = getPortalState();
+          const cleanId = teamId.toUpperCase().replace(/\s+/g, '');
+          const idx = state.teams.findIndex(
+            (t) => (t.teamId || '').toUpperCase().replace(/\s+/g, '') === cleanId
+          );
+          if (idx >= 0) {
+            state.teams[idx] = liveTeam;
+          } else {
+            state.teams.unshift(liveTeam);
+          }
+          savePortalState(state);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     const sessionTeamId = localStorage.getItem('student_session_team_id');
     if (!sessionTeamId) {
@@ -101,88 +151,22 @@ export default function StudentDashboardPage() {
       } else {
         generateTeamQRCode(foundTeam.teamId).then(setQrCodeUrl);
       }
-    } else {
-      // Fetch live team record from server API
-      fetch('/api/student/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId: sessionTeamId }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.success && data.team) {
-            const teamObj = data.team;
-            setCurrentTeam(teamObj);
-            const isRealSelection = Boolean(
-              teamObj.selectedThemeId &&
-              teamObj.selectedThemeId !== 'Not Selected' &&
-              teamObj.selectedThemeId !== 'NONE'
-            );
-            if (isRealSelection) {
-              setSelectedThemeId(teamObj.selectedThemeId);
-              setThemeSubmitted(true);
-            } else {
-              setSelectedThemeId('');
-              setThemeSubmitted(false);
-            }
-            if (teamObj.qrCodeUrl) {
-              setQrCodeUrl(teamObj.qrCodeUrl);
-            } else {
-              generateTeamQRCode(teamObj.teamId).then(setQrCodeUrl);
-            }
-            // Sync to local portalState
-            state.teams.unshift(teamObj);
-            savePortalState(state);
-          } else {
-            // Fresh Team Fallback for current session team ID
-            const freshTeam: any = {
-              teamId: sessionTeamId,
-              teamName: `Team ${sessionTeamId}`,
-              leaderName: 'Team Leader',
-              leaderEmail: '',
-              leaderPhone: '',
-              college: '',
-              department: '',
-              members: [],
-              attendanceStatus: 'Not Checked In',
-              selectedThemeId: undefined,
-              registrationStatus: 'Verified',
-            };
-            setCurrentTeam(freshTeam);
-            setSelectedThemeId('');
-            setThemeSubmitted(false);
-          }
-        })
-        .catch(() => {
-          const freshTeam: any = {
-            teamId: sessionTeamId,
-            teamName: `Team ${sessionTeamId}`,
-            leaderName: 'Team Leader',
-            leaderEmail: '',
-            leaderPhone: '',
-            college: '',
-            department: '',
-            members: [],
-            attendanceStatus: 'Not Checked In',
-            selectedThemeId: undefined,
-            registrationStatus: 'Verified',
-          };
-          setCurrentTeam(freshTeam);
-          setSelectedThemeId('');
-          setThemeSubmitted(false);
-        });
     }
-  }, [router]);
 
-  useEffect(() => {
+    // Always fetch live profile & live PS list from server API
+    syncLiveTeamData(sessionTeamId);
     fetchAllocations();
     fetchPsAndThemes();
+
+    // 5-second polling interval for instant live updates across refreshes and devices
     const interval = setInterval(() => {
+      syncLiveTeamData(sessionTeamId);
       fetchAllocations();
       fetchPsAndThemes();
-    }, 10000);
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
 
   const handleConfirmSelectPS = async () => {
     if (!currentTeam || !selectPsModal.ps) return;

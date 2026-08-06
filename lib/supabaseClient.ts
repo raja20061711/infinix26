@@ -224,7 +224,16 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
         roll_number: team.rollNumber || team.roll_number || null,
         members: parsedMembers,
         accommodation_required: team.accommodationRequired ?? team.accommodation_required ?? false,
-        selected_theme_id: team.selectedThemeId || team.selected_theme_id || null,
+        selected_theme_id:
+          team.selectedThemeId &&
+          team.selectedThemeId !== 'Not Selected' &&
+          team.selectedThemeId !== 'NONE'
+            ? team.selectedThemeId
+            : team.selected_theme_id &&
+              team.selected_theme_id !== 'Not Selected' &&
+              team.selected_theme_id !== 'NONE'
+            ? team.selected_theme_id
+            : null,
         upi_transaction_id: team.upiTransactionId || team.upi_transaction_id || null,
         payment_proof_url: team.paymentProofUrl || team.payment_proof_url || null,
         payment_amount: team.paymentAmount || team.payment_amount || null,
