@@ -237,7 +237,8 @@ export default function StudentDashboardPage() {
   };
 
   const handleConfirmSelectTheme = (themeId: string) => {
-    if (!portalState || !currentTeam || !portalState.themeSelectionEnabled || themeSubmitted) return;
+    const isEnabled = portalState?.themeSelectionEnabled ?? true;
+    if (!portalState || !currentTeam || !isEnabled || themeSubmitted) return;
 
     const updatedTeams = portalState.teams.map((t) => {
       if (t.teamId === currentTeam.teamId) {
@@ -490,7 +491,7 @@ export default function StudentDashboardPage() {
                   </div>
                 </div>
 
-                {!portalState.themeSelectionEnabled ? (
+                {!(portalState.themeSelectionEnabled ?? true) ? (
                   <span className="px-3 py-1 rounded-full bg-amber-950/50 border border-amber-500/50 text-[10px] font-bold text-amber-300 flex items-center gap-1.5">
                     <Lock className="w-3 h-3" />
                     LOCKED BY ADMIN
@@ -504,7 +505,7 @@ export default function StudentDashboardPage() {
               </div>
 
               {/* Locked State Message if Admin disabled theme selection */}
-              {!portalState.themeSelectionEnabled ? (
+              {!(portalState.themeSelectionEnabled ?? true) ? (
                 <div className="p-6 rounded-2xl bg-[#020d1e]/80 border border-amber-500/30 text-center space-y-3 my-4">
                   <div className="w-12 h-12 rounded-full bg-amber-950/40 border border-amber-500/50 flex items-center justify-center mx-auto text-amber-400">
                     <Lock className="w-6 h-6" />
