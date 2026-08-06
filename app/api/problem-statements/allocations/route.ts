@@ -15,7 +15,8 @@ export async function GET() {
         if (
           row.selected_theme_id &&
           row.selected_theme_id !== 'Not Selected' &&
-          row.selected_theme_id !== 'NONE'
+          row.selected_theme_id !== 'NONE' &&
+          !row.selected_theme_id.startsWith('thm-')
         ) {
           allocations[row.selected_theme_id] = {
             teamId: row.team_id,

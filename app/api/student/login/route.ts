@@ -71,7 +71,8 @@ export async function POST(req: Request) {
       selectedThemeId:
         matchedRow.selected_theme_id &&
         matchedRow.selected_theme_id !== 'Not Selected' &&
-        matchedRow.selected_theme_id !== 'NONE'
+        matchedRow.selected_theme_id !== 'NONE' &&
+        !matchedRow.selected_theme_id.startsWith('thm-')
           ? matchedRow.selected_theme_id
           : undefined,
       upiTransactionId: matchedRow.upi_transaction_id || undefined,
