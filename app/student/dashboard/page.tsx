@@ -36,6 +36,7 @@ export default function StudentDashboardPage() {
   const [isSubmittingPs, setIsSubmittingPs] = useState<boolean>(false);
   const [psErrorMsg, setPsErrorMsg] = useState<string>('');
   const [psSuccessMsg, setPsSuccessMsg] = useState<string>('');
+  const [psList, setPsList] = useState<any[]>([]);
 
   const fetchAllocations = () => {
     fetch('/api/problem-statements/allocations')
@@ -43,6 +44,17 @@ export default function StudentDashboardPage() {
       .then((data) => {
         if (data && data.success && data.allocations) {
           setAllocations(data.allocations);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const fetchPsAndThemes = () => {
+    fetch('/api/problem-statements/list')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && data.problemStatements) {
+          setPsList(data.problemStatements);
         }
       })
       .catch(() => {});
@@ -114,6 +126,7 @@ export default function StudentDashboardPage() {
 
   useEffect(() => {
     fetchAllocations();
+    fetchPsAndThemes();
   }, []);
 
   const handleConfirmSelectPS = async () => {
@@ -199,8 +212,11 @@ export default function StudentDashboardPage() {
 
   const selectedThemeObj = portalState.themes.find((th) => th.id === selectedThemeId);
 
-  // Published problem statements visible to students
-  const publishedPSList = portalState.problemStatements.filter((ps) => ps.isPublished || ps.status === 'Published');
+  // Published problem statements visible to students (falls back to live server API psList)
+  const publishedPSList =
+    psList.length > 0
+      ? psList
+      : portalState.problemStatements.filter((ps) => ps.isPublished || ps.status === 'Published');
 
   return (
     <main className="relative min-h-screen pb-20 text-slate-100">
@@ -611,7 +627,7 @@ export default function StudentDashboardPage() {
                               Rules & Constraints:
                             </span>
                             <ul className="list-disc list-inside text-gray-300 text-[11px] space-y-1">
-                              {ps.rules.map((rule, rIdx) => (
+                              {ps.rules.map((rule: string, rIdx: number) => (
                                 <li key={rIdx}>{rule}</li>
                               ))}
                             </ul>

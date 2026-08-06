@@ -563,6 +563,23 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     updateState({ ...portalState, teams: updatedTeams });
   };
 
+  const handleResetTeamPS = async (teamId: string) => {
+    if (!portalState) return;
+    const updatedTeams = portalState.teams.map((t) =>
+      t.teamId === teamId ? { ...t, selectedThemeId: undefined } : t
+    );
+    const updatedTeam = updatedTeams.find((t) => t.teamId === teamId);
+    const newState = { ...portalState, teams: updatedTeams };
+    updateState(newState);
+
+    if (updatedTeam) {
+      try {
+        await upsertAllRegistrationsToSupabase([{ ...updatedTeam, selected_theme_id: null }]);
+      } catch (e) {}
+    }
+    showToast(`✅ Reset Problem Statement allocation for Team ${teamId}`);
+  };
+
   const handleResetAllThemeSelections = () => {
     if (!portalState) return;
     const updatedTeams = portalState.teams.map((t) => ({ ...t, selectedThemeId: undefined }));
@@ -896,6 +913,31 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
       'Email Status': t.emailStatus,
     }));
     exportToCSV(`INFINIX26_Teams_Master_Report_${Date.now()}.csv`, exportRows);
+  };
+
+  const exportPSAllocationsReport = () => {
+    if (!portalState) return;
+    const exportRows = portalState.problemStatements.map((ps) => {
+      const assignedTeam = portalState.teams.find(
+        (t) => t.selectedThemeId === ps.id || t.selectedThemeId === ps.psCode
+      );
+      const themeTitle = portalState.themes.find((th) => th.id === ps.themeId)?.title || 'General';
+
+      return {
+        'PS Code': ps.psCode,
+        'Problem Statement Title': ps.title,
+        'Theme / Domain': themeTitle,
+        'Allocation Status': assignedTeam ? 'RESERVED' : 'AVAILABLE',
+        'Assigned Team ID': assignedTeam?.teamId || 'Unassigned',
+        'Assigned Team Name': assignedTeam?.teamName || 'Unassigned',
+        'Leader Name': assignedTeam?.leaderName || 'N/A',
+        'Leader Mobile': assignedTeam?.leaderPhone || 'N/A',
+        'Leader Email': assignedTeam?.leaderEmail || 'N/A',
+        College: assignedTeam?.college || 'N/A',
+        Department: assignedTeam?.department || 'N/A',
+      };
+    });
+    exportToCSV(`INFINIX26_PS_Allocations_Mapping_${Date.now()}.csv`, exportRows);
   };
 
   if (!portalState) {
@@ -1813,6 +1855,110 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 CREATE PROBLEM STATEMENT
               </button>
             </form>
+
+            {/* LIVE PROBLEM STATEMENT ALLOCATIONS & TEAM MAPPING TABLE */}
+            <div className="p-6 rounded-3xl bg-[#04162E]/80 backdrop-blur-2xl border border-[#00D9FF]/30 space-y-4 mb-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#00D9FF]/20">
+                <div>
+                  <h3 className="font-orbitron font-extrabold text-base text-white tracking-wide uppercase flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#00D9FF]" />
+                    <span>LIVE PROBLEM STATEMENT ALLOCATIONS & TEAM MAPPING</span>
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Overview of which team has selected which Problem Statement (First-Come First-Served allocation)
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={exportPSAllocationsReport}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#0284c7] text-black font-orbitron font-bold text-xs uppercase shadow-[0_0_15px_rgba(0,217,255,0.4)] hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>EXPORT ALLOCATIONS CSV</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#02142a] text-[#7CE7FF] uppercase text-[10px] font-bold border-b border-white/10">
+                    <tr>
+                      <th className="p-3">PS Code</th>
+                      <th className="p-3">Problem Statement Title</th>
+                      <th className="p-3">Theme / Domain</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3">Assigned Team ID & Name</th>
+                      <th className="p-3">Leader Contact</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 font-mono text-[11px]">
+                    {portalState.problemStatements.map((ps) => {
+                      const assignedTeam = portalState.teams.find(
+                        (t) => t.selectedThemeId === ps.id || t.selectedThemeId === ps.psCode
+                      );
+                      const themeTitle = portalState.themes.find((th) => th.id === ps.themeId)?.title || 'General';
+
+                      return (
+                        <tr key={ps.id} className="hover:bg-white/5 transition-colors">
+                          <td className="p-3 font-bold text-[#00D9FF] font-orbitron">{ps.psCode}</td>
+                          <td className="p-3 font-sans font-bold text-white max-w-xs truncate">{ps.title}</td>
+                          <td className="p-3 font-sans text-gray-300">{themeTitle}</td>
+                          <td className="p-3 font-sans">
+                            {assignedTeam ? (
+                              <span className="px-2.5 py-0.5 rounded-full bg-red-950 text-red-300 border border-red-500/50 text-[10px] font-bold font-orbitron">
+                                🔴 RESERVED
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/50 text-[10px] font-bold font-orbitron">
+                                🟢 AVAILABLE
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3 font-sans">
+                            {assignedTeam ? (
+                              <div>
+                                <span className="font-bold text-white block">{assignedTeam.teamName}</span>
+                                <span className="text-[#00D9FF] text-[10px] font-mono">{assignedTeam.teamId} • {assignedTeam.college}</span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-500 text-[10px]">Unassigned</span>
+                            )}
+                          </td>
+                          <td className="p-3 font-sans">
+                            {assignedTeam ? (
+                              <div>
+                                <span className="text-gray-200 block font-medium">{assignedTeam.leaderName}</span>
+                                <span className="text-gray-400 text-[10px] block">{assignedTeam.leaderPhone}</span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="p-3 text-right font-sans">
+                            {assignedTeam && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  triggerLowRiskModal(
+                                    'Reset Team Allocation',
+                                    `Clear Problem Statement "${ps.psCode}" reservation for Team "${assignedTeam.teamName}"?`,
+                                    () => handleResetTeamPS(assignedTeam.teamId)
+                                  )
+                                }
+                                className="px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/60 text-amber-300 hover:bg-amber-900 text-[10px] font-bold font-orbitron cursor-pointer"
+                              >
+                                RESET
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
             {/* List Problem Statements */}
             <div className="space-y-4">
