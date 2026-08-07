@@ -38,20 +38,20 @@ const sponsorList = [
     locationUrl: 'https://share.google/XFJajlhSNoMjInKfj',
   },
   {
-    name: 'UNSTOP',
-    badge: 'Media Partner',
-    tier: 'PLATFORM & MEDIA PARTNER',
-    tagline: 'Official Online Platform',
-    logo: '/unstop-logo.png',
-    url: 'https://unstop.com',
-  },
-  {
     name: 'THE RAIN TREE RESTO LOUNGE & BAR',
     badge: 'Merchandise Partner',
     tier: 'OFFICIAL LOUNGE & RESTO PARTNER',
     tagline: 'Casual Dining & Social Spot',
     logo: '/rain-tree-logo.png',
     locationUrl: 'https://maps.google.com/?q=The+Rain+Tree+Resto+Lounge+Bar+Rajapalayam',
+  },
+  {
+    name: 'UNSTOP',
+    badge: 'Media Partner',
+    tier: 'PLATFORM & MEDIA PARTNER',
+    tagline: 'Official Online Platform',
+    logo: '/unstop-logo.png',
+    url: 'https://unstop.com',
   },
 ];
 
