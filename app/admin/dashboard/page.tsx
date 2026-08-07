@@ -616,19 +616,15 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
   const handleResetTeamPS = async (teamId: string) => {
     if (!portalState) return;
+    await resetTeamPSInSupabase(teamId);
+
     const updatedTeams = portalState.teams.map((t) =>
-      t.teamId === teamId ? { ...t, selectedThemeId: undefined } : t
+      t.teamId.toUpperCase() === teamId.toUpperCase() ? { ...t, selectedThemeId: undefined } : t
     );
-    const updatedTeam = updatedTeams.find((t) => t.teamId === teamId);
     const newState = { ...portalState, teams: updatedTeams };
     updateState(newState);
 
-    if (updatedTeam) {
-      try {
-        await upsertAllRegistrationsToSupabase([{ ...updatedTeam, selected_theme_id: null }]);
-      } catch (e) { }
-    }
-    showToast(`✅ Reset Problem Statement allocation for Team ${teamId}`);
+    showToast(`🔄 Reset Problem Statement allocation for Team ${teamId} in Supabase DB & Portal!`);
   };
 
   const handleResetAllThemeSelections = () => {
@@ -760,23 +756,6 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
           console.error('Delete team failed:', err);
           showToast(`❌ Failed to delete team "${team.teamName}": ${err.message || 'Unknown error'}. Row not removed.`, 'error');
         }
-      }
-    );
-  };
-
-  const handleResetTeamPS = (team: Team) => {
-    triggerLowRiskModal(
-      `Confirm Reset PS Allocation for "${team.teamName}"`,
-      `Are you sure you want to reset and unlock Problem Statement selection for Team ${team.teamId} (${team.teamName})? They will be able to choose a new problem statement on their Student Portal immediately.`,
-      async () => {
-        if (!portalState) return;
-        await resetTeamPSInSupabase(team.teamId);
-
-        const updatedTeams = portalState.teams.map((t) =>
-          t.teamId === team.teamId ? { ...t, selectedThemeId: undefined } : t
-        );
-        updateState({ ...portalState, teams: updatedTeams });
-        showToast(`🔄 Reset PS allocation for Team "${team.teamName}" (${team.teamId}) in Supabase DB & Portal!`);
       }
     );
   };
@@ -1697,7 +1676,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
                           {/* Reset PS Selection Button */}
                           <button
-                            onClick={() => handleResetTeamPS(team)}
+                            onClick={() => handleResetTeamPS(team.teamId)}
                             title="Reset & Unlock Problem Statement Selection"
                             className="p-2 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 transition-all cursor-pointer"
                           >
