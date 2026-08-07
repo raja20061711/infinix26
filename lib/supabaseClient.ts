@@ -302,6 +302,31 @@ export async function approveRegistrationInSupabase(teamId: string) {
   }
 }
 
+// Helper: Explicitly reset Problem Statement allocation for a team in Supabase DB
+export async function resetTeamPSInSupabase(teamId: string) {
+  try {
+    const cleanId = teamId.trim();
+    const { data, error } = await supabase
+      .from('registrations')
+      .update({
+        selected_theme_id: null,
+        updated_at: new Date().toISOString(),
+      })
+      .ilike('team_id', cleanId)
+      .select();
+
+    if (error) {
+      console.error(`❌ Error resetting PS allocation for ${cleanId} in Supabase:`, error.message);
+      return null;
+    }
+    console.log(`✅ Problem Statement allocation for team ${cleanId} reset to null in Supabase DB!`);
+    return data;
+  } catch (err: any) {
+    console.error('Supabase PS reset exception:', err);
+    return null;
+  }
+}
+
 // Helper: Delete Registration from Supabase (throws on failure)
 export async function deleteRegistrationFromSupabase(teamId: string) {
   try {
