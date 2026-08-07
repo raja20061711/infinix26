@@ -68,6 +68,7 @@ import { syncToGoogleSheets } from '@/utils/sheetSync';
 import {
   fetchRegistrationsFromSupabase,
   upsertAllRegistrationsToSupabase,
+  approveRegistrationInSupabase,
   deleteRegistrationFromSupabase,
   logAttendanceToSupabase,
   updateAttendanceStatusInSupabase,
@@ -440,6 +441,7 @@ export default function AdminDashboardPage() {
     updateState(newState);
 
     // Sync updated team to Supabase
+    await approveRegistrationInSupabase(team.teamId);
     await upsertAllRegistrationsToSupabase([updatedTeamObj]);
 
     // Mirror payment verification update to Google Sheets

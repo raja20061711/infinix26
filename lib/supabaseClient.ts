@@ -275,6 +275,33 @@ export async function upsertAllRegistrationsToSupabase(teams: any[]) {
   }
 }
 
+// Helper: Explicitly approve payment & registration status in Supabase DB
+export async function approveRegistrationInSupabase(teamId: string) {
+  try {
+    const cleanId = teamId.trim();
+    const { data, error } = await supabase
+      .from('registrations')
+      .update({
+        registration_status: 'Verified',
+        payment_status: 'Verified',
+        email_status: 'Sent',
+        updated_at: new Date().toISOString(),
+      })
+      .ilike('team_id', cleanId)
+      .select();
+
+    if (error) {
+      console.error(`❌ Error approving registration ${cleanId} in Supabase:`, error.message);
+      return null;
+    }
+    console.log(`✅ Registration ${cleanId} payment approved & verified in Supabase DB!`);
+    return data;
+  } catch (err: any) {
+    console.error('Supabase registration approve exception:', err);
+    return null;
+  }
+}
+
 // Helper: Delete Registration from Supabase (throws on failure)
 export async function deleteRegistrationFromSupabase(teamId: string) {
   try {
