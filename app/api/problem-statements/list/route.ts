@@ -30,18 +30,20 @@ export async function GET() {
 
         const { data: dbPS } = await supabase.from('problem_statements').select('*');
         if (dbPS && dbPS.length > 0) {
-          problemStatements = dbPS.map((row: any) => ({
-            id: row.id,
-            psCode: row.ps_code,
-            title: row.title,
-            description: row.description,
-            themeId: row.theme_id,
-            domain: themes.find((t) => t.id === row.theme_id)?.domain || 'General',
-            pdfUrl: row.pdf_url,
-            status: row.status || 'Published',
-            isPublished: row.is_published ?? true,
-            rules: Array.isArray(row.rules) ? row.rules : [],
-          }));
+          problemStatements = dbPS
+            .filter((row: any) => row.is_published === true || row.status === 'Published')
+            .map((row: any) => ({
+              id: row.id,
+              psCode: row.ps_code,
+              title: row.title,
+              description: row.description,
+              themeId: row.theme_id,
+              domain: themes.find((t) => t.id === row.theme_id)?.domain || 'General',
+              pdfUrl: row.pdf_url,
+              status: row.status || 'Published',
+              isPublished: row.is_published ?? true,
+              rules: Array.isArray(row.rules) ? row.rules : [],
+            }));
         }
       } catch (dbErr) {
         console.warn('Supabase PS list fetch fallback:', dbErr);

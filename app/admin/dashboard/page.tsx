@@ -71,6 +71,8 @@ import {
   deleteRegistrationFromSupabase,
   logAttendanceToSupabase,
   updateAttendanceStatusInSupabase,
+  fetchProblemStatementsFromSupabase,
+  upsertProblemStatementToSupabase,
   deleteProblemStatementFromSupabase,
   deleteAnnouncementFromSupabase,
 } from '@/lib/supabaseClient';
@@ -146,6 +148,29 @@ export default function AdminDashboardPage() {
         if (showToastNotice) {
           showToast(`⚡ Synced ${dbTeams.length} teams directly from Supabase DB!`);
         }
+      }
+
+      // Fetch live Problem Statements from Supabase DB
+      const dbPS = await fetchProblemStatementsFromSupabase();
+      if (dbPS && Array.isArray(dbPS) && dbPS.length > 0) {
+        setPortalState((prev) => {
+          const baseState = prev || getPortalState();
+          const mappedPS: ProblemStatement[] = dbPS.map((row: any) => ({
+            id: row.id,
+            psCode: row.ps_code,
+            title: row.title,
+            description: row.description,
+            themeId: row.theme_id,
+            pdfUrl: row.pdf_url,
+            status: row.status || 'Published',
+            isPublished: row.is_published ?? true,
+            rules: Array.isArray(row.rules) ? row.rules : [],
+            resources: Array.isArray(row.resources) ? row.resources : [],
+          }));
+          const updatedState = { ...baseState, problemStatements: mappedPS };
+          savePortalState(updatedState);
+          return updatedState;
+        });
       }
     } catch (err) {
       console.error('Error fetching live registrations from Supabase:', err);
@@ -469,7 +494,7 @@ export default function AdminDashboardPage() {
   };
 
   // --- MASTER 1-BUTTON GO-LIVE & LOCK ---
-  const executeMasterGoLive = () => {
+  const executeMasterGoLive = async () => {
     if (!portalState) return;
     const updatedPS = portalState.problemStatements.map((ps) => ({
       ...ps,
@@ -492,9 +517,14 @@ export default function AdminDashboardPage() {
       announcements: [goLiveAnn, ...portalState.announcements],
     };
     updateState(newState);
+
+    // Sync all published problem statements to Supabase DB
+    for (const ps of updatedPS) {
+      await upsertProblemStatementToSupabase(ps);
+    }
   };
 
-  const executeMasterLock = () => {
+  const executeMasterLock = async () => {
     if (!portalState) return;
     const updatedPS = portalState.problemStatements.map((ps) => ({
       ...ps,
@@ -507,6 +537,10 @@ export default function AdminDashboardPage() {
       problemStatements: updatedPS,
     };
     updateState(newState);
+
+    for (const ps of updatedPS) {
+      await upsertProblemStatementToSupabase(ps);
+    }
   };
 
   // --- CSV Import (PapaParse) ---
@@ -757,7 +791,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     }
   };
 
-  const handleCreatePS = (e: React.FormEvent) => {
+  const handleCreatePS = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!portalState || !newPS.title.trim()) return;
     const rulesList = newPS.rules.split('\n').map((r) => r.trim()).filter(Boolean);
@@ -787,44 +821,69 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
       rules: '',
       resources: '',
     });
+
+    // Save directly to Supabase DB so Student Portal sees it instantly
+    await upsertProblemStatementToSupabase(psObj);
+    showToast(`🎉 Problem Statement "${psObj.psCode}" created & synced to Supabase DB!`);
   };
 
-  const handleUpdatePS = (e: React.FormEvent) => {
+  const handleUpdatePS = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!portalState || !editingPS) return;
+    const updatedPSObj = { ...editingPS, isPublished: editingPS.status === 'Published' };
     const updatedPS = portalState.problemStatements.map((ps) =>
-      ps.id === editingPS.id ? { ...editingPS, isPublished: editingPS.status === 'Published' } : ps
+      ps.id === editingPS.id ? updatedPSObj : ps
     );
     updateState({ ...portalState, problemStatements: updatedPS });
     setEditingPS(null);
+
+    await upsertProblemStatementToSupabase(updatedPSObj);
+    showToast(`✅ Problem Statement "${updatedPSObj.psCode}" updated & synced to Supabase DB!`);
   };
 
-  const handleTogglePublishPS = (id: string) => {
+  const handleTogglePublishPS = async (id: string) => {
     if (!portalState) return;
+    let toggledObj: ProblemStatement | null = null;
     const updatedPS = portalState.problemStatements.map((ps) => {
       if (ps.id === id) {
         const nextState = !ps.isPublished;
-        return {
+        toggledObj = {
           ...ps,
           isPublished: nextState,
           status: (nextState ? 'Published' : 'Unpublished') as 'Published' | 'Unpublished',
         };
+        return toggledObj;
       }
       return ps;
     });
     updateState({ ...portalState, problemStatements: updatedPS });
+
+    if (toggledObj) {
+      await upsertProblemStatementToSupabase(toggledObj);
+      showToast(`Updated status for ${(toggledObj as ProblemStatement).psCode} to ${(toggledObj as ProblemStatement).status} in Supabase DB!`);
+    }
   };
 
-  const handlePublishAllPS = () => {
+  const handlePublishAllPS = async () => {
     if (!portalState) return;
     const updatedPS = portalState.problemStatements.map((ps) => ({ ...ps, isPublished: true, status: 'Published' as const }));
     updateState({ ...portalState, problemStatements: updatedPS });
+
+    for (const ps of updatedPS) {
+      await upsertProblemStatementToSupabase(ps);
+    }
+    showToast('🚀 Published ALL Problem Statements to Supabase DB!');
   };
 
-  const handleUnpublishAllPS = () => {
+  const handleUnpublishAllPS = async () => {
     if (!portalState) return;
     const updatedPS = portalState.problemStatements.map((ps) => ({ ...ps, isPublished: false, status: 'Unpublished' as const }));
     updateState({ ...portalState, problemStatements: updatedPS });
+
+    for (const ps of updatedPS) {
+      await upsertProblemStatementToSupabase(ps);
+    }
+    showToast('🔒 Unpublished ALL Problem Statements in Supabase DB!');
   };
 
   const handleDeletePS = async (id: string) => {
