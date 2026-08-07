@@ -55,7 +55,7 @@ const FAQ_KNOWLEDGE_BASE: { keywords: string[]; response: string }[] = [
   {
     keywords: ['date', 'dates', 'when', 'time', 'schedule', 'timeline', 'september', 'start', 'end', 'reveal', 'problem', 'check-in', 'pitching', 'valedictory', 'results'],
     response:
-      "Official Event Timeline & Schedule:\n\n[REGISTRATION MILESTONES]\n• Aug 07, 2026: Official Registrations Open on Website\n• Sep 05, 2026: Registration Deadline\n\n[DAY 1 - 10 SEP 2026]\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n[DAY 2 - 11 SEP 2026]\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 03:00 PM: Results Announcement & Valedictory Ceremony",
+      "Official Event Timeline & Schedule:\n\n[REGISTRATION MILESTONES]\n• Aug 06, 2026: Official Registrations Open on Website\n• Sep 05, 2026: Registration Deadline\n\n[DAY 1 - 10 SEP 2026]\n• 09:00 AM: Participant Check-in & Desk Allocation\n• 10:00 AM: Problem Statements Reveal & 32-Hour Hackathon Begins\n• 02:00 PM: Mentorship Round 1 (Idea Evaluation)\n• 09:00 PM: Mentorship Round 2 (Technical Progress)\n\n[DAY 2 - 11 SEP 2026]\n• 06:00 AM: Final Code Freeze & Submission\n• 09:00 AM: Grand Jury Pitching & Evaluation\n• 03:00 PM: Results Announcement & Valedictory Ceremony",
   },
   {
     keywords: ['theme', 'themes', 'track', 'tracks', 'domain', 'domains', 'category', 'categories', 'challenge', 'ai', 'ml', 'cyber', 'health', 'medtech', 'cloud', 'devops', 'fintech', 'open innovation', 'energy', 'smart grid'],

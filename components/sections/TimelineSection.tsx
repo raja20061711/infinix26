@@ -15,7 +15,7 @@ import {
 const milestones = [
   {
     title: 'Registrations Open',
-    date: '07 Aug 2026',
+    date: '06 Aug 2026',
     icon: Calendar,
   },
   {

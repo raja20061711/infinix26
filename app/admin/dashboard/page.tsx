@@ -856,6 +856,15 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
   const handleMarkPresent = async () => {
     if (!portalState || !scannedTeam) return;
+
+    if (scannedTeam.attendanceStatus === 'Checked In') {
+      setCheckInFeedback({
+        success: false,
+        msg: `⚠️ Team ${scannedTeam.teamName} (${scannedTeam.teamId}) is ALREADY Checked In! Duplicate check-in is not allowed. Check-in can only happen 1 time.`,
+      });
+      return;
+    }
+
     const checkInTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     const updatedTeams = portalState.teams.map((t) => {

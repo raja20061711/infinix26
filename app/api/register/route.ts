@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { upsertRegistrationToSupabase, uploadPaymentSlipToSupabase } from '@/lib/supabaseClient';
+import { supabase, upsertRegistrationToSupabase, uploadPaymentSlipToSupabase } from '@/lib/supabaseClient';
 import { sendAdminNotificationEmail } from '@/lib/emailService';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
 import { isRegistrationOpen } from '@/lib/registrationSettings';
@@ -60,6 +60,36 @@ export async function POST(req: NextRequest) {
         { error: 'UPI Transaction Reference ID / UTR is required.' },
         { status: 400 }
       );
+    }
+
+    // Duplicate check: Prevent duplicate registration in database
+    try {
+      const cleanEmail = leaderEmail.trim().toLowerCase();
+      const cleanPhone = leaderPhone.trim();
+      const cleanUpi = upiTransactionId.trim();
+
+      const { data: existingRegs } = await supabase
+        .from('registrations')
+        .select('team_id, leader_email, leader_phone, upi_transaction_id')
+        .or(`leader_email.eq.${cleanEmail},leader_phone.eq.${cleanPhone},upi_transaction_id.eq.${cleanUpi}`);
+
+      if (existingRegs && existingRegs.length > 0) {
+        const dup = existingRegs[0];
+        let dupField = 'details';
+        if (dup.leader_email?.toLowerCase() === cleanEmail) {
+          dupField = `Leader Email (${leaderEmail})`;
+        } else if (dup.leader_phone === cleanPhone) {
+          dupField = `Leader Mobile Number (${leaderPhone})`;
+        } else if (dup.upi_transaction_id === cleanUpi) {
+          dupField = `UPI Transaction UTR ID (${upiTransactionId})`;
+        }
+        return NextResponse.json(
+          { error: `Duplicate Registration Blocked: A team (ID: ${dup.team_id}) is already registered with this ${dupField}. Duplicates are not allowed in the database.` },
+          { status: 400 }
+        );
+      }
+    } catch (checkErr) {
+      console.warn('[Register API] Duplicate check error notice:', checkErr);
     }
 
     // Fee calculation (per participant)

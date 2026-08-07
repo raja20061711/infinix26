@@ -39,6 +39,7 @@ const navLinks = [
   { name: 'DOMAINS', href: '/#tracks' },
   { name: 'TIMELINE', href: '/#timeline' },
   { name: 'PRIZES', href: '/#prizes' },
+  { name: 'BROCHURE', href: '/brochure' },
   { name: 'COMMITTEE', href: '/committee' },
   { name: 'SPONSORS', href: '/#sponsors' },
   { name: 'CONTACT', href: '/#contact' },

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { updateAttendanceStatusInSupabase } from '@/lib/supabaseClient';
+import { supabase, updateAttendanceStatusInSupabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,8 +16,30 @@ export async function POST(req: Request) {
       );
     }
 
+    const cleanTeamId = teamId.trim();
+
+    // Check if team is already checked in to enforce 1-time check-in
+    if (status === 'Checked In') {
+      const { data: existingTeam } = await supabase
+        .from('registrations')
+        .select('attendance_status, team_name')
+        .ilike('team_id', cleanTeamId)
+        .maybeSingle();
+
+      if (existingTeam && existingTeam.attendance_status === 'Checked In') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Team ${existingTeam.team_name || cleanTeamId} is ALREADY Checked In! Duplicate check-in is not allowed. Check-in can only happen 1 time.`,
+            alreadyCheckedIn: true,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const result = await updateAttendanceStatusInSupabase(
-      teamId,
+      cleanTeamId,
       status as 'Checked In' | 'Not Checked In',
       checkedInBy
     );

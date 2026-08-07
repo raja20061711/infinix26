@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ExternalLink, Play, ChevronDown, Download } from 'lucide-react';
+import { ExternalLink, Play, ChevronDown, Download, FileText } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
+import BrochureViewerModal from '../BrochureViewerModal';
 
 function TitleVideoPlayer() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -96,6 +97,7 @@ function TitleVideoPlayer() {
 }
 
 export default function HeroSection() {
+  const [isBrochureOpen, setIsBrochureOpen] = useState<boolean>(false);
   // Live Countdown timer targeted at 10 September 2026
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -305,19 +307,32 @@ export default function HeroSection() {
           <Play className="w-3.5 h-3.5 fill-current text-[#00D9FF]" />
         </a>
 
+        {/* View Brochure Interactive Modal Button */}
+        <button
+          onClick={() => setIsBrochureOpen(true)}
+          className="px-8 py-3.5 rounded-full glass-panel border border-[#00D9FF]/40 text-xs font-extrabold tracking-widest text-white hover:text-[#7CE7FF] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.5)] hover:scale-105 transition-all duration-300 flex items-center gap-2.5 cursor-pointer"
+          data-hoverable="true"
+        >
+          <span>VIEW BROCHURE</span>
+          <FileText className="w-3.5 h-3.5 text-[#00D9FF]" />
+        </button>
+
         {/* Download Brochure Secondary Button */}
         <a
           href="/infinix26-brochure.pdf"
           target="_blank"
           rel="noreferrer"
-          download
+          download="INFINIX26_Official_Brochure.pdf"
           className="px-8 py-3.5 rounded-full glass-panel border border-[#00D9FF]/40 text-xs font-extrabold tracking-widest text-white hover:text-[#7CE7FF] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.5)] hover:scale-105 transition-all duration-300 flex items-center gap-2.5"
           data-hoverable="true"
         >
-          <span>DOWNLOAD BROCHURE</span>
+          <span>DOWNLOAD PDF</span>
           <Download className="w-3.5 h-3.5 text-[#00D9FF]" />
         </a>
       </motion.div>
+
+      {/* Brochure Viewer Interactive Modal */}
+      <BrochureViewerModal isOpen={isBrochureOpen} onClose={() => setIsBrochureOpen(false)} />
 
       {/* Photorealistic Glassmorphism Countdown Card */}
       <motion.div

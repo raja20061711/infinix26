@@ -346,16 +346,27 @@ export async function updateAttendanceStatusInSupabase(
       console.log(`✅ Attendance status for team ${teamId} updated to "${status}" in Supabase DB!`);
     }
 
-    // 2. Insert audit log into attendance table
-    try {
-      await supabase.from('attendance').insert({
-        team_id: teamId,
-        status: status,
-        check_in_time: timeISO,
-        checked_in_by: checkedInBy,
-      });
-    } catch (auditErr) {
-      console.warn('Attendance audit log notice:', auditErr);
+    // 2. Insert audit log into attendance table (1-time check-in, no duplicates)
+    if (status === 'Checked In') {
+      try {
+        const actualTeamId = (updateData && updateData[0]?.team_id) || teamId.trim();
+        const { data: existingLogs } = await supabase
+          .from('attendance')
+          .select('id')
+          .eq('team_id', actualTeamId)
+          .limit(1);
+
+        if (!existingLogs || existingLogs.length === 0) {
+          await supabase.from('attendance').insert({
+            team_id: actualTeamId,
+            status: status,
+            check_in_time: timeISO,
+            checked_in_by: checkedInBy,
+          });
+        }
+      } catch (auditErr) {
+        console.warn('Attendance audit log notice:', auditErr);
+      }
     }
 
     return updateData;
