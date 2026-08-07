@@ -29,7 +29,7 @@ const sponsorList = [
     url: 'https://brassyacademy.com/',
   },
   {
-    name: 'THE THREE MONKEYS FOOD CORNER',
+    name: 'THE THREE MONKEYS',
     badge: 'Merchandise Partner',
     tier: 'OFFICIAL MERCHANDISE PARTNER',
     tagline: 'Official Merchandise & Apparel Partner',
@@ -38,7 +38,7 @@ const sponsorList = [
     locationUrl: 'https://share.google/XFJajlhSNoMjInKfj',
   },
   {
-    name: 'THE RAIN TREE RESTO LOUNGE & BAR',
+    name: 'THE RAIN TREE',
     badge: 'Merchandise Partner',
     tier: 'OFFICIAL LOUNGE & RESTO PARTNER',
     tagline: 'Casual Dining & Social Spot',
