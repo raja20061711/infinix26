@@ -76,6 +76,7 @@ import {
   fetchProblemStatementsFromSupabase,
   upsertProblemStatementToSupabase,
   deleteProblemStatementFromSupabase,
+  upsertAnnouncementToSupabase,
   deleteAnnouncementFromSupabase,
 } from '@/lib/supabaseClient';
 
@@ -988,7 +989,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
   };
 
   // --- Announcements ---
-  const handleCreateAnnouncement = (e: React.FormEvent) => {
+  const handleCreateAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!portalState || !newAnn.title.trim()) return;
     const annObj: Announcement = {
@@ -1001,6 +1002,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     };
     updateState({ ...portalState, announcements: [annObj, ...portalState.announcements] });
     setNewAnn({ title: '', message: '', category: 'General' });
+
+    // Sync to Supabase DB so Realtime triggers instantly for all connected users!
+    await upsertAnnouncementToSupabase(annObj);
+    showToast(`🚀 Announcement broadcasted live via Supabase Realtime!`);
   };
 
   const handleDeleteAnnouncement = async (id: string) => {

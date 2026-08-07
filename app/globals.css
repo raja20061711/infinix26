@@ -111,7 +111,10 @@
 }
 
 .animate-marquee {
-  display: inline-block;
+  display: flex;
+  align-items: center;
   white-space: nowrap;
-  animation: marquee 28s linear infinite;
+  width: max-content;
+  will-change: transform;
+  animation: marquee 75s linear infinite;
 }

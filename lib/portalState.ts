@@ -186,24 +186,7 @@ const INITIAL_STATE: PortalState = {
     },
   ],
   problemStatements: [],
-  announcements: [
-    {
-      id: 'ann-1',
-      title: "Welcome Hacking Teams to INFINIX'26!",
-      message: 'All registered team leaders must verify their member contact info. Theme selection will open soon once Admin enables it.',
-      timestamp: 'Today, 10:00 AM',
-      category: 'General',
-      isPublished: true,
-    },
-    {
-      id: 'ann-2',
-      title: 'Important: Hackathon Check-in Instructions',
-      message: 'Bring your official College ID Card, laptops, extension boards, and Unstop registration ticket.',
-      timestamp: 'Today, 11:30 AM',
-      category: 'Urgent',
-      isPublished: true,
-    },
-  ],
+  announcements: [],
 };
 
 export function getPortalState(): PortalState {

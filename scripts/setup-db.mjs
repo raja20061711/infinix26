@@ -15,12 +15,6 @@ const DEFAULT_THEMES = [
   { id: 'theme-energy', title: 'Energy Innovation & Smart Grid', domain: 'EEE & ECE', description: 'Renewable Energy, Smart Grids, Power Management', is_active: true },
 ];
 
-const DEFAULT_ANNOUNCEMENTS = [
-  { id: 'ann-1', title: '🚀 Registrations Open on Unstop!', message: 'Registration via Unstop: ₹250 for Internal Ramco Students & ₹350 for External Students.', category: 'Urgent', is_published: true },
-  { id: 'ann-2', title: '🏆 Total ₹30,000 Prize Pool', message: 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!', category: 'Update', is_published: true },
-  { id: 'ann-3', title: '📌 Hardware Notice for Open Innovation', message: 'Participants working on Hardware/IoT must bring their own components & boards.', category: 'General', is_published: true },
-];
-
 const DEFAULT_REGISTRATIONS = [
   {
     team_id: 'INF-2026-001',
@@ -49,14 +43,8 @@ async function setupDatabase() {
   if (themesErr) console.log('Themes status:', themesErr.message);
   else console.log('✅ Themes table READY!');
 
-  // 2. Sync Announcements
-  console.log('2. Syncing Announcements...');
-  const { error: annErr } = await supabase.from('announcements').upsert(DEFAULT_ANNOUNCEMENTS, { onConflict: 'id' });
-  if (annErr) console.log('Announcements status:', annErr.message);
-  else console.log('✅ Announcements table READY!');
-
-  // 3. Sync Registrations
-  console.log('3. Syncing Registrations...');
+  // 2. Sync Registrations
+  console.log('2. Syncing Registrations...');
   const { error: regErr } = await supabase.from('registrations').upsert(DEFAULT_REGISTRATIONS, { onConflict: 'team_id' });
   if (regErr) console.log('Registrations status:', regErr.message);
   else console.log('✅ Registrations table READY!');

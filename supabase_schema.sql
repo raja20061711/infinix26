@@ -159,3 +159,7 @@ CREATE POLICY "Public can read chatbot knowledge" ON public.chatbot_knowledge
 -- Public can submit contact messages
 CREATE POLICY "Public can submit contact messages" ON public.contact_messages
   FOR INSERT WITH CHECK (true);
+
+-- ENABLE SUPABASE REALTIME FOR ANNOUNCEMENTS TABLE
+ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
+ALTER TABLE public.announcements REPLICA IDENTITY FULL;

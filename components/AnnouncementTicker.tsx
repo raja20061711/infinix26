@@ -2,142 +2,151 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Volume2, ChevronRight } from 'lucide-react';
-import { getPortalState, Announcement } from '@/lib/portalState';
-
-const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: 'ann-default-1',
-    title: "Official Registrations Open!",
-    message: "Registration Fee: ₹200 for Internal Ramco College Students & ₹350 for External College Students. Register your team today!",
-    category: 'Urgent',
-    timestamp: 'Just Now',
-    isPublished: true,
-  },
-  {
-    id: 'ann-default-2',
-    title: 'Total ₹15,000 Prize Pool',
-    message: 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!',
-    category: 'Update',
-    timestamp: 'Just Now',
-    isPublished: true,
-  },
-  {
-    id: 'ann-default-3',
-    title: 'Hardware Notice for Open Innovation',
-    message: 'Participants must bring their own hardware, IoT modules, sensors & development boards.',
-    category: 'General',
-    timestamp: 'Just Now',
-    isPublished: true,
-  },
-];
+import { Bell, X } from 'lucide-react';
+import { Announcement } from '@/lib/portalState';
+import { supabase, fetchAnnouncementsFromSupabase } from '@/lib/supabaseClient';
 
 export default function AnnouncementTicker() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(DEFAULT_ANNOUNCEMENTS);
-  const [previewVisible, setPreviewVisible] = useState(true);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    const loadState = () => {
-      const state = getPortalState();
-      if (state && state.announcements && state.announcements.length > 0) {
-        const publishedOnly = state.announcements.filter((a) => a.isPublished !== false);
-        if (publishedOnly.length > 0) {
+    // 1. Initial Fetch strictly from Supabase DB (Only Admin published announcements)
+    const loadInitialAnnouncements = async () => {
+      try {
+        const dbData = await fetchAnnouncementsFromSupabase();
+        if (dbData && Array.isArray(dbData)) {
+          const publishedOnly: Announcement[] = dbData
+            .filter((row: any) => row.is_published !== false)
+            .map((row: any) => ({
+              id: row.id,
+              title: row.title,
+              message: row.message,
+              category: row.category || 'General',
+              timestamp: row.created_at
+                ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'Just Now',
+              isPublished: row.is_published ?? true,
+            }));
           setAnnouncements(publishedOnly);
         }
+      } catch (err) {
+        console.error('Failed to fetch initial announcements in Ticker:', err);
       }
     };
 
-    loadState();
+    loadInitialAnnouncements();
 
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'infinix26_portal_state_v2') {
-        loadState();
-      }
-    };
+    // 2. Supabase Realtime Subscription (NO polling / NO setInterval)
+    const channel = supabase
+      .channel('public:announcements:ticker')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'announcements' },
+        (payload) => {
+          console.log('⚡ Realtime Announcement Ticker Payload:', payload);
+          const { eventType, new: newRow, old: oldRow } = payload;
 
-    window.addEventListener('storage', handleStorageChange);
-    const interval = setInterval(loadState, 3000);
+          if (eventType === 'INSERT' || eventType === 'UPDATE') {
+            if (!newRow) return;
+            const annItem: Announcement = {
+              id: newRow.id,
+              title: newRow.title || 'New Announcement',
+              message: newRow.message || '',
+              category: newRow.category || 'General',
+              timestamp: newRow.created_at
+                ? new Date(newRow.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'Just Now',
+              isPublished: newRow.is_published ?? true,
+            };
+
+            setAnnouncements((prev) => {
+              if (annItem.isPublished === false) {
+                return prev.filter((a) => a.id !== annItem.id);
+              }
+              const exists = prev.some((a) => a.id === annItem.id);
+              if (exists) {
+                return prev.map((a) => (a.id === annItem.id ? annItem : a));
+              } else {
+                setDrawerOpen(true);
+                return [annItem, ...prev];
+              }
+            });
+          } else if (eventType === 'DELETE') {
+            if (oldRow && oldRow.id) {
+              setAnnouncements((prev) => prev.filter((a) => a.id !== oldRow.id));
+            }
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, []);
 
-  const latestAnn = announcements[0] || DEFAULT_ANNOUNCEMENTS[0];
+  const marqueeList =
+    announcements.length > 0
+      ? [...announcements, ...announcements, ...announcements, ...announcements]
+      : [];
 
   return (
     <>
-      {/* 1. TOP PERMANENT NOTIFICATION BADGE & COMPACT SIDE PREVIEW CONTAINER */}
-      <div className="fixed top-5 right-4 sm:right-8 z-50 flex items-center gap-2">
-        {/* COMPACT SIDE PREVIEW TOOLTIP (Only hides when X is clicked) */}
-        <AnimatePresence>
-          {previewVisible && (
-            <motion.div
-              initial={{ opacity: 0, x: 20, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setDrawerOpen(true)}
-              className="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#020b18]/95 border border-[#00D9FF]/40 text-white shadow-[0_0_20px_rgba(0,217,255,0.2)] backdrop-blur-xl cursor-pointer hover:border-[#00D9FF] transition-all max-w-sm group"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#00D9FF] animate-pulse shrink-0" />
-              
-              <div className="truncate text-xs">
-                <span className="font-bold text-[#00D9FF] font-orbitron text-[11px] mr-1.5">
-                  ANNOUNCEMENT:
-                </span>
-                <span className="text-gray-200 text-[11px] font-medium truncate">
-                  {latestAnn.title}
-                </span>
+      {/* FULL-WIDTH LIVE ANNOUNCEMENT TICKER BAR (Renders ONLY when Admin posts announcements) */}
+      <AnimatePresence>
+        {announcements.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: '34px' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setDrawerOpen(true)}
+            className="w-full h-[34px] bg-[#020817]/85 backdrop-blur-md border-y border-[#00D9FF]/30 shadow-[0_0_15px_rgba(0,217,255,0.15)] flex items-center overflow-hidden cursor-pointer group select-none transition-colors hover:bg-[#04162e]/90"
+            title="Click to view all live announcements"
+          >
+            {/* Animated Red LIVE Dot & Label */}
+            <div className="flex items-center gap-2 px-3 sm:px-4 shrink-0 z-10 bg-[#020817]/95 h-full border-r border-[#00D9FF]/30 text-xs font-orbitron font-bold">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_8px_#ef4444]" />
+              </span>
+              <span className="text-red-400 font-extrabold tracking-widest text-[11px] uppercase drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
+                LIVE
+              </span>
+            </div>
+
+            {/* Continuous Smooth Infinite Marquee */}
+            <div className="relative flex-1 overflow-hidden h-full flex items-center">
+              <div className="animate-marquee group-hover:[animation-play-state:paused] flex items-center gap-8 whitespace-nowrap w-max shrink-0 px-4">
+                {marqueeList.map((ann, idx) => (
+                  <div
+                    key={`${ann.id}-${idx}`}
+                    className="inline-flex items-center gap-2.5 text-xs sm:text-[13px] font-orbitron font-medium tracking-wide shrink-0"
+                  >
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold tracking-widest uppercase border shrink-0 ${
+                        ann.category === 'Urgent'
+                          ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
+                          : ann.category === 'Update'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          : 'bg-[#00D9FF]/15 text-[#00D9FF] border-[#00D9FF]/30'
+                      }`}
+                    >
+                      {ann.category || 'General'}
+                    </span>
+                    <span className="text-white font-semibold shrink-0">{ann.title}:</span>
+                    <span className="text-cyan-100/90 font-sans text-xs shrink-0">{ann.message}</span>
+                    <span className="text-[#00D9FF]/40 ml-4 font-mono shrink-0">•</span>
+                  </div>
+                ))}
               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              <ChevronRight className="w-3.5 h-3.5 text-[#00D9FF] group-hover:translate-x-0.5 transition-transform shrink-0" />
-
-              {/* Close side preview ONLY (Notification badge stays!) */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPreviewVisible(false);
-                }}
-                className="p-0.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors shrink-0 ml-1"
-                title="Hide preview text (Badge stays active)"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* PERMANENT TOP NOTIFICATION BADGE BUTTON (ALWAYS SHOWS EVEN IF X IS CLICKED) */}
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setDrawerOpen(true)}
-          className="relative flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#04162e]/90 border border-[#00D9FF]/50 text-[#00D9FF] shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:border-[#00D9FF] hover:shadow-[0_0_30px_rgba(0,217,255,0.6)] backdrop-blur-xl transition-all cursor-pointer group"
-          title="Open Website Live Announcements"
-        >
-          {/* Pulsing Active Dot */}
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D9FF] opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00D9FF]" />
-          </span>
-
-          <Bell className="w-4 h-4 text-[#00D9FF] group-hover:rotate-12 transition-transform" />
-
-          <span className="text-[11px] font-extrabold font-orbitron tracking-widest uppercase text-white hidden sm:inline">
-            UPDATES
-          </span>
-
-          {/* Count Badge */}
-          <span className="px-1.5 py-0.2 rounded-full bg-[#00D9FF] text-black font-orbitron font-extrabold text-[10px]">
-            {announcements.length}
-          </span>
-        </motion.button>
-      </div>
-
-      {/* 2. OCEAN GLASS LIVE ANNOUNCEMENTS MODAL DRAWER */}
+      {/* LIVE ANNOUNCEMENTS MODAL DRAWER */}
       <AnimatePresence>
         {drawerOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -168,7 +177,7 @@ export default function AnnouncementTicker() {
 
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#00D9FF] text-gray-400 hover:text-white transition-all"
+                  className="p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#00D9FF] text-gray-400 hover:text-white transition-all cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -176,42 +185,48 @@ export default function AnnouncementTicker() {
 
               {/* Announcements List */}
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                {announcements.map((ann) => {
-                  const isUrgent = ann.category === 'Urgent';
-                  return (
-                    <div
-                      key={ann.id}
-                      className={`p-4 rounded-2xl border transition-all ${
-                        isUrgent
-                          ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
-                          : 'bg-[#04162e]/70 border-[#00D9FF]/25 hover:border-[#00D9FF]/60'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold tracking-widest uppercase border ${
-                            isUrgent
-                              ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
-                              : 'bg-[#00D9FF]/10 border-[#00D9FF]/30 text-[#00D9FF]'
-                          }`}
-                        >
-                          {ann.category}
-                        </span>
+                {announcements.length > 0 ? (
+                  announcements.map((ann) => {
+                    const isUrgent = ann.category === 'Urgent';
+                    return (
+                      <div
+                        key={ann.id}
+                        className={`p-4 rounded-2xl border transition-all ${
+                          isUrgent
+                            ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
+                            : 'bg-[#04162e]/70 border-[#00D9FF]/25 hover:border-[#00D9FF]/60'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold tracking-widest uppercase border ${
+                              isUrgent
+                                ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
+                                : 'bg-[#00D9FF]/10 border-[#00D9FF]/30 text-[#00D9FF]'
+                            }`}
+                          >
+                            {ann.category}
+                          </span>
 
-                        <span className="text-[10px] text-gray-400 font-mono">
-                          {ann.timestamp}
-                        </span>
+                          <span className="text-[10px] text-gray-400 font-mono">
+                            {ann.timestamp}
+                          </span>
+                        </div>
+
+                        <h4 className="font-orbitron font-bold text-sm text-[#00D9FF] mb-1">
+                          {ann.title}
+                        </h4>
+                        <p className="text-xs text-gray-300 leading-relaxed font-sans">
+                          {ann.message}
+                        </p>
                       </div>
-
-                      <h4 className="font-orbitron font-bold text-sm text-white mb-1">
-                        {ann.title}
-                      </h4>
-                      <p className="text-xs text-gray-300 leading-relaxed font-sans">
-                        {ann.message}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-400 font-orbitron text-xs">
+                    No announcements published yet. Live updates from Admin will appear here instantly.
+                  </div>
+                )}
               </div>
 
               {/* Drawer Footer */}
@@ -219,7 +234,7 @@ export default function AnnouncementTicker() {
                 <span>INFINIX&apos;26 Official Broadcast System</span>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="px-5 py-2 rounded-full bg-[#00D9FF] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_#00D9FF] hover:scale-105 transition-all"
+                  className="px-5 py-2 rounded-full bg-[#00D9FF] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_#00D9FF] hover:scale-105 transition-all cursor-pointer"
                 >
                   GOT IT
                 </button>

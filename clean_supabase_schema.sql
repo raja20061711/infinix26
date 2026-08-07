@@ -138,11 +138,7 @@ INSERT INTO public.themes (id, title, domain, description, is_active) VALUES
 ('theme-open', 'Open Innovation', 'Interdisciplinary', 'Software & Hardware Real-World Innovations', true),
 ('theme-energy', 'Energy Innovation & Smart Grid', 'EEE & ECE', 'Renewable Energy, Smart Grids, Power Management', true);
 
--- Insert Default Announcements
-INSERT INTO public.announcements (id, title, message, category, is_published) VALUES
-('ann-1', '🚀 Registrations Open on Unstop!', 'Registration via Unstop: ₹250 for Internal Ramco Students & ₹350 for External Students.', 'Urgent', true),
-('ann-2', '🏆 Total ₹30,000 Prize Pool', 'Compete across 7 exciting hackathon themes & win cash prizes + certificates!', 'Update', true),
-('ann-3', '📌 Hardware Notice for Open Innovation', 'Participants working on Hardware/IoT must bring their own components & boards.', 'General', true);
+
 
 -- Insert Initial Sample Registration
 INSERT INTO public.registrations (team_id, team_name, leader_name, leader_email, leader_phone, college, department, members, password_hash, registration_status, email_status) VALUES
@@ -179,6 +175,10 @@ GRANT ALL ON TABLE public.contact_messages TO anon, authenticated, service_role;
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('payment-proofs', 'payment-proofs', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- STEP 6: ENABLE SUPABASE REALTIME FOR ANNOUNCEMENTS TABLE
+ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
+ALTER TABLE public.announcements REPLICA IDENTITY FULL;
 
 -- Allow Public Read & Upload Access for payment-proofs Bucket
 DROP POLICY IF EXISTS "Public Read Access for Payment Proofs" ON storage.objects;
