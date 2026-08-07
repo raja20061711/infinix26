@@ -213,23 +213,39 @@ export default function TracksSection() {
           })}
         </div>
 
-        {/* COMPACT IMPORTANT NOTE INFORMATION BOX */}
-        <div className="rounded-xl bg-[#04162e]/90 border border-[#00D9FF]/35 p-4 shadow-[0_0_20px_rgba(0,217,255,0.12)] flex items-start gap-3 backdrop-blur-xl">
-          <div className="w-8 h-8 rounded-lg bg-[#00D9FF]/15 border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] shrink-0 mt-0.5">
-            <Info className="w-4 h-4" />
+        {/* ⚠️ IMPORTANT NOTE — Glowing Highlighted Box */}
+        <div
+          className="relative rounded-2xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-500/10 via-orange-500/8 to-amber-500/10 p-4 sm:p-5 flex items-start gap-4 backdrop-blur-xl overflow-hidden"
+          style={{ boxShadow: '0 0 30px rgba(251,191,36,0.25), inset 0 0 30px rgba(251,191,36,0.05)' }}
+        >
+          {/* Ambient corner glow */}
+          <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-amber-400/15 blur-2xl pointer-events-none" />
+
+          {/* Icon with blinking ring */}
+          <div className="relative flex-shrink-0 mt-0.5">
+            <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-amber-400 opacity-20"></span>
+            <div className="relative w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/70 flex items-center justify-center text-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.5)]">
+              <Info className="w-4 h-4" />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1 text-xs">
-            <h5 className="font-orbitron font-bold text-xs text-white tracking-wide flex items-center gap-1.5">
-              <span className="text-[#00D9FF]">📌</span> Important Note
+          <div className="flex flex-col gap-2 text-xs">
+            {/* Title with blinking dot */}
+            <h5 className="font-orbitron font-black text-sm text-amber-300 tracking-widest uppercase flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+              </span>
+              ⚠ Important Note
             </h5>
 
-            <p className="text-gray-300 leading-relaxed font-medium">
+            <p className="text-amber-100/90 leading-relaxed font-medium">
               Participants must bring all required hardware, IoT modules, sensors, components, development boards, and cables.
             </p>
 
-            <p className="text-[#00D9FF] font-semibold">
-              The organizing committee will not provide hardware/electronic components.
+            <p className="text-white font-black tracking-wide uppercase text-[11px] bg-red-500/20 border border-red-400/50 rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 w-fit"
+              style={{ boxShadow: '0 0 10px rgba(248,113,113,0.3)' }}>
+              🚫 The organizing committee will NOT provide hardware / electronic components.
             </p>
           </div>
         </div>

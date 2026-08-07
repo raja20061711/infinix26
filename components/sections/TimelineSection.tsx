@@ -15,7 +15,7 @@ import {
 const milestones = [
   {
     title: 'Registrations Open',
-    date: '06 Aug 2026',
+    date: '07 Aug 2026',
     icon: Calendar,
   },
   {
@@ -39,8 +39,8 @@ const milestones = [
     icon: Flag,
   },
   {
-    title: 'Results Announcement',
-    date: '11 Sep 2026 04:00 PM',
+    title: 'Results & Valedictory',
+    date: '11 Sep 2026 03:00 PM',
     icon: Trophy,
   },
 ];

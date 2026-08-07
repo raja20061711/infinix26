@@ -140,9 +140,10 @@ export default function HeroSection() {
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         className="mb-6 w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 flex flex-col gap-3"
       >
-        {/* Top Logos Bar - Always Horizontal Side by Side on Mobile & Desktop */}
+        {/* Top Logos Bar — Left | Center | Right */}
         <div className="w-full flex items-center justify-between gap-2 px-1">
-          {/* Left Official Logo - Ramco Institute of Technology */}
+
+          {/* Left: RIT Logo */}
           <motion.div
             animate={{ y: [0, -3, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
@@ -156,7 +157,46 @@ export default function HeroSection() {
             />
           </motion.div>
 
-          {/* Right Official Logos - IE(I) Logo + Chapter Emblem */}
+          {/* Center: Institution Text */}
+          <div className="flex flex-col items-center text-center flex-1 space-y-1 px-2">
+            <h2 className="font-orbitron font-black text-xs sm:text-base md:text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+              RAMCO INSTITUTE OF TECHNOLOGY
+            </h2>
+            <span className="text-[9px] sm:text-xs font-semibold text-gray-300 tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              (An Autonomous Institution)
+            </span>
+            <p className="text-[11px] sm:text-sm font-bold text-[#7CE7FF] tracking-widest uppercase pt-0.5 drop-shadow-[0_0_10px_rgba(0,217,255,0.6)]">
+              DEPARTMENT OF INFORMATION TECHNOLOGY
+            </p>
+            <p className="text-[10px] sm:text-sm text-gray-300 font-semibold tracking-wider drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              in association with{' '}
+              <span className="text-[#7CE7FF] font-bold">IE(I)-IT Student Chapter</span>
+            </p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap justify-center">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.2)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+                <span className="font-orbitron font-black text-[9px] sm:text-[10px] text-emerald-300 tracking-widest uppercase">
+                  REGISTRATION LIVE
+                </span>
+              </span>
+              <span className="text-gray-600 text-xs">·</span>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/50 hover:bg-[#00D9FF]/20 hover:border-[#00D9FF] hover:shadow-[0_0_15px_rgba(0,217,255,0.35)] transition-all duration-300 group"
+                data-hoverable="true"
+              >
+                <span className="font-orbitron font-extrabold text-[9px] sm:text-[10px] text-[#7CE7FF] group-hover:text-white transition-colors tracking-widest uppercase">
+                  DIRECT ONLINE ENTRY
+                </span>
+                <span className="text-[#00D9FF] text-xs group-hover:translate-x-0.5 transition-transform">↗</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: IE(I) + Chapter Logos */}
           <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
             <motion.div
               animate={{ y: [0, -3, 0] }}
@@ -170,7 +210,6 @@ export default function HeroSection() {
                 className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
               />
             </motion.div>
-
             <motion.div
               animate={{ y: [0, -3, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
@@ -183,39 +222,6 @@ export default function HeroSection() {
                 className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(0,217,255,0.4)]"
               />
             </motion.div>
-          </div>
-        </div>
-
-        {/* Center Institutional Typography Stack */}
-        <div className="flex flex-col items-center text-center flex-1 space-y-1">
-          <h2 className="font-orbitron font-black text-xs sm:text-base md:text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-            RAMCO INSTITUTE OF TECHNOLOGY
-          </h2>
-
-          <span className="text-[9px] sm:text-xs font-semibold text-gray-300 tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            (An Autonomous Institution)
-          </span>
-
-          <p className="text-[11px] sm:text-sm font-bold text-[#7CE7FF] tracking-widest uppercase pt-0.5 drop-shadow-[0_0_10px_rgba(0,217,255,0.6)]">
-            DEPARTMENT OF INFORMATION TECHNOLOGY
-          </p>
-
-          <p className="text-[10px] sm:text-sm text-gray-300 font-semibold tracking-wider drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-            in association with{' '}
-            <span className="text-[#7CE7FF] font-bold">IE(I)-IT Student Chapter</span>
-          </p>
-
-          <div className="flex items-center gap-2.5 mt-2">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0c1322]/90 border border-[#00D9FF]/40 hover:border-[#00D9FF] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] transition-all duration-300 group"
-              data-hoverable="true"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#00D9FF] animate-pulse" />
-              <span className="font-orbitron font-extrabold text-[10px] sm:text-xs text-[#7CE7FF] group-hover:text-white transition-colors tracking-wider">
-                REGISTRATION LIVE • DIRECT ONLINE ENTRY
-              </span>
-            </Link>
           </div>
         </div>
       </motion.div>

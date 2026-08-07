@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Sparkles,
   ShieldAlert,
+  ShieldCheck,
   User,
   Clock,
   QrCode,
@@ -80,6 +81,7 @@ export default function RegisterPage() {
   const [gender, setGender] = useState('Male');
   const [rollNumber, setRollNumber] = useState('');
   const [accommodationRequired, setAccommodationRequired] = useState(false);
+  const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
 
   // Additional Members (Minimum 2, Maximum 4 required -> Total 3 to 5 members)
   const [members, setMembers] = useState<TeamMember[]>([
@@ -166,6 +168,10 @@ export default function RegisterPage() {
       if (!members[i].name.trim() || !members[i].email.trim()) {
         return setError(`Please fill in Name and Email for Member ${i + 2}.`);
       }
+    }
+
+    if (!declarationConfirmed) {
+      return setError('Please confirm the declaration box stating all provided details are correct.');
     }
 
     // Move to Step 2 (Payment Page)
@@ -469,9 +475,19 @@ export default function RegisterPage() {
                     onChange={(e) => setTeamName(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl bg-[#060b13] border border-gray-700 text-white placeholder-gray-600 focus:outline-none focus:border-[#00D9FF] text-sm"
                   />
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    Note: Problem statement selection will happen inside the Student Portal after payment verification.
-                  </p>
+                  {/* ⚠️ Important Note */}
+                  <div className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-400/60 bg-amber-500/10 backdrop-blur-sm"
+                    style={{ boxShadow: '0 0 18px rgba(251,191,36,0.18)' }}>
+                    {/* Blinking dot */}
+                    <span className="mt-0.5 flex-shrink-0 relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400"></span>
+                    </span>
+                    <p className="text-[11px] leading-relaxed text-amber-200 font-semibold">
+                      <span className="text-amber-400 font-black uppercase tracking-wider">⚠ Important Note: </span>
+                      Problem statement selection will happen inside the <span className="text-white font-bold">Student Portal</span> after payment verification.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -724,22 +740,26 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* 4. Logistics */}
-              <div className="p-6 rounded-2xl bg-[#0c1424]/80 border border-[#00D9FF]/20 backdrop-blur-md flex justify-between items-center">
-                <div>
-                  <h3 className="text-sm font-bold font-orbitron text-white">
-                    ACCOMMODATION REQUIRED?
+              {/* 4. Declaration & Confirmation */}
+              <div className="p-6 rounded-2xl bg-[#0c1424]/80 border border-[#00D9FF]/30 backdrop-blur-md space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#00D9FF]" />
+                  <h3 className="text-sm font-bold font-orbitron text-white tracking-wider uppercase">
+                    DECLARATION & CONFIRMATION
                   </h3>
-                  <p className="text-xs text-gray-400">
-                    Check if your team requires stay/food on campus during Sep 10-11.
-                  </p>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={accommodationRequired}
-                  onChange={(e) => setAccommodationRequired(e.target.checked)}
-                  className="w-5 h-5 accent-[#00D9FF] cursor-pointer"
-                />
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={declarationConfirmed}
+                    onChange={(e) => setDeclarationConfirmed(e.target.checked)}
+                    className="w-5 h-5 mt-0.5 accent-[#00D9FF] cursor-pointer rounded focus:ring-1 focus:ring-[#00D9FF]"
+                  />
+                  <span className="text-xs text-gray-300 group-hover:text-white transition-colors leading-relaxed">
+                    I hereby declare that all the details provided above (Team Name, Leader & Member details, Contact info, College & Department) are complete, accurate, and correct to the best of my knowledge.
+                  </span>
+                </label>
               </div>
 
               {/* Step 1 Next Button */}

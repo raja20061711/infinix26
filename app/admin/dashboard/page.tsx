@@ -46,6 +46,8 @@ import {
 } from 'lucide-react';
 import OceanPortalBackground from '@/components/portal/OceanPortalBackground';
 import QRScannerModal from '@/components/QRScannerModal';
+import { ShinyButton } from '@/components/ui/shiny-button';
+import { EventLaunchOverlay } from '@/components/ui/event-launch-overlay';
 import {
   getPortalState,
   savePortalState,
@@ -68,6 +70,7 @@ import {
   upsertAllRegistrationsToSupabase,
   deleteRegistrationFromSupabase,
   logAttendanceToSupabase,
+  updateAttendanceStatusInSupabase,
   deleteProblemStatementFromSupabase,
   deleteAnnouncementFromSupabase,
 } from '@/lib/supabaseClient';
@@ -113,8 +116,8 @@ export default function AdminDashboardPage() {
               members: Array.isArray(row.members)
                 ? row.members
                 : typeof row.members === 'string'
-                ? JSON.parse(row.members || '[]')
-                : localTeam?.members || [],
+                  ? JSON.parse(row.members || '[]')
+                  : localTeam?.members || [],
               accommodationRequired: row.accommodation_required ?? localTeam?.accommodationRequired ?? false,
               selectedThemeId: row.selected_theme_id || localTeam?.selectedThemeId || undefined,
               upiTransactionId: row.upi_transaction_id || localTeam?.upiTransactionId || undefined,
@@ -122,7 +125,11 @@ export default function AdminDashboardPage() {
               paymentAmount: row.payment_amount || localTeam?.paymentAmount || undefined,
               paymentStatus: row.payment_status || localTeam?.paymentStatus || 'Pending Verification',
               attendanceStatus: row.attendance_status || localTeam?.attendanceStatus || 'Not Checked In',
-              checkInTime: row.check_in_time || localTeam?.checkInTime || undefined,
+              checkInTime: row.check_in_time
+                ? typeof row.check_in_time === 'string' && row.check_in_time.includes('T')
+                  ? new Date(row.check_in_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                  : row.check_in_time
+                : localTeam?.checkInTime || undefined,
               checkedInBy: row.checked_in_by || localTeam?.checkedInBy || undefined,
               password: row.password_hash || localTeam?.password || 'hackathon2026',
               registrationStatus: row.registration_status || localTeam?.registrationStatus || 'Pending Payment Verification',
@@ -191,6 +198,8 @@ export default function AdminDashboardPage() {
   // REGISTRATION PAUSE / STOP CONTROL STATE
   const [isRegistrationOpenState, setIsRegistrationOpenState] = useState<boolean>(true);
   const [isTogglingRegistration, setIsTogglingRegistration] = useState<boolean>(false);
+  const [showLaunchAnimation, setShowLaunchAnimation] = useState<boolean>(false);
+  const [hasEverStarted, setHasEverStarted] = useState<boolean>(false);
 
   useEffect(() => {
     fetch('/api/admin/registration-status')
@@ -200,15 +209,16 @@ export default function AdminDashboardPage() {
           setIsRegistrationOpenState(data.isOpen);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleToggleRegistration = async (newStatus: boolean) => {
     setIsTogglingRegistration(true);
+    const isFirstStart = newStatus === true && !hasEverStarted;
     try {
       try {
         localStorage.setItem('infinix_reg_open', String(newStatus));
-      } catch (e) {}
+      } catch (e) { }
 
       const res = await fetch('/api/admin/registration-status', {
         method: 'POST',
@@ -218,9 +228,13 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data && data.success) {
         setIsRegistrationOpenState(data.isOpen);
+        if (data.isOpen) {
+          setHasEverStarted(true);
+          if (isFirstStart) setShowLaunchAnimation(true);
+        }
         try {
           localStorage.setItem('infinix_reg_open', String(data.isOpen));
-        } catch (e) {}
+        } catch (e) { }
         showToast(data.message, 'success');
       } else {
         showToast(data?.error || 'Failed to update registration status', 'error');
@@ -259,7 +273,7 @@ export default function AdminDashboardPage() {
     title: string;
     description: string;
     onConfirm: () => void;
-  }>({ isOpen: false, title: '', description: '', onConfirm: () => {} });
+  }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
   // HIGH RISK RE-AUTHENTICATION MODAL STATE (Password Required)
   const [highRiskModal, setHighRiskModal] = useState<{
@@ -267,7 +281,7 @@ export default function AdminDashboardPage() {
     title: string;
     description: string;
     onConfirm: () => void;
-  }>({ isOpen: false, title: '', description: '', onConfirm: () => {} });
+  }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -361,7 +375,7 @@ export default function AdminDashboardPage() {
     const creds = { email: updatedEmail, password: updatedPass };
     try {
       localStorage.setItem('admin_credentials', JSON.stringify(creds));
-    } catch (e) {}
+    } catch (e) { }
 
     setAdminEmail(updatedEmail);
     setAdminPassword(updatedPass);
@@ -374,7 +388,7 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(creds),
       });
-    } catch (e) {}
+    } catch (e) { }
 
     setCredSuccessMsg('🔑 Custom Admin credentials updated & locked! ONLY your new password can unlock the portal now.');
   };
@@ -575,7 +589,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     if (updatedTeam) {
       try {
         await upsertAllRegistrationsToSupabase([{ ...updatedTeam, selected_theme_id: null }]);
-      } catch (e) {}
+      } catch (e) { }
     }
     showToast(`✅ Reset Problem Statement allocation for Team ${teamId}`);
   };
@@ -700,7 +714,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
           // If deleteRegistrationFromSupabase returns null AND supabase is configured, it means a failure occurred
           // However the function logs errors internally and returns data on success or null on error
           // We check: if supabase is configured and result explicitly failed, keep row visible
-          
+
           // 2. Only after successful Supabase deletion, remove from UI
           const updatedTeams = portalState.teams.filter((t) => t.teamId !== team.teamId);
           updateState({ ...portalState, teams: updatedTeams });
@@ -829,7 +843,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
         const obj = JSON.parse(searchId);
         if (obj.teamId) searchId = obj.teamId;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const team = portalState.teams.find((t) => t.teamId.toUpperCase() === searchId.toUpperCase());
     if (team) {
@@ -865,21 +879,45 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
     const themeTitle = portalState.themes.find((th) => th.id === updatedTeamObj.selectedThemeId)?.title;
     const psCode = portalState.problemStatements.find((p) => p.themeId === updatedTeamObj.selectedThemeId)?.psCode;
 
-    // 1. Log attendance check-in event to Supabase attendance table & registrations table
-    await logAttendanceToSupabase(scannedTeam.teamId, 'Admin Control Desk');
-    try {
-      await upsertAllRegistrationsToSupabase([{
-        ...updatedTeamObj,
-        attendance_status: 'Checked In',
-        check_in_time: checkInTimeStr
-      }]);
-    } catch (upsertErr) {
-      console.warn('Supabase DB attendance update notice:', upsertErr);
-    }
+    // 1. Persist attendance check-in directly to Supabase DB (registrations table + attendance log)
+    await updateAttendanceStatusInSupabase(scannedTeam.teamId, 'Checked In', 'Admin Control Desk', checkInTimeStr);
 
     // 2. Sync to Google Sheets API
     await syncAttendanceToGoogleSheets(updatedTeamObj, themeTitle, psCode, 'Admin Control Desk');
     setCheckInFeedback({ success: true, msg: `Successfully marked ${scannedTeam.teamName} (${scannedTeam.teamId}) as PRESENT!` });
+  };
+
+  const handleToggleAttendance = async (team: Team) => {
+    if (!portalState) return;
+    const isCurrentlyCheckedIn = team.attendanceStatus === 'Checked In';
+    const newStatus = isCurrentlyCheckedIn ? 'Not Checked In' : 'Checked In';
+    const checkInTimeStr = isCurrentlyCheckedIn ? '' : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const updatedTeams = portalState.teams.map((t) => {
+      if (t.teamId === team.teamId) {
+        return {
+          ...t,
+          attendanceStatus: newStatus as 'Checked In' | 'Not Checked In',
+          checkInTime: checkInTimeStr,
+          checkedInBy: isCurrentlyCheckedIn ? undefined : 'Admin Dashboard',
+        };
+      }
+      return t;
+    });
+
+    const newState = { ...portalState, teams: updatedTeams };
+    updateState(newState);
+
+    showToast(`Updated attendance for ${team.teamName} (${team.teamId}) to ${newStatus}`);
+
+    // Update Supabase DB directly
+    await updateAttendanceStatusInSupabase(team.teamId, newStatus as any, 'Admin Dashboard', checkInTimeStr);
+
+    if (!isCurrentlyCheckedIn) {
+      const themeTitle = portalState.themes.find((th) => th.id === team.selectedThemeId)?.title;
+      const psCode = portalState.problemStatements.find((p) => p.themeId === team.selectedThemeId)?.psCode;
+      await syncAttendanceToGoogleSheets({ ...team, attendanceStatus: 'Checked In', checkInTime: checkInTimeStr }, themeTitle, psCode, 'Admin Dashboard');
+    }
   };
 
   // --- Announcements ---
@@ -952,9 +990,14 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
   if (!portalState) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#01050e] text-white">
-        <div className="flex items-center gap-3 text-sm text-[#00D9FF]">
-          <Sparkles className="w-5 h-5 animate-spin" />
-          <span>Loading Admin Control Center...</span>
+        <OceanPortalBackground />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/infinix-event-logo-clean.png" alt="INFINIX" className="w-16 h-16 object-contain animate-pulse" style={{ filter: 'drop-shadow(0 0 20px #00D9FF)' }} />
+          <div className="flex items-center gap-3 text-sm text-[#00D9FF] font-orbitron font-bold tracking-widest">
+            <Sparkles className="w-5 h-5 animate-spin" />
+            <span>LOADING ADMIN CONTROL CENTER...</span>
+          </div>
         </div>
       </main>
     );
@@ -989,6 +1032,12 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
   return (
     <div className="relative min-h-screen flex text-slate-100 bg-[#01050e] overflow-x-hidden">
+      {/* Launch Animation Overlay (only on first event start) */}
+      <EventLaunchOverlay
+        isVisible={showLaunchAnimation}
+        onComplete={() => setShowLaunchAnimation(false)}
+      />
+
       {/* 2D Cinematic Ocean Background */}
       <OceanPortalBackground />
 
@@ -1027,11 +1076,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as AdminTab)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#00D9FF]/25 to-transparent text-[#00D9FF] border-l-4 border-[#00D9FF] font-bold'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${isActive
+                    ? 'bg-gradient-to-r from-[#00D9FF]/25 to-transparent text-[#00D9FF] border-l-4 border-[#00D9FF] font-bold'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D9FF]' : 'text-gray-400'}`} />
                   <span>{tab.label}</span>
@@ -1094,11 +1142,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as AdminTab)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-[#00D9FF] text-black shadow-[0_0_12px_rgba(0,217,255,0.6)]'
-                    : 'bg-[#04162E] text-gray-300 border border-[#00D9FF]/20'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive
+                  ? 'bg-[#00D9FF] text-black shadow-[0_0_12px_rgba(0,217,255,0.6)]'
+                  : 'bg-[#04162E] text-gray-300 border border-[#00D9FF]/20'
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
@@ -1119,58 +1166,68 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
               </p>
             </div>
 
-            {/* REGISTRATION PAUSE / STOP CONTROL CARD */}
-            <div className={`p-6 sm:p-8 rounded-3xl border-2 backdrop-blur-2xl transition-all shadow-2xl ${
-              isRegistrationOpenState
-                ? 'bg-gradient-to-r from-[#031d1a]/90 via-[#042823]/95 to-[#021512]/90 border-emerald-500/60 shadow-[0_0_35px_rgba(16,185,129,0.2)]'
-                : 'bg-gradient-to-r from-[#2a040b]/90 via-[#3a0610]/95 to-[#1c0206]/90 border-red-500/60 shadow-[0_0_35px_rgba(239,68,68,0.2)]'
-            }`}>
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-lg ${
-                    isRegistrationOpenState
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
-                      : 'bg-red-500/20 border-red-400 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-                  }`}>
-                    {isRegistrationOpenState ? <CheckCircle2 className="w-8 h-8" /> : <Lock className="w-8 h-8" />}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-bold font-orbitron tracking-[0.2em] uppercase px-2.5 py-0.5 rounded-full border ${
-                        isRegistrationOpenState
-                          ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
-                          : 'bg-red-500/20 border-red-400/40 text-red-300'
-                      }`}>
-                        {isRegistrationOpenState ? '🟢 REGISTRATIONS ACTIVE & OPEN' : '🔴 REGISTRATIONS PAUSED / STOPPED'}
-                      </span>
-                    </div>
-                    <h3 className="font-orbitron font-black text-xl text-white tracking-wide uppercase">
-                      TEAM REGISTRATION PORTAL CONTROL
-                    </h3>
-                    <p className="text-xs text-gray-300 mt-1 max-w-xl">
-                      {isRegistrationOpenState
-                        ? 'Form is active. Students can submit team registrations on /register.'
-                        : 'Registration form is locked. Anyone visiting /register or submitting requests sees "There is no longer accepting registrations".'}
-                    </p>
-                  </div>
-                </div>
+            {/* 👑 GRAND MASTER CONTROL PANEL */}
+            <div className={`relative overflow-hidden rounded-3xl border-2 backdrop-blur-2xl transition-all duration-700 ${isRegistrationOpenState
+              ? 'border-emerald-400/80 shadow-[0_0_80px_rgba(0,255,128,0.35)]'
+              : 'border-rose-500/80 shadow-[0_0_80px_rgba(255,30,80,0.3)]'
+              }`}
+              style={{ minHeight: 220 }}
+            >
+              {/* Ambient background */}
+              <div className={`absolute inset-0 transition-all duration-700 ${isRegistrationOpenState
+                ? 'bg-gradient-to-br from-[#011a0f] via-[#02110c] to-[#000a06]'
+                : 'bg-gradient-to-br from-[#1a0208] via-[#100105] to-[#070003]'
+                }`} />
 
-                <button
+              {/* Glow orbs */}
+              <div className={`absolute -right-24 -top-24 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${isRegistrationOpenState ? 'bg-emerald-500/25' : 'bg-rose-600/25'
+                }`} />
+              <div className={`absolute -left-24 -bottom-24 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${isRegistrationOpenState ? 'bg-teal-400/15' : 'bg-pink-700/15'
+                }`} />
+
+              {/* Status header row */}
+              <div className="relative z-10 flex flex-wrap items-center gap-2 px-8 pt-7 pb-4">
+
+
+
+                <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold font-orbitron tracking-widest uppercase border transition-all duration-500 ${isRegistrationOpenState
+                  ? 'bg-emerald-950/80 border-emerald-400/60 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                  : 'bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.4)]'
+                  }`}>
+                  {isRegistrationOpenState ? '🟢 EVENT LIVE — PORTAL ACTIVE' : '🔴 EVENT PAUSED — PORTAL LOCKED'}
+                </span>
+              </div>
+
+              {/* Main ShinyButton filling the rest */}
+              <div className="relative z-10 px-6 pb-6">
+                <ShinyButton
+                  variant={isRegistrationOpenState ? 'stop' : 'start'}
                   onClick={() => handleToggleRegistration(!isRegistrationOpenState)}
                   disabled={isTogglingRegistration}
-                  className={`px-6 py-3.5 rounded-2xl font-orbitron font-black text-xs tracking-wider uppercase transition-all shadow-xl flex items-center gap-2.5 cursor-pointer self-stretch md:self-auto justify-center ${
-                    isRegistrationOpenState
-                      ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white border border-red-400 hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] hover:scale-[1.02]'
-                      : 'bg-gradient-to-r from-emerald-400 to-teal-500 text-black border border-emerald-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:scale-[1.02]'
-                  }`}
                 >
-                  {isRegistrationOpenState ? <Lock className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                  {isTogglingRegistration
-                    ? 'UPDATING STATUS...'
-                    : isRegistrationOpenState
-                    ? 'PAUSE / STOP REGISTRATIONS'
-                    : 'ACTIVATE & RESUME REGISTRATIONS'}
-                </button>
+                  {isTogglingRegistration ? (
+                    <span className="flex flex-col items-center gap-2">
+                      <RefreshCw className="w-8 h-8 animate-spin" />
+                      <span className="text-base tracking-widest">SYNCING...</span>
+                    </span>
+                  ) : isRegistrationOpenState ? (
+                    <span className="flex flex-col items-center gap-3 px-4">
+                      <span className="flex items-center gap-3">
+                        <Lock className="w-10 h-10" />
+                        <span className="text-3xl sm:text-4xl font-black tracking-widest">STOP EVENT</span>
+                      </span>
+                      <span className="text-xs font-normal tracking-[0.3em] opacity-70 uppercase">Lock & Pause Portal</span>
+                    </span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-3 px-4">
+                      <span className="flex items-center gap-3">
+                        <Sparkles className="w-10 h-10 animate-pulse" />
+                        <span className="text-3xl sm:text-4xl font-black tracking-widest">START EVENT</span>
+                      </span>
+                      <span className="text-xs font-normal tracking-[0.3em] opacity-70 uppercase">Launch INFINIX&apos;26 Live</span>
+                    </span>
+                  )}
+                </ShinyButton>
               </div>
             </div>
 
@@ -1262,9 +1319,8 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                   <Layers className="w-5 h-5 text-[#00D9FF]" />
                 </div>
                 <span
-                  className={`font-orbitron font-extrabold text-lg block uppercase ${
-                    portalState.themeSelectionEnabled ? 'text-emerald-400' : 'text-amber-400'
-                  }`}
+                  className={`font-orbitron font-extrabold text-lg block uppercase ${portalState.themeSelectionEnabled ? 'text-emerald-400' : 'text-amber-400'
+                    }`}
                 >
                   {portalState.themeSelectionEnabled ? 'UNLOCKED' : 'LOCKED'}
                 </span>
@@ -1499,23 +1555,24 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       <td className="p-4">
                         <div className="space-y-1">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit ${
-                              team.registrationStatus === 'Verified'
-                                ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
-                                : 'bg-amber-950 text-amber-300 border border-amber-500/40'
-                            }`}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit ${team.registrationStatus === 'Verified'
+                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
+                              : 'bg-amber-950 text-amber-300 border border-amber-500/40'
+                              }`}
                           >
                             {team.registrationStatus === 'Verified' ? 'Verified' : 'Pending Payment'}
                           </span>
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit ${
-                              team.attendanceStatus === 'Checked In'
-                                ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50'
-                                : 'bg-gray-900 text-gray-400 border border-gray-700'
-                            }`}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAttendance(team)}
+                            title="Click to toggle Check-In status"
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold block w-fit transition-all hover:scale-105 cursor-pointer ${team.attendanceStatus === 'Checked In'
+                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-900'
+                              : 'bg-gray-900 text-gray-400 border border-gray-700 hover:border-gray-500 hover:text-white'
+                              }`}
                           >
-                            {team.attendanceStatus}
-                          </span>
+                            {team.attendanceStatus === 'Checked In' ? '✓ Checked In' : '⏳ Not Checked In'}
+                          </button>
                         </div>
                       </td>
                       <td className="p-4 text-right">
@@ -1599,11 +1656,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       handleToggleThemeSelection
                     )
                   }
-                  className={`px-4 py-2.5 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer ${
-                    portalState.themeSelectionEnabled
-                      ? 'bg-amber-950/60 border-amber-500 text-amber-300'
-                      : 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
-                  }`}
+                  className={`px-4 py-2.5 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer ${portalState.themeSelectionEnabled
+                    ? 'bg-amber-950/60 border-amber-500 text-amber-300'
+                    : 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
+                    }`}
                 >
                   {portalState.themeSelectionEnabled ? 'UNPUBLISH THEME SELECTION' : 'PUBLISH THEME SELECTION'}
                 </button>
@@ -1984,9 +2040,8 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                           {ps.psCode}
                         </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            ps.isPublished ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-amber-950 text-amber-300 border border-amber-500/30'
-                          }`}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ps.isPublished ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-amber-950 text-amber-300 border border-amber-500/30'
+                            }`}
                         >
                           {ps.isPublished ? 'PUBLISHED LIVE' : 'UNPUBLISHED (HIDDEN)'}
                         </span>
@@ -2008,49 +2063,48 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                       <p className="text-xs text-gray-300 max-w-xl">{ps.description}</p>
                     </div>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() =>
-                        triggerHighRiskModal(
-                          ps.isPublished ? 'Unpublish PS' : 'Publish PS',
-                          `Toggle publication state for PS code ${ps.psCode}?`,
-                          () => handleTogglePublishPS(ps.id)
-                        )
-                      }
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer ${
-                        ps.isPublished
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() =>
+                          triggerHighRiskModal(
+                            ps.isPublished ? 'Unpublish PS' : 'Publish PS',
+                            `Toggle publication state for PS code ${ps.psCode}?`,
+                            () => handleTogglePublishPS(ps.id)
+                          )
+                        }
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer ${ps.isPublished
                           ? 'bg-amber-950/60 border border-amber-500 text-amber-300 hover:bg-amber-900'
                           : 'bg-emerald-950/60 border border-emerald-500 text-emerald-300 hover:bg-emerald-900'
-                      }`}
-                    >
-                      {ps.isPublished ? 'UNPUBLISH' : 'PUBLISH'}
-                    </button>
+                          }`}
+                      >
+                        {ps.isPublished ? 'UNPUBLISH' : 'PUBLISH'}
+                      </button>
 
-                    <button
-                      onClick={() => setEditingPS(ps)}
-                      className="p-2 rounded-xl text-gray-400 hover:text-[#00D9FF] transition-colors"
-                      title="Edit PS"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
+                      <button
+                        onClick={() => setEditingPS(ps)}
+                        className="p-2 rounded-xl text-gray-400 hover:text-[#00D9FF] transition-colors"
+                        title="Edit PS"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
 
-                    <button
-                      onClick={() =>
-                        triggerHighRiskModal(
-                          'Delete Problem Statement',
-                          `Delete problem statement "${ps.title}"?`,
-                          () => handleDeletePS(ps.id)
-                        )
-                      }
-                      className="p-2 rounded-xl text-gray-400 hover:text-red-400 transition-colors"
-                      title="Delete PS"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <button
+                        onClick={() =>
+                          triggerHighRiskModal(
+                            'Delete Problem Statement',
+                            `Delete problem statement "${ps.title}"?`,
+                            () => handleDeletePS(ps.id)
+                          )
+                        }
+                        className="p-2 rounded-xl text-gray-400 hover:text-red-400 transition-colors"
+                        title="Delete PS"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           </div>
         )}
@@ -2137,11 +2191,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
             {/* Check-In Feedback Alert */}
             {checkInFeedback && (
               <div
-                className={`p-4 rounded-xl text-xs flex items-center justify-between ${
-                  checkInFeedback.success
-                    ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
-                    : 'bg-red-950/80 border border-red-500/50 text-red-200'
-                }`}
+                className={`p-4 rounded-xl text-xs flex items-center justify-between ${checkInFeedback.success
+                  ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
+                  : 'bg-red-950/80 border border-red-500/50 text-red-200'
+                  }`}
               >
                 <span>{checkInFeedback.msg}</span>
                 {checkInFeedback.success && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
@@ -2164,11 +2217,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
                   </div>
 
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      scannedTeam.attendanceStatus === 'Checked In'
-                        ? 'bg-emerald-950 border border-emerald-500 text-emerald-400'
-                        : 'bg-amber-950 border border-amber-500 text-amber-300'
-                    }`}
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${scannedTeam.attendanceStatus === 'Checked In'
+                      ? 'bg-emerald-950 border border-emerald-500 text-emerald-400'
+                      : 'bg-amber-950 border border-amber-500 text-amber-300'
+                      }`}
                   >
                     {scannedTeam.attendanceStatus}
                   </span>
@@ -3109,11 +3161,10 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
               initial={{ y: 50, opacity: 0, scale: 0.9 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 50, opacity: 0, scale: 0.9 }}
-              className={`fixed bottom-6 right-6 z-50 p-4 max-w-md rounded-2xl border shadow-2xl flex items-center justify-between gap-4 backdrop-blur-xl ${
-                toastMessage.type === 'success'
-                  ? 'bg-[#041c30]/95 border-[#00D9FF] text-white shadow-[0_0_30px_rgba(0,217,255,0.4)]'
-                  : 'bg-red-950/95 border-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)]'
-              }`}
+              className={`fixed bottom-6 right-6 z-50 p-4 max-w-md rounded-2xl border shadow-2xl flex items-center justify-between gap-4 backdrop-blur-xl ${toastMessage.type === 'success'
+                ? 'bg-[#041c30]/95 border-[#00D9FF] text-white shadow-[0_0_30px_rgba(0,217,255,0.4)]'
+                : 'bg-red-950/95 border-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)]'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {toastMessage.type === 'success' ? (

@@ -24,8 +24,8 @@ async function saveToPermanentLocalStorage(
 ): Promise<string | null> {
   if (typeof window !== 'undefined') return null; // Browser environment safeguard
   try {
-    const fs = await import('fs');
-    const path = await import('path');
+    const fs = eval('require')('fs');
+    const path = eval('require')('path');
     const fileName = `${teamId.replace(/[^a-zA-Z0-9_-]/g, '')}_${Date.now()}.${extension}`;
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'payment_slips');
 
@@ -310,6 +310,57 @@ export async function logAttendanceToSupabase(teamId: string, checkedInBy: strin
     return data;
   } catch (err) {
     console.error('Supabase attendance log failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Update Team Attendance Status directly in Supabase DB (registrations table & attendance audit log)
+ */
+export async function updateAttendanceStatusInSupabase(
+  teamId: string,
+  status: 'Checked In' | 'Not Checked In' = 'Checked In',
+  checkedInBy: string = 'Admin Control Desk',
+  checkInTime?: string
+) {
+  try {
+    const timeISO = new Date().toISOString();
+    const timeDisplay = checkInTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // 1. Explicitly update attendance fields in registrations table
+    // Note: check_in_time column in Postgres is TIMESTAMPTZ, so we pass ISO string if status is Checked In, or null if Not Checked In
+    const { data: updateData, error: updateError } = await supabase
+      .from('registrations')
+      .update({
+        attendance_status: status,
+        check_in_time: status === 'Checked In' ? timeISO : null,
+        checked_in_by: status === 'Checked In' ? checkedInBy : null,
+        updated_at: timeISO,
+      })
+      .ilike('team_id', teamId.trim())
+      .select();
+
+    if (updateError) {
+      console.error(`❌ Error updating attendance in registrations table for ${teamId}:`, updateError.message);
+    } else {
+      console.log(`✅ Attendance status for team ${teamId} updated to "${status}" in Supabase DB!`);
+    }
+
+    // 2. Insert audit log into attendance table
+    try {
+      await supabase.from('attendance').insert({
+        team_id: teamId,
+        status: status,
+        check_in_time: timeISO,
+        checked_in_by: checkedInBy,
+      });
+    } catch (auditErr) {
+      console.warn('Attendance audit log notice:', auditErr);
+    }
+
+    return updateData;
+  } catch (err: any) {
+    console.error('Supabase attendance status update exception:', err?.message || err);
     return null;
   }
 }
