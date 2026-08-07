@@ -29,13 +29,12 @@ const sponsorList = [
     url: 'https://brassyacademy.com/',
   },
   {
-    name: 'THE THREE MONKEYS FOOD CORNER',
-    badge: 'Merchandise Partner',
-    tier: 'OFFICIAL MERCHANDISE PARTNER',
-    tagline: 'Official Merchandise & Apparel Partner',
-    logo: '/three-monkeys-logo.png',
-    url: 'https://www.instagram.com/threemonkeyscafe/?hl=en',
-    locationUrl: 'https://share.google/XFJajlhSNoMjInKfj',
+    name: 'THE THREE MONKEYS & RAIN TREE',
+    badge: 'Merchandise Partners',
+    tier: 'OFFICIAL MERCHANDISE PARTNERS',
+    tagline: 'Food, Apparel & Lounge Partners',
+    logos: ['/three-monkeys-logo.png', '/rain-tree-logo.png'],
+    locationUrl: 'https://share.google/XFJajlhSNoMjInKfj', // Using one of the locations for now
   },
   {
     name: 'UNSTOP',
@@ -44,14 +43,6 @@ const sponsorList = [
     tagline: 'Official Online Platform',
     logo: '/unstop-logo.png',
     url: 'https://unstop.com',
-  },
-  {
-    name: 'THE RAIN TREE RESTO LOUNGE & BAR',
-    badge: 'Merchandise Partner',
-    tier: 'OFFICIAL LOUNGE & RESTO PARTNER',
-    tagline: 'Casual Dining & Social Spot',
-    logo: '/rain-tree-logo.png', // Make sure to add rain-tree-logo.png to the public folder
-    locationUrl: 'https://maps.google.com/?q=The+Rain+Tree+Resto+Lounge+Bar+Rajapalayam',
   },
 ];
 
@@ -123,15 +114,30 @@ export default function SponsorsSection() {
                   </div>
 
                   {/* High-Contrast Crisp Logo Container Box */}
-                  <div className="w-full h-24 mb-3.5 p-2 rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-[1.04] bg-white border-2 border-[#00D9FF]/40 shadow-[0_4px_25px_rgba(0,217,255,0.2)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.logo}
-                      alt={item.name}
-                      loading="eager"
-                      decoding="async"
-                      className="max-h-full max-w-full object-contain p-0.5"
-                    />
+                  <div className="w-full h-24 mb-3.5 p-2 rounded-2xl flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 group-hover:scale-[1.04] bg-white border-2 border-[#00D9FF]/40 shadow-[0_4px_25px_rgba(0,217,255,0.2)]">
+                    {item.logos ? (
+                      item.logos.map((lg, i) => (
+                        <div key={i} className="h-full w-1/2 flex items-center justify-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={lg}
+                            alt={`${item.name} logo ${i + 1}`}
+                            loading="eager"
+                            decoding="async"
+                            className="max-h-full max-w-full object-contain p-0.5"
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={item.logo}
+                        alt={item.name}
+                        loading="eager"
+                        decoding="async"
+                        className="max-h-full max-w-full object-contain p-0.5"
+                      />
+                    )}
                   </div>
 
                   {/* Sponsor Name & Details */}
