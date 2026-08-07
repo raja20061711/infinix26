@@ -485,7 +485,7 @@ export default function RegisterPage() {
                     </span>
                     <p className="text-[11px] leading-relaxed text-amber-200 font-semibold">
                       <span className="text-amber-400 font-black uppercase tracking-wider">⚠ Important Note: </span>
-                      Problem statement selection will happen inside the <span className="text-white font-bold">Student Portal</span> after payment verification.
+                      Problem statement selection will happen inside the <span className="text-white font-bold">Student Portal</span> on Hackathon Day after Admin releases it.
                     </p>
                   </div>
                 </div>
