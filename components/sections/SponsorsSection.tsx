@@ -42,7 +42,7 @@ const sponsorList = [
     badge: 'Merchandise Partner',
     tier: 'OFFICIAL LOUNGE & RESTO PARTNER',
     tagline: 'Casual Dining & Social Spot',
-    logo: '/rain-tree-logo.png',
+    logo: '/rain-tree-logo.jpg',
     locationUrl: 'https://maps.google.com/?q=The+Rain+Tree+Resto+Lounge+Bar+Rajapalayam',
   },
   {
