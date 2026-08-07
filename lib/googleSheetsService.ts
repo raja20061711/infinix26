@@ -18,8 +18,10 @@ const DEFAULT_WEBHOOK_URL =
 /**
  * Helper: Format current date & time in Indian Standard Time (IST - Asia/Kolkata)
  */
-export function getISTTimestamp(): string {
-  return new Date().toLocaleString('en-IN', {
+export function getISTTimestamp(dateInput?: Date | string): string {
+  const d = dateInput ? (typeof dateInput === 'string' ? new Date(dateInput) : dateInput) : new Date();
+  if (isNaN(d.getTime())) return typeof dateInput === 'string' ? dateInput : '';
+  return d.toLocaleString('en-IN', {
     timeZone: 'Asia/Kolkata',
     day: '2-digit',
     month: 'short',
@@ -29,6 +31,17 @@ export function getISTTimestamp(): string {
     second: '2-digit',
     hour12: true,
   }) + ' IST';
+}
+
+export function getISTTimeString(dateInput?: Date | string): string {
+  const d = dateInput ? (typeof dateInput === 'string' ? new Date(dateInput) : dateInput) : new Date();
+  if (isNaN(d.getTime())) return typeof dateInput === 'string' ? dateInput : '';
+  return d.toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
 }
 
 export async function syncAttendanceToGoogleSheets(

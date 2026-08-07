@@ -63,7 +63,7 @@ import {
   Announcement,
   CSVImportResult,
 } from '@/lib/portalState';
-import { syncAttendanceToGoogleSheets } from '@/lib/googleSheetsService';
+import { syncAttendanceToGoogleSheets, getISTTimeString } from '@/lib/googleSheetsService';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
 import {
   fetchRegistrationsFromSupabase,
@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
               attendanceStatus: row.attendance_status || localTeam?.attendanceStatus || 'Not Checked In',
               checkInTime: row.check_in_time
                 ? typeof row.check_in_time === 'string' && row.check_in_time.includes('T')
-                  ? new Date(row.check_in_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                  ? getISTTimeString(row.check_in_time)
                   : row.check_in_time
                 : localTeam?.checkInTime || undefined,
               checkedInBy: row.checked_in_by || localTeam?.checkedInBy || undefined,
@@ -924,7 +924,7 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
       return;
     }
 
-    const checkInTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const checkInTimeStr = getISTTimeString();
 
     const updatedTeams = portalState.teams.map((t) => {
       if (t.teamId === scannedTeam.teamId) {
@@ -952,14 +952,14 @@ INF-2026-006,Sci-Fi Builders,Lakshmi Priya,lakshmi.p@gmail.com,+91 96666 33333,S
 
     // 2. Sync to Google Sheets API
     await syncAttendanceToGoogleSheets(updatedTeamObj, themeTitle, psCode, 'Admin Control Desk');
-    setCheckInFeedback({ success: true, msg: `Successfully marked ${scannedTeam.teamName} (${scannedTeam.teamId}) as PRESENT!` });
+    setCheckInFeedback({ success: true, msg: `Successfully marked ${scannedTeam.teamName} (${scannedTeam.teamId}) as PRESENT at ${checkInTimeStr} IST!` });
   };
 
   const handleToggleAttendance = async (team: Team) => {
     if (!portalState) return;
     const isCurrentlyCheckedIn = team.attendanceStatus === 'Checked In';
     const newStatus = isCurrentlyCheckedIn ? 'Not Checked In' : 'Checked In';
-    const checkInTimeStr = isCurrentlyCheckedIn ? '' : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const checkInTimeStr = isCurrentlyCheckedIn ? '' : getISTTimeString();
 
     const updatedTeams = portalState.teams.map((t) => {
       if (t.teamId === team.teamId) {

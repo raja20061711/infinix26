@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { syncToGoogleSheets } from '@/utils/sheetSync';
+import { getISTTimeString } from '@/lib/googleSheetsService';
 
 // Supabase URL & Anon Key from Environment Variables with direct fallback
 const supabaseUrl =
@@ -325,7 +326,7 @@ export async function updateAttendanceStatusInSupabase(
 ) {
   try {
     const timeISO = new Date().toISOString();
-    const timeDisplay = checkInTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const timeDisplay = checkInTime || getISTTimeString();
 
     // 1. Explicitly update attendance fields in registrations table
     // Note: check_in_time column in Postgres is TIMESTAMPTZ, so we pass ISO string if status is Checked In, or null if Not Checked In
