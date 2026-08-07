@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, ExternalLink, ArrowLeft, FileText, Sparkles, ChevronLeft, ChevronRight, Eye, Layers } from 'lucide-react';
+import { Download, ExternalLink, ArrowLeft, FileText, ChevronLeft, ChevronRight, Eye, Layers, ZoomIn, ZoomOut, RotateCcw, ArrowDown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import OceanPortalBackground from '@/components/portal/OceanPortalBackground';
@@ -26,14 +26,21 @@ const BROCHURE_PAGES = [
 export default function BrochurePage() {
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [zoomModalOpen, setZoomModalOpen] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
 
   const handlePrev = () => {
     setSelectedPage((prev) => (prev > 1 ? prev - 1 : TOTAL_PAGES));
+    setZoomLevel(100);
   };
 
   const handleNext = () => {
     setSelectedPage((prev) => (prev < TOTAL_PAGES ? prev + 1 : 1));
+    setZoomLevel(100);
   };
+
+  const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 25, 225));
+  const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 25, 75));
+  const resetZoom = () => setZoomLevel(100);
 
   return (
     <main className="min-h-screen bg-[#01050e] text-slate-100 relative overflow-x-hidden">
@@ -59,7 +66,7 @@ export default function BrochurePage() {
               </span>
             </h1>
             <p className="mt-2 text-sm text-gray-300 max-w-2xl">
-              Explore the complete 10-page official handbook for INFINIX&apos;26 National Level 32-Hour Hackathon hosted by Ramco Institute of Technology.
+              Explore the 10-page official handbook for INFINIX&apos;26 National Level 32-Hour Hackathon at 300 DPI high clarity with full zoom & scroll controls.
             </p>
           </div>
 
@@ -87,54 +94,99 @@ export default function BrochurePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
           {/* Main Large Viewer Card (8 Cols) */}
           <div className="lg:col-span-8 flex flex-col items-center">
-            <div className="w-full glass-panel p-4 sm:p-6 rounded-3xl border border-[#00D9FF]/30 bg-[#04162e]/70 shadow-[0_20px_50px_rgba(2,8,23,0.85)] relative overflow-hidden backdrop-blur-2xl">
+            <div className="w-full glass-panel p-4 sm:p-6 rounded-3xl border border-[#00D9FF]/30 bg-[#04162e]/80 shadow-[0_20px_50px_rgba(2,8,23,0.85)] relative overflow-hidden backdrop-blur-2xl">
               {/* Top Controls Bar */}
-              <div className="flex items-center justify-between pb-4 border-b border-[#00D9FF]/20 mb-4">
+              <div className="flex flex-wrap items-center justify-between pb-4 border-b border-[#00D9FF]/20 gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <span className="px-3 py-1 rounded-full bg-[#00D9FF]/15 border border-[#00D9FF]/40 text-[#00D9FF] font-orbitron font-bold text-xs">
                     PAGE {selectedPage} / {TOTAL_PAGES}
                   </span>
-                  <span className="text-xs font-semibold text-white truncate max-w-[220px] sm:max-w-md">
+                  <span className="text-xs font-semibold text-white truncate max-w-[180px] sm:max-w-xs">
                     {BROCHURE_PAGES[selectedPage - 1].title}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setZoomModalOpen(true)}
+                {/* Zoom & View Toolbar */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 bg-[#010612] p-1 rounded-xl border border-[#00D9FF]/30">
+                    <button
+                      onClick={zoomOut}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                      title="Zoom Out (-)"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-mono font-bold text-[#00D9FF] px-1.5 min-w-[45px] text-center">
+                      {zoomLevel}%
+                    </span>
+                    <button
+                      onClick={zoomIn}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                      title="Zoom In (+)"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    {zoomLevel !== 100 && (
+                      <button
+                        onClick={resetZoom}
+                        className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                        title="Reset Zoom"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <a
+                    href={`/brochure_pages/page_${selectedPage}.png`}
+                    target="_blank"
+                    rel="noreferrer"
                     className="p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#00D9FF] text-[#00D9FF] hover:text-white transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                   >
                     <Eye className="w-4 h-4" />
-                    <span className="hidden sm:inline">FULLSCREEN</span>
-                  </button>
+                    <span className="hidden sm:inline">FULL HD</span>
+                  </a>
                 </div>
               </div>
 
-              {/* Page Display Image Frame */}
-              <div className="relative w-full flex items-center justify-center bg-[#010612] rounded-2xl p-2 sm:p-4 overflow-hidden border border-[#00D9FF]/20 min-h-[500px]">
-                {/* Arrow Controls Over Image */}
+              {/* Scroll Tip Bar */}
+              <div className="mb-3 flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#00D9FF]/10 border border-[#00D9FF]/20 text-[11px] text-[#7CE7FF]">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <ArrowDown className="w-3.5 h-3.5 text-[#00D9FF] animate-bounce" />
+                  Scroll down inside frame below to read bottom details clearly (&quot;keela ulathu&quot;)
+                </span>
+                <span className="text-[10px] font-mono text-gray-400">300 DPI Clear Text</span>
+              </div>
+
+              {/* Page Display Image Frame with Full Vertical Scroll Support */}
+              <div className="relative w-full flex flex-col items-center bg-[#010612] rounded-2xl p-2 sm:p-4 overflow-y-auto overflow-x-auto border border-[#00D9FF]/20 max-h-[75vh] scrollbar-thin scrollbar-thumb-[#00D9FF]/40">
+                {/* Arrow Controls Floating */}
                 <button
                   onClick={handlePrev}
-                  className="absolute left-3 z-10 p-3 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,217,255,0.4)]"
+                  className="fixed left-6 sm:left-12 z-20 p-3 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,217,255,0.4)]"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
 
                 <button
                   onClick={handleNext}
-                  className="absolute right-3 z-10 p-3 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,217,255,0.4)]"
+                  className="fixed right-6 sm:right-12 z-20 p-3 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,217,255,0.4)]"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
 
-                {/* Main Page Rendered PNG */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/brochure_pages/page_${selectedPage}.png`}
-                  alt={`INFINIX'26 Brochure Page ${selectedPage}`}
-                  className="max-h-[75vh] w-auto object-contain rounded-xl shadow-2xl cursor-pointer hover:opacity-95 transition-opacity"
-                  onClick={() => setZoomModalOpen(true)}
-                />
+                {/* Main Page Rendered 300 DPI PNG Image */}
+                <div
+                  className="transition-all duration-200 ease-out flex flex-col items-center"
+                  style={{ width: `${zoomLevel}%`, minWidth: '320px' }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/brochure_pages/page_${selectedPage}.png`}
+                    alt={`INFINIX'26 Brochure Page ${selectedPage}`}
+                    className="w-full h-auto object-contain rounded-xl shadow-2xl"
+                  />
+                </div>
               </div>
 
               {/* Bottom Quick Page Buttons */}
@@ -142,7 +194,10 @@ export default function BrochurePage() {
                 {Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1).map((pgNum) => (
                   <button
                     key={pgNum}
-                    onClick={() => setSelectedPage(pgNum)}
+                    onClick={() => {
+                      setSelectedPage(pgNum);
+                      setZoomLevel(100);
+                    }}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-orbitron transition-all cursor-pointer ${
                       selectedPage === pgNum
                         ? 'bg-[#00D9FF] text-black shadow-[0_0_15px_#00D9FF]'
@@ -163,7 +218,7 @@ export default function BrochurePage() {
                 <Layers className="w-4 h-4" />
                 ALL 10 BROCHURE PAGES
               </h3>
-              <p className="text-xs text-gray-400">Click any page thumbnail below to inspect:</p>
+              <p className="text-xs text-gray-400">Click any page to jump & scroll:</p>
             </div>
 
             <div className="space-y-3 max-h-[680px] overflow-y-auto pr-1">
@@ -172,7 +227,10 @@ export default function BrochurePage() {
                 return (
                   <button
                     key={pg.id}
-                    onClick={() => setSelectedPage(pg.id)}
+                    onClick={() => {
+                      setSelectedPage(pg.id);
+                      setZoomLevel(100);
+                    }}
                     className={`w-full p-3 rounded-2xl border flex items-center gap-3 transition-all text-left cursor-pointer ${
                       isActive
                         ? 'bg-[#00D9FF]/20 border-[#00D9FF] shadow-[0_0_20px_rgba(0,217,255,0.3)]'
@@ -227,28 +285,6 @@ export default function BrochurePage() {
           </div>
         </div>
       </div>
-
-      {/* Fullscreen Zoom Modal */}
-      <AnimatePresence>
-        {zoomModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl">
-            <button
-              onClick={() => setZoomModalOpen(false)}
-              className="absolute top-6 right-6 p-3 rounded-full bg-white/10 border border-white/20 text-white hover:bg-[#00D9FF] hover:text-black transition-all cursor-pointer z-50"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-
-            {/* Fullscreen Image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/brochure_pages/page_${selectedPage}.png`}
-              alt={`Full view Page ${selectedPage}`}
-              className="max-h-[92vh] max-w-[92vw] object-contain rounded-2xl shadow-[0_0_60px_rgba(0,217,255,0.4)]"
-            />
-          </div>
-        )}
-      </AnimatePresence>
 
       <Footer />
     </main>

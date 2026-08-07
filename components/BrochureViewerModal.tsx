@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, ChevronLeft, ChevronRight, Maximize2, FileText, Sparkles, ExternalLink } from 'lucide-react';
+import { X, Download, ChevronLeft, ChevronRight, FileText, ZoomIn, ZoomOut, RotateCcw, ExternalLink, Eye, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 
 interface BrochureViewerModalProps {
@@ -13,73 +13,125 @@ interface BrochureViewerModalProps {
 
 const TOTAL_PAGES = 10;
 const PAGE_TITLES = [
-  'Event Title & Sponsors',
-  'About INFINIX\'26 & Domains',
+  'Event Title & Official Sponsors',
+  'About INFINIX\'26 & Hackathon Domains',
   'Smart Intelligence, Cloud & MedTech',
   'Open Innovation & Smart Automation',
-  'Prize Pool & Rewards Breakdown',
-  'Event Trajectory & Schedule',
-  'Rules of Engagement & Hardware',
-  'Code of Conduct & Guidelines',
-  'Organizing Committee & Contacts',
-  'Registration Fees & QR Code',
+  'Win Big: ₹15,000 Prize Pool Breakdown',
+  'Event Trajectory & Milestones Timeline',
+  'Rules of Engagement & Hardware Requirements',
+  'Hackathon Code of Conduct & Guidelines',
+  'Faculty & Student Coordinators Contact Info',
+  'Registration Fees & Direct QR Code Scanner',
 ];
 
 export default function BrochureViewerModal({ isOpen, onClose, initialPage = 1 }: BrochureViewerModalProps) {
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
 
   if (!isOpen) return null;
 
   const handlePrev = () => {
     setCurrentPage((prev) => (prev > 1 ? prev - 1 : TOTAL_PAGES));
+    setZoomLevel(100);
   };
 
   const handleNext = () => {
     setCurrentPage((prev) => (prev < TOTAL_PAGES ? prev + 1 : 1));
+    setZoomLevel(100);
   };
+
+  const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 25, 225));
+  const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 25, 75));
+  const resetZoom = () => setZoomLevel(100);
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-2xl">
         <motion.div
           initial={{ opacity: 0, scale: 0.94, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full max-w-5xl h-[92vh] flex flex-col bg-[#020b18]/95 border border-[#00D9FF]/40 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,217,255,0.3)] backdrop-blur-2xl text-white"
+          className="relative w-full max-w-6xl h-[94vh] flex flex-col bg-[#020b18]/98 border border-[#00D9FF]/40 rounded-3xl overflow-hidden shadow-[0_0_70px_rgba(0,217,255,0.35)] backdrop-blur-2xl text-white"
         >
-          {/* Glowing Ocean Accent Bar */}
+          {/* Glowing Ocean Top Bar */}
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#00D9FF] via-[#7CE7FF] to-[#00D9FF] shadow-[0_0_15px_#00D9FF]" />
 
-          {/* Modal Header */}
-          <div className="flex items-center justify-between px-5 sm:px-8 py-4 border-b border-[#00D9FF]/20 bg-[#04162e]/80">
+          {/* Modal Header Controls */}
+          <div className="flex flex-wrap items-center justify-between px-4 sm:px-6 py-3 border-b border-[#00D9FF]/20 bg-[#04162e]/90 gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-[#00D9FF]/15 border border-[#00D9FF]/40 text-[#00D9FF]">
+              <div className="p-2 rounded-xl bg-[#00D9FF]/15 border border-[#00D9FF]/40 text-[#00D9FF]">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-orbitron font-extrabold text-sm sm:text-base text-white tracking-wide uppercase flex items-center gap-2">
+                <h3 className="font-orbitron font-extrabold text-xs sm:text-sm text-white tracking-wide uppercase flex items-center gap-2">
                   <span>INFINIX&apos;26 OFFICIAL BROCHURE</span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00D9FF]/20 text-[#7CE7FF] border border-[#00D9FF]/30 font-sans font-semibold">
-                    10 PAGES
+                    10 PAGES (HIGH RESOLUTION)
                   </span>
                 </h3>
-                <p className="text-xs text-[#7CE7FF]">
+                <p className="text-[11px] text-[#7CE7FF] truncate max-w-xs sm:max-w-md">
                   Page {currentPage} of {TOTAL_PAGES}: <span className="font-semibold text-white">{PAGE_TITLES[currentPage - 1]}</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Header Zoom & Download Toolbar */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              {/* Zoom Controls */}
+              <div className="flex items-center gap-1 bg-[#010612] p-1 rounded-xl border border-[#00D9FF]/30">
+                <button
+                  onClick={zoomOut}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                  title="Zoom Out (-)"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="text-xs font-mono font-bold text-[#00D9FF] px-1.5 min-w-[45px] text-center">
+                  {zoomLevel}%
+                </span>
+                <button
+                  onClick={zoomIn}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                  title="Zoom In (+)"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                {zoomLevel !== 100 && (
+                  <button
+                    onClick={resetZoom}
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                    title="Reset Zoom"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* View Full Image in New Tab */}
+              <a
+                href={`/brochure_pages/page_${currentPage}.png`}
+                target="_blank"
+                rel="noreferrer"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#00D9FF] text-xs font-bold text-gray-200 hover:text-white transition-all"
+                title="Open Clear Full HD Image in New Tab"
+              >
+                <span>OPEN FULL HD</span>
+                <Eye className="w-3.5 h-3.5 text-[#00D9FF]" />
+              </a>
+
+              {/* Download PDF Button */}
               <a
                 href="/infinix26-brochure.pdf"
                 download="INFINIX26_Official_Brochure.pdf"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#4CCFFF] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,217,255,0.6)] hover:scale-105 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#4CCFFF] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_15px_rgba(0,217,255,0.6)] hover:scale-105 transition-all"
               >
                 <span>DOWNLOAD PDF</span>
                 <Download className="w-3.5 h-3.5" />
               </a>
 
+              {/* Close Modal Button */}
               <button
                 onClick={onClose}
                 className="p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#00D9FF] text-gray-300 hover:text-white transition-all cursor-pointer"
@@ -89,53 +141,60 @@ export default function BrochureViewerModal({ isOpen, onClose, initialPage = 1 }
             </div>
           </div>
 
-          {/* Main Interactive Canvas / Viewer */}
-          <div className="relative flex-1 bg-[#010612] flex items-center justify-center p-3 sm:p-6 overflow-hidden">
-            {/* Background Ocean Glow */}
-            <div className="absolute inset-0 bg-radial from-[#00D9FF]/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-
-            {/* Left Prev Arrow */}
+          {/* Main Viewer Area (Scrollable Vertically & Horizontally for Ultra Clear Reading) */}
+          <div className="relative flex-1 bg-[#010612] overflow-auto p-2 sm:p-4 flex items-center justify-center">
+            {/* Prev Arrow Floating */}
             <button
               onClick={handlePrev}
-              className="absolute left-3 sm:left-6 z-20 p-3 sm:p-4 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all shadow-[0_0_20px_rgba(0,217,255,0.3)] cursor-pointer"
+              className="fixed left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-2xl bg-[#04162e]/95 border border-[#00D9FF]/50 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all shadow-[0_0_25px_rgba(0,217,255,0.5)] cursor-pointer"
               title="Previous Page"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            {/* Right Next Arrow */}
+            {/* Next Arrow Floating */}
             <button
               onClick={handleNext}
-              className="absolute right-3 sm:right-6 z-20 p-3 sm:p-4 rounded-2xl bg-[#04162e]/90 border border-[#00D9FF]/40 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all shadow-[0_0_20px_rgba(0,217,255,0.3)] cursor-pointer"
+              className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-2xl bg-[#04162e]/95 border border-[#00D9FF]/50 text-[#00D9FF] hover:bg-[#00D9FF] hover:text-black hover:scale-110 transition-all shadow-[0_0_25px_rgba(0,217,255,0.5)] cursor-pointer"
               title="Next Page"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
 
-            {/* Brochure Page Image Container */}
-            <div className="relative max-h-full max-w-full flex items-center justify-center overflow-hidden rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-[#00D9FF]/20 bg-[#020b18]">
-              <motion.img
-                key={currentPage}
-                src={`/brochure_pages/page_${currentPage}.png`}
-                alt={`INFINIX'26 Official Brochure Page ${currentPage}`}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.25 }}
-                className="max-h-[66vh] sm:max-h-[70vh] w-auto object-contain rounded-xl select-none"
-              />
+            {/* Image Container with Scroll Support for Bottom Content ("keela ulathu") */}
+            <div className="w-full h-full flex flex-col items-center overflow-y-auto overflow-x-auto p-2 sm:p-4 rounded-2xl scrollbar-thin scrollbar-thumb-[#00D9FF]/40 bg-[#020b18]/60">
+              <div
+                className="transition-all duration-200 ease-out my-auto flex flex-col items-center"
+                style={{ width: `${zoomLevel}%`, minWidth: '320px' }}
+              >
+                <img
+                  key={currentPage}
+                  src={`/brochure_pages/page_${currentPage}.png`}
+                  alt={`INFINIX'26 Official Brochure Page ${currentPage}`}
+                  className="w-full h-auto object-contain rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] border border-[#00D9FF]/20 select-none"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Footer Controls & Thumbnail Strip */}
-          <div className="px-4 py-3 border-t border-[#00D9FF]/20 bg-[#04162e]/90 flex flex-col sm:flex-row items-center justify-between gap-3">
-            {/* Page Selector Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1 no-scrollbar">
+          {/* Footer Controls & Page Jump Pills */}
+          <div className="px-4 py-2.5 border-t border-[#00D9FF]/20 bg-[#04162e]/95 flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Scroll Indicator Tip */}
+            <div className="flex items-center gap-1.5 text-[11px] text-[#7CE7FF] font-medium">
+              <ArrowDown className="w-3.5 h-3.5 animate-bounce text-[#00D9FF]" />
+              <span>Scroll down inside image to read bottom content clearly</span>
+            </div>
+
+            {/* Page Jump Pills */}
+            <div className="flex items-center gap-1 overflow-x-auto max-w-full py-0.5 no-scrollbar">
               {Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1).map((pgNum) => (
                 <button
                   key={pgNum}
-                  onClick={() => setCurrentPage(pgNum)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold font-orbitron transition-all cursor-pointer ${
+                  onClick={() => {
+                    setCurrentPage(pgNum);
+                    setZoomLevel(100);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold font-orbitron transition-all cursor-pointer ${
                     currentPage === pgNum
                       ? 'bg-[#00D9FF] text-black shadow-[0_0_15px_#00D9FF]'
                       : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-[#00D9FF]/40'
@@ -146,26 +205,15 @@ export default function BrochureViewerModal({ isOpen, onClose, initialPage = 1 }
               ))}
             </div>
 
-            {/* Action CTAs */}
-            <div className="flex items-center gap-3">
-              <a
-                href="/infinix26-brochure.pdf"
-                download="INFINIX26_Official_Brochure.pdf"
-                className="flex sm:hidden items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00D9FF] text-black font-extrabold text-xs uppercase"
-              >
-                <span>DOWNLOAD PDF</span>
-                <Download className="w-3.5 h-3.5" />
-              </a>
-
-              <Link
-                href="/register"
-                onClick={onClose}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-[#00D9FF] via-[#4CCFFF] to-[#7CE7FF] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,217,255,0.7)] hover:scale-105 transition-all"
-              >
-                <span>REGISTER FOR HACKATHON</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            {/* Register CTA */}
+            <Link
+              href="/register"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#00D9FF] to-[#7CE7FF] text-black font-extrabold text-xs tracking-wider uppercase shadow-[0_0_15px_rgba(0,217,255,0.7)] hover:scale-105 transition-all"
+            >
+              <span>REGISTER</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </motion.div>
       </div>
